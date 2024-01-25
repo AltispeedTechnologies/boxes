@@ -1,1 +1,3 @@
-from .user import User
+from .account import *
+from .address import *
+from .user import *
