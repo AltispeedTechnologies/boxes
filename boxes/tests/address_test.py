@@ -1,12 +1,11 @@
 from django.test import TestCase
-from boxes.models import Address
-from boxes.models import UserAddress
+from boxes.models import *
 
-class AccountTest(TestCase):
+class AddressTest(TestCase):
     def setUp(self):
-        # Create a sample User, some of this may be duplicated
+        # Create a sample CustomUser, some of this may be duplicated
         # This is just the bare minimum to allow the user to be saved
-        self.user = User()
+        self.user = CustomUser()
         self.user.save()
 
         # Create a sample Address, copies of this can be modified within the

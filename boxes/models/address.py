@@ -11,6 +11,6 @@ class Address(models.Model):
     instructions = models.CharField(max_length=4000, null=True)
 
 class UserAddress(models.Model):
-    user_id = models.ForeignKey("User", on_delete=models.CASCADE)
+    user_id = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
     address_id = models.ForeignKey(Address, on_delete=models.CASCADE)
     is_preferred = models.BooleanField()
