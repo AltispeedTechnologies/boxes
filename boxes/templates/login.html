@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form method="POST" novalidate>
+	{% csrf_token %}
+	<h2>Login</h2>
+    <hr />
+
+    <div class="table-responsive">
+        {{form.as_table}}
+    </div>
+
+    <br />
+    {% include "_messages.html" %}
+
+	<input type="submit" class="btn btn-primary" value="Login" />
+</form>
+
+{% endblock content%}
