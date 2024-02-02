@@ -1,7 +1,11 @@
+{% extends "base.html" %}
+
 {% block content %}
 <form method="POST" novalidate class="needs-validation">
     {% csrf_token %}
     <h2 class="mb-4">Register User</h2>
+
+    {% include "_messages.html" %}
 
     {% for field in form %}
     <div class="mb-3 row">
