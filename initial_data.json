@@ -1,0 +1,25 @@
+[
+  {
+    "model": "boxes.customuser",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$enT8pASGEmk0zBEduEUDzQ$Bv46v4tuv7z/J/bAXsqwWfhdQHZpQiFbhNFTjirnlRs=",
+      "last_login": "2024-02-02T22:22:22.309Z",
+      "is_superuser": true,
+      "username": "tsimonq2",
+      "first_name": "Foo",
+      "last_name": "Baz",
+      "email": "simon@tsimonq2.net",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2024-01-30T04:55:00.151Z",
+      "company": "Altispeed",
+      "prefix": "Mr.",
+      "middle_name": "Bar",
+      "suffix": "III",
+      "comments": null,
+      "groups": [],
+      "user_permissions": []
+    }
+  }
+]
