@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Create Package</h2>
+
+  <form method="post" action="{% url 'create_package' %}">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-primary">Create</button>
+  </form>
+  
+  <a href="{% url 'packages' %}" class="btn btn-secondary mt-2">Back to All Packages</a>
+{% endblock %}

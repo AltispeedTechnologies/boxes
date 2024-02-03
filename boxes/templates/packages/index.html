@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center">
+    <h2>All Packages</h2>
+    <a href="{% url 'create_package' %}" class="btn btn-primary">Add</a>
+  </div>
+
+  {% if packages %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Account ID</th>
+          <th>Address ID</th>
+          <th>Tracking Code</th>
+          <th>Current State</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for package in packages %}
+          <tr>
+            <td>{{ package.id }}</td>
+            <td>{{ package.account_id_id }}</td>
+            <td>{{ package.address_id_id }}</td>
+            <td>{{ package.tracking_code }}</td>
+            <td>{{ package.current_state }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No packages available.</p>
+  {% endif %}
+{% endblock %}
