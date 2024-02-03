@@ -7,9 +7,6 @@ def all_packages(request):
     return render(request, "packages/index.html", {"packages": packages})
 
 def create_package(request):
-    form = PackageForm(request.user)
-
-def create_package(request):
     if request.method == "POST":
         form = PackageForm(request.user, request.POST)
         if form.is_valid():

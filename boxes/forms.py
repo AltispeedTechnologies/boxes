@@ -15,8 +15,8 @@ class PackageForm(forms.ModelForm):
 
     def __init__(self, user, *args, **kwargs):
         super(PackageForm, self).__init__(*args, **kwargs)
-        #self.fields["user_id"] = user.id
-        self.fields["current_state"].initial = 1
+        self.fields["user"] = user.id
+        self.fields["current_state"].initial = 0
 
     def clean_current_state(self):
         # Add any additional validation logic for current_state if needed
