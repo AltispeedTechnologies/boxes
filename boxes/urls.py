@@ -10,4 +10,5 @@ urlpatterns = [
 
     path("packages/", all_packages, name="packages"),
     path("packages/new", create_package, name="create_package"),
+    path("packages/search", search_packages, name="search_packages"),
 ]

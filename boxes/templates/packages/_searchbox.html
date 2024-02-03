@@ -1,0 +1,16 @@
+{% block content %}
+<hr />
+<div class="container input-group">
+  <form action="{% url 'search_packages' %}" method="get">
+    <input name="q" type="text" class="form-control" placeholder="Search...">
+    <div class="input-group-append">
+      <select name="filter" class="form-control">
+        <option value="tracking_code">Tracking Code</option>
+        <option value="current_state">Current State</option>
+      </select>
+      <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+  </form>
+</div>
+<hr />
+{% endblock content %}
