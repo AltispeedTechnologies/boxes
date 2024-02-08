@@ -2,6 +2,7 @@ from boxes.forms import PackageForm
 from django.contrib import messages
 from django.core.validators import validate_slug
 from django.core.exceptions import ValidationError
+from django.db.models import F
 from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from boxes.models import Address, Package, PACKAGE_STATES
@@ -10,7 +11,19 @@ from boxes.models import Address, Package, PACKAGE_STATES
 STATE_NAME_TO_ID_MAP = dict((name, id) for id, name in PACKAGE_STATES)
 
 def all_packages(request):
-    packages = Package.objects.all()
+    packages = Package.objects.select_related("account", "address").values(
+        "id",
+        "account__description",
+        "address__address",
+        "tracking_code",
+        "current_state",
+    ).all()
+
+    # This is usually done automatically, but manually specified due to the
+    # above query being precise
+    for package in packages:
+        package["current_state_display"] = dict(PACKAGE_STATES)[package["current_state"]]
+
     return render(request, "packages/index.html", {"packages": packages})
 
 def create_package(request):
@@ -47,15 +60,40 @@ def search_packages(request):
 
     if filters == "tracking_code":
         # Find all packages containing this tracking code
-        packages = Package.objects.filter(tracking_code__icontains=query)
+        packages = search_by_tracking_code(query)
     elif filters == "current_state":
-        # Convert human-readable state to its corresponding ID
-        matching_states = [state_id for name, state_id in STATE_NAME_TO_ID_MAP.items() if query.lower() in name.lower()]
-
-        if matching_states:
-            packages = Package.objects.filter(current_state__in=matching_states)
-        else:
-            messages.error(request, "Invalid state name")
-            return redirect("packages")
+        # Find all packages with matching states
+        packages = search_by_current_state(query)
 
     return render(request, "packages/search.html", {"packages": packages, "query": query, "filter": filters})
+
+def search_by_tracking_code(query):
+    packages = Package.objects.filter(tracking_code__icontains=query).values(
+        "id",
+        "account__description",
+        "address__address",
+        "tracking_code",
+        "current_state",
+    )
+    add_current_state_display(packages)
+    return packages
+
+def search_by_current_state(query):
+    matching_states = [state_id for name, state_id in STATE_NAME_TO_ID_MAP.items() if query.lower() in name.lower()]
+    if matching_states:
+        packages = Package.objects.filter(current_state__in=matching_states).values(
+            "id",
+            "account__description",
+            "address__address",
+            "tracking_code",
+            "current_state",
+        )
+        add_current_state_display(packages)
+        return packages
+    else:
+        messages.error(request, "Invalid state name")
+        return redirect("packages")
+
+def add_current_state_display(packages):
+    for package in packages:
+        package["current_state_display"] = dict(PACKAGE_STATES)[package["current_state"]]
