@@ -9,8 +9,8 @@ PACKAGE_STATES = {
 }
 
 class Package(models.Model):
-    account_id = models.ForeignKey("Account", on_delete=models.CASCADE)
-    address_id = models.ForeignKey("Address", on_delete=models.CASCADE)
+    account = models.ForeignKey("Account", on_delete=models.CASCADE)
+    address = models.ForeignKey("Address", on_delete=models.CASCADE)
     tracking_code = models.CharField(max_length=30, unique=True)
     current_state = models.PositiveSmallIntegerField(choices=PACKAGE_STATES, default=0)
 
@@ -44,7 +44,7 @@ class Package(models.Model):
 
 
 class PackageLedger(models.Model):
-    user_id = models.ForeignKey("CustomUser", on_delete=models.RESTRICT)
+    user = models.ForeignKey("CustomUser", on_delete=models.RESTRICT)
     package_id = models.ForeignKey(Package, on_delete=models.CASCADE)
     state = models.PositiveSmallIntegerField(choices=PACKAGE_STATES)
     timestamp = models.DateTimeField(auto_now_add=True)

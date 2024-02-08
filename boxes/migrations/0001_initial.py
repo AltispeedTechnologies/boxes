@@ -141,7 +141,7 @@ class Migration(migrations.Migration):
                 ("is_good_standing", models.BooleanField()),
                 ("description", models.CharField(max_length=256, null=True)),
                 (
-                    "user_id",
+                    "user",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         to=settings.AUTH_USER_MODEL,
@@ -198,13 +198,13 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "account_id",
+                    "account",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE, to="boxes.account"
                     ),
                 ),
                 (
-                    "address_id",
+                    "address",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE, to="boxes.address"
                     ),
@@ -225,13 +225,13 @@ class Migration(migrations.Migration):
                 ),
                 ("is_preferred", models.BooleanField()),
                 (
-                    "address_id",
+                    "address",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE, to="boxes.address"
                     ),
                 ),
                 (
-                    "user_id",
+                    "user",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         to=settings.AUTH_USER_MODEL,
@@ -252,13 +252,13 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "account_id",
+                    "account",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE, to="boxes.account"
                     ),
                 ),
                 (
-                    "user_id",
+                    "user",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         to=settings.AUTH_USER_MODEL,
@@ -298,7 +298,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "user_id",
+                    "user",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.RESTRICT,
                         to=settings.AUTH_USER_MODEL,
@@ -322,7 +322,7 @@ class Migration(migrations.Migration):
                 ("debit", models.DecimalField(decimal_places=2, max_digits=8)),
                 ("description", models.CharField(max_length=256)),
                 (
-                    "account_id",
+                    "account",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE, to="boxes.account"
                     ),

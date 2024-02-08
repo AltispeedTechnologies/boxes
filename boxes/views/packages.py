@@ -19,9 +19,9 @@ def create_package(request):
         if form.is_valid():
             # Process the form data and save the new package
             package = form.save(commit=False)
-            package.user_id = request.user.id
-            package.account_id_id = 1
-            package.address_id_id = 1
+            package.user = request.user.id
+            package.account_id = 1
+            package.address_id = 1
             package.save()
 
             return redirect("packages")

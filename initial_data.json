@@ -3,7 +3,7 @@
     "model": "boxes.account",
     "pk": 1,
     "fields": {
-      "user_id": 1,
+      "user": 1,
       "balance": "1000.00",
       "is_good_standing": true,
       "description": "Sample Account"
@@ -13,8 +13,8 @@
     "model": "boxes.package",
     "pk": 1,
     "fields": {
-      "account_id": 1,
-      "address_id": 1,
+      "account": 1,
+      "address": 1,
       "tracking_code": "jsifskjldf",
       "current_state": 2
     }
