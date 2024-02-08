@@ -2,7 +2,6 @@ from boxes.forms import PackageForm
 from django.contrib import messages
 from django.core.validators import validate_slug
 from django.core.exceptions import ValidationError
-from django.db.models import F
 from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect, render
 from boxes.models import Address, Package, PACKAGE_STATES
