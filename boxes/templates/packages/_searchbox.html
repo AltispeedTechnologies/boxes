@@ -1,16 +1,39 @@
 {% block content %}
-<hr />
 <div class="container input-group">
-  <form action="{% url 'search_packages' %}" method="get">
-    <input name="q" type="text" class="form-control" placeholder="Search...">
-    <div class="input-group-append">
-      <select name="filter" class="form-control">
+  <form id="search_form" action="{% url 'search_packages' %}" method="get">
+    <div id="search_input_container" class="input-group-append">
+      <input name="q" type="text" class="form-control" placeholder="Search...">
+    </div>
+    <div id="state_select_container" class="input-group-append d-none">
+      <select name="q" id="state_select" class="form-control">
+        {% for state_name, state_id in STATE_NAMES.items %}
+          <option value="{{ state_name }}">{{ state_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div id="filter_select_container" class="input-group-append">
+      <select name="filter" id="filter_select" class="form-control">
         <option value="tracking_code">Tracking Code</option>
         <option value="current_state">Current State</option>
       </select>
-      <button type="submit" class="btn btn-primary">Search</button>
     </div>
+    <button type="submit" class="btn btn-primary">Search</button>
   </form>
 </div>
-<hr />
+
+<script>
+document.getElementById("filter_select").addEventListener("change", function() {
+  var selectedFilter = this.value;
+  var searchInputContainer = document.getElementById("search_input_container");
+  var stateSelectContainer = document.getElementById("state_select_container");
+  searchInputContainer.classList.toggle("d-none", selectedFilter === "current_state");
+  stateSelectContainer.classList.toggle("d-none", selectedFilter !== "current_state");
+
+  // Disable hidden form elements
+  var hiddenFormElements = stateSelectContainer.querySelectorAll('select, input');
+  hiddenFormElements.forEach(function(element) {
+    element.disabled = selectedFilter !== "current_state";
+  });
+});
+</script>
 {% endblock content %}

@@ -4,21 +4,21 @@
       <table class="table table-bordered">
         <thead class="thead-dark">
           <tr>
-            <th>ID</th>
             <th>Account</th>
             <th>Address</th>
             <th>Tracking Code</th>
             <th>Current State</th>
+            <th>Details</th>
           </tr>
         </thead>
         <tbody>
           {% for package in packages %}
             <tr>
-              <td>{{ package.id }}</td>
               <td>{{ package.account__description }}</td>
               <td>{{ package.address__address }}</td>
               <td>{{ package.tracking_code }}</td>
               <td>{{ package.current_state_display }}</td>
+              <td><button class="btn btn-sm btn-primary">View</button></td>
             </tr>
           {% endfor %}
         </tbody>
