@@ -9,3 +9,9 @@ class CustomUser(AbstractUser):
     comments = models.CharField(max_length=4000, null=True)
     groups = models.ManyToManyField(Group, related_name="custom_user_groups")
     user_permissions = models.ManyToManyField(Permission, related_name="custom_user_permissions")
+
+    def is_admin(self):
+        return self.groups.filter(name="Admin").exists()
+
+    def is_staff(self):
+        return self.groups.filter(name="Admin").exists() or self.groups.filter(name="Staff").exists()

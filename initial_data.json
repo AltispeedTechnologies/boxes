@@ -659,7 +659,6 @@
       "first_name": "Foo",
       "last_name": "Bar",
       "email": "text@example.com",
-      "is_staff": true,
       "is_active": true,
       "date_joined": "2024-01-30T04:55:00.151Z",
       "company": "Altispeed",
@@ -667,7 +666,7 @@
       "middle_name": "Baz",
       "suffix": "II",
       "comments": null,
-      "groups": [],
+      "groups": [1],
       "user_permissions": []
     }
   }
