@@ -575,6 +575,14 @@
     }
   },
   {
+    "model": "auth.group",
+    "pk": 3,
+    "fields": {
+      "name": "Customer",
+      "permissions": []
+    }
+  },
+  {
     "model": "boxes.account",
     "pk": 1,
     "fields": {
@@ -682,13 +690,35 @@
       "last_name": "Login",
       "email": "staff@example.com",
       "is_active": true,
-      "date_joined": "2024-01-30T04:55:00.151Z",
+      "date_joined": "2024-01-31T04:55:00.151Z",
       "company": "Altispeed",
       "prefix": "Mrs.",
       "middle_name": "Test",
       "suffix": "II",
       "comments": null,
       "groups": [2],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "boxes.customuser",
+    "pk": 3,
+    "fields": {
+      "password": "pbkdf2_sha256$600000$enT8pASGEmk0zBEduEUDzQ$Bv46v4tuv7z/J/bAXsqwWfhdQHZpQiFbhNFTjirnlRs=",
+      "last_login": "2024-02-02T22:22:22.309Z",
+      "is_superuser": true,
+      "username": "customer",
+      "first_name": "Customer",
+      "last_name": "Login",
+      "email": "customer@example.com",
+      "is_active": true,
+      "date_joined": "2024-02-01T04:55:00.151Z",
+      "company": "Altispeed",
+      "prefix": "Mr.",
+      "middle_name": "Test",
+      "suffix": "II",
+      "comments": null,
+      "groups": [3],
       "user_permissions": []
     }
   }
