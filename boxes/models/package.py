@@ -2,10 +2,9 @@ from django.db import models
 
 PACKAGE_STATES = {
     (0, "Received"),
-    (1, "Needs label printed"),
-    (2, "Checked in"),
-    (3, "Checked out"),
-    (4, "Mis-placed"),
+    (1, "Checked in"),
+    (2, "Checked out"),
+    (3, "Mis-placed"),
 }
 
 class Package(models.Model):
@@ -18,20 +17,17 @@ class Package(models.Model):
         # The state transitions should be locked only for regular users
         # TODO: Implement an override for admins, revisit this
         transitions = {
-            "submit_for_label_printing": {"from": 0, "to": 1},
-            "check_in": {"from": 1, "to": 2},
-            "check_out": {"from": 2, "to": 3},
-            "misplace": {"from": 2, "to": 4},
+            "check_in": {"from": 0, "to": 1},
+            "check_out": {"from": 1, "to": 2},
+            "misplace": {"from": None, "to": 3},
         }
 
-        current_state = self.current_state
-
-        if current_state == transitions[new_state]["from"]:
+        if new_state in transitions and (
+            transitions[new_state]["from"] is None or
+            self.current_state == transitions[new_state]["from"]
+        ):
             self.current_state = transitions[new_state]["to"]
             self.save()
-
-    def submit_for_label_printing(self):
-        self.transition_state("submit_for_label_printing")
 
     def check_in(self):
         self.transition_state("check_in")
