@@ -21,29 +21,33 @@ def create_package(request):
         package.user = request.user.id
         package.account_id = 1
         package.address_id = 1
+        package.current_state = 2
         package.save()
-        return redirect("packages")
+        #return redirect("packages")
     return render(request, "packages/create.html", {"form": form})
 
 def search_packages(request):
     query = request.GET.get("q", "").strip()
+    state = request.GET.get("state", "").strip()
     filters = request.GET.get("filter", "").strip()
 
-    allowed_filters = ["tracking_code", "current_state"]
+    allowed_filters = ["tracking_code", "current_state", "customer"]
     if filters not in allowed_filters:
         messages.error(request, "Invalid filter value")
         return redirect("packages")
 
-    try:
-        validate_slug(query)
-    except ValidationError:
-        messages.error(request, "Invalid query value")
-        return redirect("packages")
+    #try:
+    #    validate_slug(query)
+    #except ValidationError:
+    #    messages.error(request, "Invalid query value")
+    #    return redirect("packages")
 
     if filters == "tracking_code":
         packages = search_by_tracking_code(query)
+    elif filters == "customer":
+        packages = _get_packages(account__description__startswith = query)
     elif filters == "current_state":
-        packages = search_by_current_state(request, query)
+        packages = search_by_current_state(request, state)
 
     return render(request, "packages/search.html", {"packages": packages, "query": query, "filter": filters, **CONTEXT})
 
@@ -56,7 +60,7 @@ def search_by_current_state(request, query):
     selected_state_name = query.strip()
     
     # Find matching states with flexible whitespace handling
-    matching_states = [state_name.strip().lower() for state_name in STATE_NAME_TO_ID_MAP.keys() if selected_state_name.lower() in state_name.lower()]
+    matching_states = [state_name.strip() for state_name in STATE_NAME_TO_ID_MAP.keys() if selected_state_name in state_name]
     
     if matching_states:
         # Get the corresponding IDs for the matching state names

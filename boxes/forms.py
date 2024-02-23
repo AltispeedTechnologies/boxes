@@ -11,11 +11,12 @@ class RegisterForm(UserCreationForm):
 class PackageForm(forms.ModelForm):
     class Meta:
         model = Package
-        fields = ["tracking_code", "current_state"]
+        fields = ["tracking_code"]
 
     def __init__(self, user, *args, **kwargs):
         super(PackageForm, self).__init__(*args, **kwargs)
-        self.fields["current_state"].initial = 0
+        self.fields["price"] = forms.CharField()
+        self.fields["carrier"] = forms.CharField()
 
     def clean_current_state(self):
         # Add any additional validation logic for current_state if needed

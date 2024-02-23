@@ -56,7 +56,7 @@ def sign_in(request):
             else:
                 messages.error(request, "Invalid username or password")
 
-        except User.DoesNotExist:
+        except CustomUser.DoesNotExist:
             messages.error(request, f"User not found with username: {username}")
 
         return render(request, "login.html", {"form": AuthenticationForm()})

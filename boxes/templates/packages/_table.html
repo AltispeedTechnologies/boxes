@@ -5,7 +5,9 @@
         <thead class="thead-dark">
           <tr>
             <th>Account</th>
-            <th>Address</th>
+            <th>Price</th>
+            <th>Carrier</th>
+            <th>Package Type</th>
             <th>Tracking Code</th>
             <th>Current State</th>
             <th>Details</th>
@@ -15,7 +17,9 @@
           {% for package in packages %}
             <tr>
               <td>{{ package.account__description }}</td>
-              <td>{{ package.address__address }}</td>
+              <td>$6.00</td>
+              <td>USPS</td>
+              <td>Pallet</td>
               <td>{{ package.tracking_code }}</td>
               <td>{{ package.current_state_display }}</td>
               <td><button class="btn btn-sm btn-primary">View</button></td>
