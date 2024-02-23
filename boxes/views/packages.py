@@ -1,3 +1,4 @@
+import re
 from django.shortcuts import render
 from boxes.forms import PackageForm
 from django.contrib import messages
@@ -36,11 +37,7 @@ def search_packages(request):
         messages.error(request, "Invalid filter value")
         return redirect("packages")
 
-    #try:
-    #    validate_slug(query)
-    #except ValidationError:
-    #    messages.error(request, "Invalid query value")
-    #    return redirect("packages")
+    query = re.sub(r"[^\w\s-]", "", query)
 
     if filters == "tracking_code":
         packages = search_by_tracking_code(query)
