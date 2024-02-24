@@ -7,11 +7,18 @@ PACKAGE_STATES = {
     (3, "Mis-placed"),
 }
 
+class PackageType(models.Model):
+    shortcode = models.CharField(max_length=1)
+    description = models.CharField(max_length=64)
+
+
 class Package(models.Model):
-    account = models.ForeignKey("Account", on_delete=models.CASCADE)
-    address = models.ForeignKey("Address", on_delete=models.CASCADE)
+    account = models.ForeignKey("Account", on_delete=models.RESTRICT)
+    carrier = models.ForeignKey("Carrier", on_delete=models.RESTRICT)
+    package_type = models.ForeignKey(PackageType, on_delete=models.RESTRICT)
     tracking_code = models.CharField(max_length=30, unique=True)
     current_state = models.PositiveSmallIntegerField(choices=PACKAGE_STATES, default=0)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
 
     def transition_state(self, new_state):
         # The state transitions should be locked only for regular users
@@ -41,6 +48,6 @@ class Package(models.Model):
 
 class PackageLedger(models.Model):
     user = models.ForeignKey("CustomUser", on_delete=models.RESTRICT)
-    package_id = models.ForeignKey(Package, on_delete=models.CASCADE)
+    package_id = models.ForeignKey(Package, on_delete=models.RESTRICT)
     state = models.PositiveSmallIntegerField(choices=PACKAGE_STATES)
     timestamp = models.DateTimeField(auto_now_add=True)

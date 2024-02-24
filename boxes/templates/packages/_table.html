@@ -17,9 +17,9 @@
           {% for package in packages %}
             <tr>
               <td>{{ package.account__description }}</td>
-              <td>$6.00</td>
-              <td>USPS</td>
-              <td>Pallet</td>
+              <td>${{ package.price }}</td>
+              <td>{{ package.carrier__name }}</td>
+              <td>{{ package.package_type__shortcode }} - {{ package.package_type__description }}</td>
               <td>{{ package.tracking_code }}</td>
               <td>{{ package.current_state_display }}</td>
               <td><button class="btn btn-sm btn-primary">View</button></td>
