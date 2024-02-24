@@ -22,6 +22,7 @@ def create_package(request):
             package = form.save(commit=False)
             package.carrier_id = form.cleaned_data["carrier_id"]
             package.account_id = form.cleaned_data["account_id"]
+            package.package_type_id = form.cleaned_data["package_type_id"]
             package.save()
             messages.success(request, "Successfully created")
         else:
