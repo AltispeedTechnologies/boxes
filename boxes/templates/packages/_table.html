@@ -7,7 +7,8 @@
             <th>Account</th>
             <th>Price</th>
             <th>Carrier</th>
-            <th>Package Type</th>
+            <th>Type</th>
+            <th>Type Description</th>
             <th>Tracking Code</th>
             <th>Current State</th>
             <th>Details</th>
@@ -19,7 +20,8 @@
               <td>{{ package.account__description }}</td>
               <td>${{ package.price }}</td>
               <td>{{ package.carrier__name }}</td>
-              <td>{{ package.package_type__shortcode }} - {{ package.package_type__description }}</td>
+              <td>{{ package.package_type__shortcode }}</td>
+              <td>{{ package.package_type__description }}</td>
               <td>{{ package.tracking_code }}</td>
               <td>{{ package.current_state_display }}</td>
               <td><button class="btn btn-sm btn-primary">View</button></td>
