@@ -36,6 +36,36 @@
     }
   },
   {
+    "model": "boxes.account",
+    "pk": 2,
+    "fields": {
+      "user": 1,
+      "balance": "0.00",
+      "is_good_standing": true,
+      "description": "Company B"
+    }
+  },
+  {
+    "model": "boxes.account",
+    "pk": 3,
+    "fields": {
+      "user": 1,
+      "balance": "6.00",
+      "is_good_standing": true,
+      "description": "John Doe"
+    }
+  },
+  {
+    "model": "boxes.account",
+    "pk": 4,
+    "fields": {
+      "user": 1,
+      "balance": "12.00",
+      "is_good_standing": true,
+      "description": "Jane Doe"
+    }
+  },
+  {
     "model": "boxes.packagetype",
     "pk": 1,
     "fields": {
@@ -59,7 +89,7 @@
     "model": "boxes.package",
     "pk": 2,
     "fields": {
-      "account": 1,
+      "account": 2,
       "carrier": 2,
       "package_type": 1,
       "tracking_code": "123456788",
@@ -71,7 +101,7 @@
     "model": "boxes.package",
     "pk": 3,
     "fields": {
-      "account": 1,
+      "account": 3,
       "carrier": 3,
       "package_type": 1,
       "tracking_code": "123456787",
@@ -83,7 +113,7 @@
     "model": "boxes.package",
     "pk": 4,
     "fields": {
-      "account": 1,
+      "account": 4,
       "carrier": 4,
       "package_type": 1,
       "tracking_code": "123456786",
