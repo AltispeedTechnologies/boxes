@@ -1,3 +1,7 @@
+# Custom
+
+staticfiles/
+
 ## SOURCE: https://djangowaves.com/tips-tricks/gitignore-for-a-django-project/
 
 # Django #
