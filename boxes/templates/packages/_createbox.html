@@ -1,0 +1,32 @@
+{% block content %}
+<div class="container my-4">
+  <table class="table">
+    <div class="row my-2">
+      <div class="col">
+        <strong><label for="{{ form.tracking_code.id_for_label }}">Tracking code:</label></strong>
+        {{ form.tracking_code }}
+      </div>
+      <div class="col">
+        <strong><label for="{{ form.price.id_for_label }}">Price:</label></strong>
+        {{ form.price }}
+      </div>
+    </div>
+    <div class="row my-2">
+      <div class="col">
+        <strong><label for="{{ form.carrier_id.id_for_label }}">Carrier:</label></strong>
+        {{ form.carrier_id }}
+      </div>
+      <div class="col">
+        <strong><label for="{{ form.account_id.id_for_label }}">Customer:</label></strong>
+        {{ form.account_id }}
+      </div>
+      <div class="col">
+        <strong><label for="{{ form.package_type_id.id_for_label }}">Type:</label></strong>
+        {{ form.package_type_id }}
+      </div>
+    </div>
+  </table>
+
+  <button id="createbtn" class="btn btn-primary">Create</button>  
+</div>
+{% endblock content %}
