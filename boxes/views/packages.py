@@ -5,14 +5,15 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.core.validators import validate_slug
 from django.core.exceptions import ValidationError
+from django.http import JsonResponse
 from django.shortcuts import redirect
 
 # Reverse the PACKAGE_STATES tuple to create a mapping from state names to IDs
-STATE_NAME_TO_ID_MAP = dict((name, id) for id, name in PACKAGE_STATES)
+STATE_NAME_TO_ID_MAP = dict((name, id) for id, name in PACKAGE_STATES if id != 0)
 CONTEXT = {"STATE_NAMES": STATE_NAME_TO_ID_MAP}
 
 def all_packages(request):
-    packages = _get_packages()
+    packages = _get_packages(current_state__gt = 0)
     return render(request, "packages/index.html", {"packages": packages, **CONTEXT})
 
 def create_package(request):
@@ -24,12 +25,13 @@ def create_package(request):
             package.account_id = form.cleaned_data["account_id"]
             package.package_type_id = form.cleaned_data["package_type_id"]
             package.save()
-            messages.success(request, "Successfully created")
+            return JsonResponse({"success": True})
         else:
-            messages.error(request, "Unable to create form")
+            errors = dict(form.errors.items()) if form.errors else {}
+            return JsonResponse({"success": False, "errors": errors})  # Return error response with form errors
     else:
         form = PackageForm()
-    return render(request, "packages/create.html", {"form": form})
+        return render(request, "packages/create.html", {"form": form})
 
 def search_packages(request):
     query = request.GET.get("q", "").strip()

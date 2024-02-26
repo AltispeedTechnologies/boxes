@@ -3,12 +3,11 @@
 {% block content %}
     <h2>Create Package</h2>
 
-    <a href="{% url 'packages' %}" class="btn btn-secondary mt-2">Back to All Packages</a>
-
     {% include "_messages.html" %}
 
-    {% include "packages/_createbox.html" %}
+    <a href="{% url 'packages' %}" class="btn btn-secondary mt-2">Back to All Packages</a>
 
+    {% include "packages/_createbox.html" %}
 
     <!-- should use Hotwire instead of duplicating code... TODO -->
     <div class="table-responsive mt-3">
@@ -18,7 +17,6 @@
                     <th>Customer</th>
                     <th>Price</th>
                     <th>Carrier</th>
-                    <th>Type</th>
                     <th>Type Description</th>
                     <th>Tracking Code</th>
                 </tr>
@@ -30,34 +28,113 @@
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td></td>
                 </tr>
             </tbody>
         </table>
     </div>
 
     <script>
-        document.getElementById("createbtn").addEventListener("click", function() {
-            var tracking_code = document.getElementById("id_tracking_code").value;
-            var price = document.getElementById("id_price").value;
-            var carrier = $("#id_carrier_id").find(":selected").text();
-            var account = $("#id_account_id").find(":selected").text();
-            var type = $("#id_package_type_id").find(":selected").text();
+        $(document).ready(function() {
+            $("#createbtn").click(function(event) {
+                event.preventDefault();
+                var csrf = getCookie("csrftoken");
 
-            var new_row = document.querySelector('.visually-hidden').cloneNode(true);
-            new_row.classList.remove("visually-hidden");
-            new_row.querySelector("td:nth-child(1)").innerText = account;
-            new_row.querySelector("td:nth-child(2)").innerText = price;
-            new_row.querySelector("td:nth-child(3)").innerText = carrier;
-            new_row.querySelector("td:nth-child(5)").innerText = type;
-            new_row.querySelector("td:nth-child(6)").innerText = tracking_code;
-            document.querySelector("tbody").appendChild(new_row);
+                // Get form field values
+                var tracking_code = $("#id_tracking_code").val();
+                console.log(tracking_code);
+                var price = $("#id_price").val();
+                var carrier_id = $("#id_carrier_id").val();
+                var account_id = $("#id_account_id").val();
+                var package_type_id = $("#id_package_type_id").val();
 
-            console.log("Price:", price);
-            console.log("Tracking code:", tracking_code);
-            console.log("Carrier:", carrier);
-            console.log("Customer:", account);
-            console.log("Type:", type);
+                // Get the human-readable values, for the table
+                var carrier = $("#id_carrier_id").find(":selected").text();
+                var account = $("#id_account_id").find(":selected").text();
+                var package_type = $("#id_package_type_id").find(":selected").text();
+
+                // Create form data object
+                var form_data = {
+                    "tracking_code": tracking_code,
+                    "price": price,
+                    "carrier_id": carrier_id,
+                    "account_id": account_id,
+                    "package_type_id": package_type_id
+                };
+
+                // Send form data via AJAX POST request
+                $.ajax({
+                    type: "POST",
+                    url: "/packages/new",
+                    headers: {
+                        "X-CSRFToken": csrf
+                    },
+                    data: form_data,
+                    success: function(response) {
+                        if (response.success) {
+                            // Clear the existing error message if there is one
+                            displayErrorMessage();
+
+                            // Visually create the new row
+                            var new_row = document.querySelector(".visually-hidden").cloneNode(true);
+                            new_row.classList.remove("visually-hidden");
+                            new_row.querySelector("td:nth-child(1)").innerText = account;
+                            new_row.querySelector("td:nth-child(2)").innerText = price;
+                            new_row.querySelector("td:nth-child(3)").innerText = carrier;
+                            new_row.querySelector("td:nth-child(4)").innerText = package_type;
+                            new_row.querySelector("td:nth-child(5)").innerText = tracking_code;
+                            document.querySelector("tbody").appendChild(new_row);
+                        } else {
+                            displayErrorMessage(response.errors);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        displayErrorMessage(response.errors);
+                    }
+                });
+            });
         });
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                var cookies = document.cookie.split(";");
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function displayErrorMessage(errors) {
+            var messages_div = $(".messages");
+
+            // Clear all existing messages if errors are not provided
+            if (!errors) {
+                messages_div.empty();
+                return;
+            }
+
+            var error_message = "";
+
+            // Loop through the errors object and concatenate error messages
+            Object.keys(errors).forEach(function(key) {
+                error_message += errors[key][0] + " "; // Append the first error message for each key
+            });
+
+            // Create and append alert div with the concatenated error message
+            var alert_div = $("<div></div>").addClass("alert alert-danger").text(error_message.trim());
+            
+            // Clear all existing messages before appending the new error message
+            messages_div.empty();
+
+            // Append alert_div only if error_message is not empty
+            if(error_message.trim() !== "") {
+                messages_div.append(alert_div);
+            }
+        }
     </script>
 {% endblock %}
