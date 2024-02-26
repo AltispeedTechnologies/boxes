@@ -9,24 +9,36 @@ from django.http import JsonResponse
 from django.shortcuts import redirect
 
 # Reverse the PACKAGE_STATES tuple to create a mapping from state names to IDs
-STATE_NAME_TO_ID_MAP = dict((name, id) for id, name in PACKAGE_STATES if id != 0)
+STATE_NAME_TO_ID_MAP = dict((name, id) for id, name in PACKAGE_STATES if id)
 CONTEXT = {"STATE_NAMES": STATE_NAME_TO_ID_MAP}
 
 def all_packages(request):
-    packages = _get_packages(current_state__gt = 0)
+    # Only get checked in packages
+    packages = _get_packages(current_state = 1)
     return render(request, "packages/index.html", {"packages": packages, **CONTEXT})
+
+def check_in_packages(request):
+    if request.method == "POST":
+        try:
+            ids = request.POST.getlist("ids[]", [])
+            Package.objects.filter(id__in=ids).update(current_state=1)
+            return JsonResponse({"success": True})
+        except ValidationError as e:
+            errors = [str(message) for message in e.messages]
+            return JsonResponse({"success": False, "errors": errors})
+        except Exception as e:
+            return JsonResponse({"success": False, "errors": [str(e)]})
 
 def create_package(request):
     if request.method == "POST":
         form = PackageForm(request.POST)
-        print(request.POST)
         if form.is_valid():
             package = form.save(commit=False)
             package.carrier_id = form.cleaned_data["carrier_id"]
             package.account_id = form.cleaned_data["account_id"]
             package.package_type_id = form.cleaned_data["package_type_id"]
             package.save()
-            return JsonResponse({"success": True})
+            return JsonResponse({"success": True, "id": package.id})
         else:
             errors = dict(form.errors.items()) if form.errors else {}
             return JsonResponse({"success": False, "errors": errors})  # Return error response with form errors
@@ -49,7 +61,7 @@ def search_packages(request):
     if filters == "tracking_code":
         packages = search_by_tracking_code(query)
     elif filters == "customer":
-        packages = _get_packages(account__description__startswith = query)
+        packages = _get_packages(account__description__startswith = query, current_state = 1)
     elif filters == "current_state":
         packages = search_by_current_state(request, state)
 
@@ -80,7 +92,6 @@ def _get_packages(**kwargs):
     # Revisit this section after we have data to test with scale
     packages = Package.objects.select_related("account", "carrier", "packagetype").values(
         "id",
-        "current_state",
         "package_type__shortcode",
         "price",
         "carrier__name",
@@ -89,9 +100,4 @@ def _get_packages(**kwargs):
         "tracking_code",
         "comments",
     ).filter(**kwargs)
-    _add_current_state_display(packages)
     return packages
-
-def _add_current_state_display(packages):
-    for package in packages:
-        package["current_state_display"] = dict(PACKAGE_STATES)[package["current_state"]]

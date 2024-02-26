@@ -34,6 +34,37 @@
 
     <script>
         $(document).ready(function() {
+            // Internal state tracking for all the IDs
+            // TODO: do this server-side... somehow
+            let packages = new Set();
+
+            $("#checkinbtn").click(function(event) {
+                event.preventDefault();
+                var csrf = getCookie("csrftoken");
+
+                let packages_array = [...packages];
+                let packages_payload = {"ids": packages_array};
+
+                $.ajax({
+                    type: "POST",
+                    url: "/packages/checkin",
+                    headers: {
+                        "X-CSRFToken": csrf
+                    },
+                    data: packages_payload,
+                    success: function(response) {
+                        if (response.success) {
+                            console.log("Successful");
+                        } else {
+                            console.log("Not successful");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("Not successful");
+                    }
+                });
+            });
+
             $("#createbtn").click(function(event) {
                 event.preventDefault();
                 var csrf = getCookie("csrftoken");
@@ -71,6 +102,8 @@
                     data: form_data,
                     success: function(response) {
                         if (response.success) {
+                            packages.add(response.id);
+                            console.log(packages);
                             // Clear the existing error message if there is one
                             displayErrorMessage();
 
