@@ -12,14 +12,16 @@
             <thead class="thead-dark">
                 <tr>
                     <th>Customer</th>
+                    <th>Tracking Code</th>
                     <th>Price</th>
                     <th>Carrier</th>
                     <th>Type Description</th>
-                    <th>Tracking Code</th>
+                    <th>Comments</th>
                 </tr>
             </thead>
             <tbody>
                 <tr class="visually-hidden">
+                    <td></td>
                     <td></td>
                     <td></td>
                     <td></td>
@@ -38,11 +40,11 @@
 
                 // Get form field values
                 var tracking_code = $("#id_tracking_code").val();
-                console.log(tracking_code);
                 var price = $("#id_price").val();
                 var carrier_id = $("#id_carrier_id").val();
                 var account_id = $("#id_account_id").val();
                 var package_type_id = $("#id_package_type_id").val();
+                var comments = $("#id_comments").val();
 
                 // Get the human-readable values, for the table
                 var carrier = $("#id_carrier_id").find(":selected").text();
@@ -55,7 +57,8 @@
                     "price": price,
                     "carrier_id": carrier_id,
                     "account_id": account_id,
-                    "package_type_id": package_type_id
+                    "package_type_id": package_type_id,
+                    "comments": comments
                 };
 
                 // Send form data via AJAX POST request
@@ -75,10 +78,11 @@
                             var new_row = document.querySelector(".visually-hidden").cloneNode(true);
                             new_row.classList.remove("visually-hidden");
                             new_row.querySelector("td:nth-child(1)").innerText = account;
-                            new_row.querySelector("td:nth-child(2)").innerText = price;
-                            new_row.querySelector("td:nth-child(3)").innerText = carrier;
-                            new_row.querySelector("td:nth-child(4)").innerText = package_type;
-                            new_row.querySelector("td:nth-child(5)").innerText = tracking_code;
+                            new_row.querySelector("td:nth-child(2)").innerText = tracking_code;
+                            new_row.querySelector("td:nth-child(3)").innerText = price;
+                            new_row.querySelector("td:nth-child(4)").innerText = carrier;
+                            new_row.querySelector("td:nth-child(5)").innerText = package_type;
+                            new_row.querySelector("td:nth-child(6)").innerText = comments;
                             document.querySelector("tbody").appendChild(new_row);
                         } else {
                             displayErrorMessage(response.errors);

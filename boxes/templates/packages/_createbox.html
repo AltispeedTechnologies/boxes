@@ -25,6 +25,10 @@
         {{ form.package_type_id }}
       </div>
     </div>
+    <div class="row">
+        <strong><label for="{{ form.comments.id_for_label }}">Comments:</label></strong>
+        {{ form.comments }}
+    </div>
   </table>
 
   <button id="createbtn" class="btn btn-primary">Create</button>  

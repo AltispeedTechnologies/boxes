@@ -19,6 +19,7 @@ class Package(models.Model):
     tracking_code = models.CharField(max_length=30, unique=True)
     current_state = models.PositiveSmallIntegerField(choices=PACKAGE_STATES, default=0)
     price = models.DecimalField(max_digits=8, decimal_places=2)
+    comments = models.CharField(max_length=256, null=True)
 
     def transition_state(self, new_state):
         # The state transitions should be locked only for regular users
