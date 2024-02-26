@@ -87,6 +87,7 @@ def _get_packages(**kwargs):
         "account__description",
         "package_type__description",
         "tracking_code",
+        "comments",
     ).filter(**kwargs)
     _add_current_state_display(packages)
     return packages
