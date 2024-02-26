@@ -54,13 +54,13 @@
                     data: packages_payload,
                     success: function(response) {
                         if (response.success) {
-                            console.log("Successful");
+                            document.querySelectorAll("tbody tr:not(.visually-hidden)").forEach(row => row.remove());
                         } else {
                             console.log("Not successful");
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.log("Not successful");
+                        console.log(error);
                     }
                 });
             });
