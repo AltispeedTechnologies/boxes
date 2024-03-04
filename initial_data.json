@@ -77,7 +77,7 @@
     "model": "boxes.packagetype",
     "pk": 2,
     "fields": {
-      "shortcode": "LH",
+      "shortcode": "H",
       "description": "Large/Heavy"
     }
   },
