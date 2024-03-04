@@ -1,19 +1,19 @@
 {% block content %}
-<div class="container input-group">
-  <form id="search_form" action="{{ search_url }}" method="get">
-    <div id="search_input_container" class="input-group-append">
-      <input name="q" type="text" class="form-control" placeholder="Search...">
+    <div class="container input-group">
+        <form id="search_form" action="{{ search_url }}" method="get">
+            <div id="search_input_container" class="input-group-append">
+                <input name="q" type="text" class="form-control" placeholder="Search..." value="{{ query }}">
+            </div>
+            <div id="filter_select_container" class="input-group-append">
+                <select name="filter" id="filter_select" class="form-control">
+                    <option value="customer" {% if filter == "customer" %}selected{% endif %}>Customer</option>
+                    <option value="tracking_code" {% if filter == "tracking_code" %}selected{% endif %}>Tracking Code</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
     </div>
-    <div id="filter_select_container" class="input-group-append">
-      <select name="filter" id="filter_select" selected="customer" class="form-control">
-        <option value="customer">Customer</option>
-        <option value="tracking_code">Tracking Code</option>
-      </select>
-    </div>
-    <button type="submit" class="btn btn-primary">Search</button>
-  </form>
-</div>
 
-{% load static %}
-<script src="{% static 'js/searchbox.js' %}" defer></script>
+    {% load static %}
+    <script src="{% static 'js/searchbox.js' %}" defer></script>
 {% endblock content %}
