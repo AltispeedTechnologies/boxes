@@ -1,5 +1,7 @@
 {% block content %}
-  {% if packages %}
+  {% if page_obj %}
+    {% include "_paginate.html" %}
+
     <div class="table-responsive mt-3">
       <table class="table table-bordered">
         <thead class="thead-dark">
@@ -15,7 +17,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for package in packages %}
+          {% for package in page_obj %}
             <tr>
               <td>{{ package.account__description }}</td>
               <td>{{ package.tracking_code }}</td>

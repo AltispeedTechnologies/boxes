@@ -15,5 +15,7 @@ urlpatterns = [
     path("packages/", is_staff(all_packages), name="packages"),
     path("packages/new", is_staff(create_package), name="create_package"),
     path("packages/checkin", is_staff(check_in_packages), name="check_in_packages"),
+    path("packages/checkout", is_staff(check_out_packages), name="check_out_packages"),
+    path("packages/checkout/search", is_staff(search_check_out_packages), name="search_check_out_packages"),
     path("packages/search", is_staff(search_packages), name="search_packages"),
 ]

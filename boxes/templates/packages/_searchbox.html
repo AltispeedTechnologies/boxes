@@ -1,21 +1,13 @@
 {% block content %}
 <div class="container input-group">
-  <form id="search_form" action="{% url 'search_packages' %}" method="get">
+  <form id="search_form" action="{{ search_url }}" method="get">
     <div id="search_input_container" class="input-group-append">
       <input name="q" type="text" class="form-control" placeholder="Search...">
-    </div>
-    <div id="state_select_container" class="input-group-append d-none">
-      <select name="state" id="state_select" class="form-control select-select2">
-        {% for state_name, state_id in STATE_NAMES.items %}
-          <option value="{{ state_name }}">{{ state_name }}</option>
-        {% endfor %}
-      </select>
     </div>
     <div id="filter_select_container" class="input-group-append">
       <select name="filter" id="filter_select" selected="customer" class="form-control">
         <option value="customer">Customer</option>
         <option value="tracking_code">Tracking Code</option>
-        <option value="current_state">Current State</option>
       </select>
     </div>
     <button type="submit" class="btn btn-primary">Search</button>

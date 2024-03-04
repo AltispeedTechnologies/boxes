@@ -21,31 +21,6 @@ class Package(models.Model):
     price = models.DecimalField(max_digits=8, decimal_places=2)
     comments = models.CharField(max_length=256, null=True)
 
-    def transition_state(self, new_state):
-        # The state transitions should be locked only for regular users
-        # TODO: Implement an override for admins, revisit this
-        transitions = {
-            "check_in": {"from": 0, "to": 1},
-            "check_out": {"from": 1, "to": 2},
-            "misplace": {"from": None, "to": 3},
-        }
-
-        if new_state in transitions and (
-            transitions[new_state]["from"] is None or
-            self.current_state == transitions[new_state]["from"]
-        ):
-            self.current_state = transitions[new_state]["to"]
-            self.save()
-
-    def check_in(self):
-        self.transition_state("check_in")
-
-    def check_out(self):
-        self.transition_state("check_out")
-
-    def misplace(self):
-        self.transition_state("misplace")
-
 
 class PackageLedger(models.Model):
     user = models.ForeignKey("CustomUser", on_delete=models.RESTRICT)
