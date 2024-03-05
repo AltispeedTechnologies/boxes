@@ -1,6 +1,6 @@
 # Custom
 
-staticfiles/
+static/
 
 ## SOURCE: https://djangowaves.com/tips-tricks/gitignore-for-a-django-project/
 
