@@ -139,13 +139,6 @@ def _search_packages_helper(request):
     if filters == "tracking_code":
         packages = _get_packages(tracking_code__icontains=query, current_state=1)
     elif filters == "customer":
-        # Use regex to search for packages where the account description contains the partial query as a whole word (case-sensitive).
-        # - \b represents a word boundary, ensuring that the search term is matched as a whole word.
-        # - {} inserts the escaped query term, allowing for partial matches.
-        # - \w*? matches any word characters (0 or more) after the partial query.
-        # - \b ensures that the match occurs as a whole word.
-        packages = _get_packages(account__description__regex=r'\b{}\w*?\b'.format(re.escape(query)), current_state=1)
+        packages = _get_packages(account__description__icontains=query, current_state=1)
     
-    paginator = Paginator(packages, PACKAGES_PER_PAGE)
-
     return packages

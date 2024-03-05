@@ -45,6 +45,11 @@ class RegisterForm(UserCreationForm):
 
 
 class PackageForm(forms.ModelForm):
+    tracking_code = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
+    price = PriceField()
+    comments = forms.CharField(widget=forms.Textarea(attrs={"rows": 2, "cols": 2}),
+                               validators=[MaxLengthValidator(256)],
+                               required=False)
     carrier_id = forms.ChoiceField(label="Carrier", widget=forms.Select(attrs={"class": "form-control select-select2"}))
     account_id = forms.ChoiceField(label="Customer", widget=forms.Select(attrs={"class": "form-control select-select2"}))
     package_type_id = forms.ChoiceField(label="Type", widget=forms.Select(attrs={"class": "form-control select-select2"}))
@@ -52,7 +57,7 @@ class PackageForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(PackageForm, self).__init__(*args, **kwargs)
         self.fields["carrier_id"].choices = Carrier.objects.values_list("id", "name").distinct()
-        self.fields["account_id"].choices = Account.objects.values_list("id", "description").distinct()
+        self.fields["account_id"].choices = Account.objects.values_list("id", "description").distinct("description")
         self.fields["package_type_id"].choices = PackageType.objects.values_list("id", "description").distinct()
 
     class Meta:
