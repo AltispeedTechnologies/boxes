@@ -119,7 +119,7 @@ def _get_packages(**kwargs):
         "package_type__description",
         "tracking_code",
         "comments",
-    ).filter(**kwargs)
+    ).filter(**kwargs).order_by("id")
 
     paginator = Paginator(packages, PACKAGES_PER_PAGE)
 
