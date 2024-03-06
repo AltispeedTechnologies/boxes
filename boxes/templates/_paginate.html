@@ -28,7 +28,7 @@
         {% endif %}
 
         <!-- Display the very last page -->
-        {% if page_obj.number > 1 %}
+        {% if page_obj.paginator.num_pages > 1 %}
         <li class="page-item {% if page_obj.number == page_obj.paginator.num_pages %}active{% endif %}"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&q={{ query }}&filter={{ filter }}">{{ page_obj.paginator.num_pages }}</a></li>
         {% endif %}
 
