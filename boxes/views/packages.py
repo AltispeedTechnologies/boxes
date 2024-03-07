@@ -23,44 +23,52 @@ def all_packages(request):
     return render(request, "packages/index.html", {"search_url": reverse("search_packages"),
                                                    "page_obj": page_obj})
 
-def check_out_packages(request):
-    return render(request, "packages/check_out.html", {"search_url": reverse("search_check_out_packages")})
+def update_packages_util(request, state, debit_credit_switch=False):
+    response_data = {"success": False, "errors": []}
+    try:
+        ids = request.POST.getlist("ids[]", [])
+        if not ids:
+            raise ValueError("No package IDs provided.")
+
+        Package.objects.filter(id__in=ids).update(current_state=state)
+        account_ledger, package_ledger = [], []
+        for pkg in Package.objects.filter(id__in=ids).values("id", "account_id", "price"):
+            debit, credit = (0, pkg["price"]) if debit_credit_switch else (pkg["price"], 0)
+            acct_entry = AccountLedger(account_id=pkg["account_id"], debit=debit, credit=credit, description="")
+            pkg_entry = PackageLedger(user_id=request.user.id, package_id_id=pkg["id"], state=state)
+            account_ledger.append(acct_entry)
+            package_ledger.append(pkg_entry)
+
+        AccountLedger.objects.bulk_create(account_ledger)
+        PackageLedger.objects.bulk_create(package_ledger)
+
+        response_data["success"] = True
+        return response_data
+    except ValidationError as e:
+        response_data["errors"] = [str(message) for message in e.messages]
+    except Exception as e:
+        response_data["errors"] = [str(e)]
+    return response_data
 
 def check_in_packages(request):
     if request.method == "POST":
-        try:
-            ids = request.POST.getlist("ids[]", [])
-            Package.objects.filter(id__in=ids).update(current_state=1)
-
-            account_ledger, package_ledger = [], []
-            for pkg in Package.objects.filter(id__in=ids).values("id", "account_id", "price"):
-                acct_entry = AccountLedger(
-                    account_id = pkg["account_id"],
-                    debit = pkg["price"],
-                    credit = 0,
-                    description = ""
-                )
-
-                pkg_entry = PackageLedger(
-                    user_id = request.user.id,
-                    package_id_id = pkg["id"],
-                    state = 1
-                )
-
-                account_ledger.append(acct_entry)
-                package_ledger.append(pkg_entry)
-
-            AccountLedger.objects.bulk_create(account_ledger)
-            PackageLedger.objects.bulk_create(package_ledger)
-
+        result = update_packages_util(request, state=1, debit_credit_switch=False)
+        if result["success"]:
             return JsonResponse({"success": True})
-        except ValidationError as e:
-            errors = [str(message) for message in e.messages]
-            print(errors)
-            return JsonResponse({"success": False, "errors": errors})
-        except Exception as e:
-            print(e)
-            return JsonResponse({"success": False, "errors": [str(e)]})
+        else:
+            return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
+
+def check_out_packages(request):
+    if request.method == "POST":
+        result = update_packages_util(request, state=2, debit_credit_switch=True)
+        if result["success"]:
+            messages.success(request, "Successfully checked out")
+            return JsonResponse({"success": True, "redirect_url": reverse("check_out_packages")})
+        else:
+            messages.error(request, "Checkout failed")
+            return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
+    else:
+        return render(request, "packages/check_out.html", {"search_url": reverse("search_check_out_packages")})
 
 def create_package(request):
     if request.method == "POST":
@@ -74,7 +82,7 @@ def create_package(request):
             return JsonResponse({"success": True, "id": package.id})
         else:
             errors = dict(form.errors.items()) if form.errors else {}
-            return JsonResponse({"success": False, "errors": errors})  # Return error response with form errors
+            return JsonResponse({"success": False, "errors": errors})
     else:
         form = PackageForm()
         return render(request, "packages/create.html", {"form": form})
@@ -89,9 +97,16 @@ def search_check_out_packages(request):
     page_number = request.GET.get("page")
     page_obj = packages.get_page(page_number)
 
-    return render(request, "packages/search_checkout.html", {"page_obj": page_obj,
-                                                             "query": request.GET.get("q", ""),
-                                                             "filter": request.GET.get("filter", "")})
+    selected_ids = request.GET.get("selected_ids", "")
+    selected = selected_ids.split(",") if selected_ids else []
+    query = request.GET.get("q", "")
+    filter_info = request.GET.get("filter", "")
+
+    return render(request, "packages/search_checkout.html", {"checkout": True,
+                                                             "page_obj": page_obj,
+                                                             "selected": selected,
+                                                             "query": query,
+                                                             "filter": filter_info})
 
 def search_packages(request):
     try:
