@@ -7,16 +7,15 @@
             <div id="filter_select_container" class="input-group-append">
                 <select name="filter" id="filter_select" class="form-control">
                     <option value="customer" {% if filter == "customer" %}selected{% endif %}>Customer</option>
-                    <option value="tracking_code" {% if filter == "tracking_code" %}selected{% endif %}>Tracking Code</option>
+                    <option value="tracking_code" {% if filter != "customer" %}selected{% endif %}>Tracking Code</option>
                 </select>
             </div>
             <button type="submit" class="btn btn-primary">Search</button>
+            {% if checkout %}
+            <button id="checkoutbtn" class="btn btn-primary">Check Out Packages</button>
+            {% endif %}
         </form>
     </div>
-
-    {% if checkout %}
-    <button id="checkoutbtn" class="btn btn-primary">Check Out Packages</button>
-    {% endif %}
 
     {% load static %}
     <script src="{% static 'js/searchbox.js' %}" defer></script>
