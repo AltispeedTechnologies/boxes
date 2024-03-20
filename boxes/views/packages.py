@@ -23,6 +23,24 @@ def all_packages(request):
     return render(request, "packages/index.html", {"search_url": reverse("search_packages"),
                                                    "page_obj": page_obj})
 
+def package_detail(request, pk):
+    package_values = Package.objects.select_related("account", "carrier", "packagetype").values(
+        "id",
+        "price",
+        "carrier__name",
+        "account__description",
+        "package_type__description",
+        "tracking_code",
+        "comments",
+    ).filter(id=pk).first()
+
+    if package_values:
+        print(package_values)
+    else:
+        print(f"No package found with id={pk}")
+
+    return render(request, "packages/package.html", {"package": package_values})
+
 def update_packages_util(request, state, debit_credit_switch=False):
     response_data = {"success": False, "errors": []}
     try:

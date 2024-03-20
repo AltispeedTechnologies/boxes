@@ -13,6 +13,7 @@ urlpatterns = [
     path("logout/", sign_out, name="logout"),
 
     path("packages/", is_staff(all_packages), name="packages"),
+    path("packages/<int:pk>", is_staff(package_detail), name="package_detail"),
     path("packages/new", is_staff(create_package), name="create_package"),
     path("packages/checkin", is_staff(check_in_packages), name="check_in_packages"),
     path("packages/checkout", is_staff(check_out_packages), name="check_out_packages"),

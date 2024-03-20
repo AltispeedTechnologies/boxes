@@ -34,7 +34,7 @@
                         </td>
                         {% endif %}
                         <td>{{ package.account__description }}</td>
-                        <td>{{ package.tracking_code }}</td>
+                        <td><a href="/packages/{{ package.id }}">{{ package.tracking_code }}</a></td>
                         <td>${{ package.price }}</td>
                         <td>{{ package.carrier__name }}</td>
                         <td>{{ package.package_type__shortcode }}</td>
