@@ -34,12 +34,19 @@ def package_detail(request, pk):
         "comments",
     ).filter(id=pk).first()
 
-    if package_values:
-        print(package_values)
-    else:
-        print(f"No package found with id={pk}")
+    state_ledger = PackageLedger.objects.select_related("user").values(
+        "user__first_name",
+        "user__last_name",
+        "state",
+        "timestamp",
+    ).filter(package_id_id=pk)
 
-    return render(request, "packages/package.html", {"package": package_values})
+    state_names = dict(PACKAGE_STATES)
+    for entry in state_ledger:
+        entry["state"] = state_names.get(entry["state"], "Unknown")
+
+    return render(request, "packages/package.html", {"package": package_values,
+                                                     "state_ledger": state_ledger})
 
 def update_packages_util(request, state, debit_credit_switch=False):
     response_data = {"success": False, "errors": []}
