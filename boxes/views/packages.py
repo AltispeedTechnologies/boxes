@@ -99,6 +99,7 @@ def create_package(request):
     if request.method == "POST":
         form = PackageForm(request.POST)
         if form.is_valid():
+            print(request.POST)
             package = form.save(commit=False)
             package.carrier_id = form.cleaned_data["carrier_id"]
             package.account_id = form.cleaned_data["account_id"]

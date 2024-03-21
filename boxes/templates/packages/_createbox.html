@@ -17,8 +17,8 @@
         {{ form.carrier_id }}
       </div>
       <div class="col">
-        <strong><label for="{{ form.account_id.id_for_label }}">Customer:</label></strong>
-        {{ form.account_id }}
+        <strong><label for="id_account_id">Customer:</label></strong>
+        <select name="account_id" class="form-control select2" id="id_account_id"></select>
       </div>
       <div class="col">
         <strong><label for="{{ form.package_type_id.id_for_label }}">Type:</label></strong>
@@ -34,4 +34,50 @@
   <button id="createbtn" class="btn btn-primary">Create</button>  
   <button id="checkinbtn" class="btn btn-primary">Check In Packages</button>
 </div>
+
+<script>
+function get_cookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+$(document).ready(function() {
+    var csrfToken = get_cookie('csrftoken');
+
+    $('#id_account_id').select2({
+        ajax: {
+            url: '/accounts/search/', // Adjust this URL to your account search endpoint
+            dataType: 'json',
+            delay: 250,
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-CSRFToken', csrfToken);
+            },
+            data: function(params) {
+                return {
+                    term: params.term,
+                    page: params.page
+                };
+            },
+            processResults: function(data, params) {
+                return {
+                    results: data.results,
+                };
+            },
+            cache: true
+        },
+        placeholder: 'Search for an account',
+        minimumInputLength: 1,
+    });
+});
+</script>
 {% endblock content %}
