@@ -12,6 +12,8 @@ urlpatterns = [
     path("login/", sign_in, name="login"),
     path("logout/", sign_out, name="logout"),
 
+    path("accounts/search/", account_search, name="account_search"),
+
     path("packages/", is_staff(all_packages), name="packages"),
     path("packages/<int:pk>", is_staff(package_detail), name="package_detail"),
     path("packages/new", is_staff(create_package), name="create_package"),

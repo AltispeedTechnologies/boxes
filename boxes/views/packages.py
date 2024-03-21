@@ -1,6 +1,6 @@
 import re
 from boxes.forms import PackageForm
-from boxes.models import Package, PackageLedger, Carrier, Account, AccountLedger, PACKAGE_STATES
+from boxes.models import *
 from django.shortcuts import render
 from django.contrib import messages
 from django.core.exceptions import ValidationError
@@ -143,9 +143,19 @@ def search_packages(request):
     page_number = request.GET.get("page")
     page_obj = packages.get_page(page_number)
 
+    # Enable a card with the user information if the filter is customer
+    account = None
+    if request.GET.get("filter", "").strip() == "customer":
+        account_id_raw = request.GET.get("cid", "").strip()
+        account_id = re.sub(r'\D', '', account_id_raw)
+        
+        if account_id:
+            account = Account.objects.get(id=account_id)
+
     return render(request, "packages/search.html", {"page_obj": page_obj,
                                                     "query": request.GET.get("q", ""),
-                                                    "filter": request.GET.get("filter", "")})
+                                                    "filter": request.GET.get("filter", ""),
+                                                    "account": account})
 
 def _get_packages(**kwargs):
     # Organized by size of expected data, manually
@@ -166,19 +176,16 @@ def _get_packages(**kwargs):
     return paginator
 
 def _search_packages_helper(request):
-    query = request.GET.get("q", "").strip()
     filters = request.GET.get("filter", "").strip()
-
-    # Your existing logic for processing the search query and filters
     allowed_filters = ["tracking_code", "customer"]
     if filters not in allowed_filters:
         raise ValueError("Invalid filter value")
 
-    query = re.sub(r"[^\w\s-]", "", query)
-
     if filters == "tracking_code":
+        query = request.GET.get("q", "").strip()
         packages = _get_packages(tracking_code__icontains=query, current_state=1)
     elif filters == "customer":
-        packages = _get_packages(account__description__icontains=query, current_state=1)
+        account_id = request.GET.get("cid", "").strip()
+        packages = _get_packages(account__id=account_id, current_state=1)
     
     return packages
