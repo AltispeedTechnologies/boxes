@@ -98,58 +98,6 @@
     }
   },
   {
-    "model": "boxes.package",
-    "pk": 1,
-    "fields": {
-      "account": 1,
-      "carrier": 1,
-      "package_type": 1,
-      "tracking_code": "123456789",
-      "current_state": 0,
-      "comments": "Some important note",
-      "price": 0.00
-    }
-  },
-  {
-    "model": "boxes.package",
-    "pk": 2,
-    "fields": {
-      "account": 2,
-      "carrier": 2,
-      "package_type": 2,
-      "tracking_code": "123456788",
-      "current_state": 1,
-      "comments": null,
-      "price": 6.00
-    }
-  },
-  {
-    "model": "boxes.package",
-    "pk": 3,
-    "fields": {
-      "account": 3,
-      "carrier": 3,
-      "package_type": 3,
-      "tracking_code": "123456787",
-      "current_state": 2,
-      "comments": null,
-      "price": 12.00
-    }
-  },
-  {
-    "model": "boxes.package",
-    "pk": 4,
-    "fields": {
-      "account": 4,
-      "carrier": 4,
-      "package_type": 4,
-      "tracking_code": "123456786",
-      "current_state": 3,
-      "comments": null,
-      "price": 24.00
-    }
-  },
-  {
     "model": "boxes.carrier",
     "pk": 1,
     "fields": {

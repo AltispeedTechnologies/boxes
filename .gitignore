@@ -1,6 +1,6 @@
 # Custom
 
-static/
+/static/
 
 ## SOURCE: https://djangowaves.com/tips-tricks/gitignore-for-a-django-project/
 
