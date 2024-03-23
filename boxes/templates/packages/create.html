@@ -54,6 +54,7 @@
                     data: packages_payload,
                     success: function(response) {
                         if (response.success) {
+                            window.open("/packages/label?ids=".concat(packages_array.toString()), "_blank");
                             document.querySelectorAll("tbody tr:not(.visually-hidden)").forEach(row => row.remove());
                         } else {
                             console.log("Not successful");
