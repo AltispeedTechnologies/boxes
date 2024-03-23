@@ -12,7 +12,7 @@ urlpatterns = [
     path("login/", sign_in, name="login"),
     path("logout/", sign_out, name="logout"),
 
-    path("accounts/search/", account_search, name="account_search"),
+    path("accounts/search/", is_staff(account_search), name="account_search"),
 
     path("packages/", is_staff(all_packages), name="packages"),
     path("packages/<int:pk>", is_staff(package_detail), name="package_detail"),
@@ -21,4 +21,6 @@ urlpatterns = [
     path("packages/checkout", is_staff(check_out_packages), name="check_out_packages"),
     path("packages/checkout/search", is_staff(search_check_out_packages), name="search_check_out_packages"),
     path("packages/search", is_staff(search_packages), name="search_packages"),
+
+    path("packages/label", is_staff(generate_label), name="generate_label"),
 ]
