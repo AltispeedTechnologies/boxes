@@ -35,49 +35,7 @@
   <button id="checkinbtn" class="btn btn-primary">Check In Packages</button>
 </div>
 
-<script>
-function get_cookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-        var cookies = document.cookie.split(';');
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = jQuery.trim(cookies[i]);
-            if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
+{% load static %}
+<script src="{% static 'js/createbox.js' %}"></script>
 
-$(document).ready(function() {
-    var csrfToken = get_cookie('csrftoken');
-
-    $('#id_account_id').select2({
-        ajax: {
-            url: '/accounts/search/', // Adjust this URL to your account search endpoint
-            dataType: 'json',
-            delay: 250,
-            beforeSend: function(xhr) {
-                xhr.setRequestHeader('X-CSRFToken', csrfToken);
-            },
-            data: function(params) {
-                return {
-                    term: params.term,
-                    page: params.page
-                };
-            },
-            processResults: function(data, params) {
-                return {
-                    results: data.results,
-                };
-            },
-            cache: true
-        },
-        placeholder: 'Search for an account',
-        minimumInputLength: 1,
-    });
-});
-</script>
 {% endblock content %}

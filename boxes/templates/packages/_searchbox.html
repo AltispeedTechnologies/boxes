@@ -20,5 +20,8 @@
     </form>
 </div>
 {% load static %}
+<script>
+    let selected_packages = new Set({{ selected|safe }});
+</script>
 <script src="{% static 'js/searchbox.js' %}"></script>
 {% endblock content %}

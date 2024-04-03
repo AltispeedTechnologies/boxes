@@ -32,6 +32,10 @@ urlpatterns = [
     path("packages/checkout", is_staff(check_out_packages), name="check_out_packages"),
     path("packages/checkout/search", is_staff(search_check_out_packages), name="search_check_out_packages"),
 
+    # Picklists page
+    path("packages/picklists", is_staff(picklists), name="picklists"),
+    path("packages/picklists/search", is_staff(search_picklist_packages), name="search_picklist_packages"),
+
     # Label printing
     path("packages/label", is_staff(generate_label), name="generate_label"),
 ]

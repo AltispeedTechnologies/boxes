@@ -1,17 +1,16 @@
 import re
+from .common import _get_packages, _search_packages_helper
 from boxes.forms import PackageForm
 from boxes.models import *
 from django.shortcuts import render
 from django.contrib import messages
 from django.core.exceptions import ValidationError
-from django.core.paginator import Paginator
 from django.core.validators import validate_slug
 from django.db.models import Sum
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 
-PACKAGES_PER_PAGE = 10
 
 def all_packages(request):
     # Only get checked in packages
@@ -172,35 +171,3 @@ def search_packages(request):
                                                     "filter": request.GET.get("filter", ""),
                                                     "account": account})
 
-def _get_packages(**kwargs):
-    # Organized by size of expected data, manually
-    # Revisit this section after we have data to test with scale
-    packages = Package.objects.select_related("account", "carrier", "packagetype").values(
-        "id",
-        "package_type__shortcode",
-        "price",
-        "carrier__name",
-        "account__description",
-        "package_type__description",
-        "tracking_code",
-        "comments",
-    ).filter(**kwargs).order_by("id")
-
-    paginator = Paginator(packages, PACKAGES_PER_PAGE)
-
-    return paginator
-
-def _search_packages_helper(request):
-    filters = request.GET.get("filter", "").strip()
-    allowed_filters = ["tracking_code", "customer"]
-    if filters not in allowed_filters:
-        raise ValueError("Invalid filter value")
-
-    if filters == "tracking_code":
-        query = request.GET.get("q", "").strip()
-        packages = _get_packages(tracking_code__icontains=query, current_state=1)
-    elif filters == "customer":
-        account_id = request.GET.get("cid", "").strip()
-        packages = _get_packages(account__id=account_id, current_state=1)
-    
-    return packages
