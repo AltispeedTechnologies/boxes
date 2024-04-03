@@ -13,16 +13,22 @@
                 <option value="tracking_code" {% if filter != "customer" %}selected{% endif %}>Tracking Code</option>
             </select>
         </div>
-        <button type="submit" class="btn btn-primary">Search</button>
-        {% if checkout %}
-        <button id="checkoutbtn" class="btn btn-primary">Check Out Packages</button>
-        {% endif %}
+        <div class="mt-2">
+            <button type="submit" class="btn btn-primary">Search</button>
+            {% if checkout %}
+            <button id="checkoutbtn" class="btn btn-primary">Check Out Packages</button>
+            {% endif %}
+            {% if picklists %}
+            <button id="picklistbtn" class="btn btn-primary">Add to Picklist</button>
+            {% endif %}
+        </div>
     </form>
     {% if picklists %}
-    <div class="position-absolute bottom-50 end-0 w-25">
+    <div class="position-absolute end-0 w-25">
         <h4 class="float-end">Select Picklist</h4>
         <br />
-        <select class="end-0 w-100" id="picklist-select"></select>
+        <select class="float-end w-100" id="picklist-select"></select>
+        <button class="float-end mt-2 btn btn-primary" id="picklistview">View</button>
     </div>
     {% endif %}
 </div>

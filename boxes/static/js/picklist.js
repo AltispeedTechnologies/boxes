@@ -55,22 +55,34 @@ $(document).ready(function() {
         update_pagination_links();
     }
 
-    $("#checkoutbtn").click(function(event) {
+    $("#picklistview").click(function(event) {
+        event.preventDefault();
+        let base_url = "/packages/picklists/";
+        let picklist_id = $("#picklist-select").find(":selected").val();
+        window.location.href = base_url + picklist_id;
+    });
+
+    $("#picklistbtn").click(function(event) {
         event.preventDefault();
         let csrfToken = get_cookie("csrftoken");
-        let packagesArray = Array.from(selected_packages);
-        let packagesPayload = {"ids": packagesArray};
-
+        let packages_array = Array.from(selected_packages);
+        let picklist_id = $("#picklist-select").find(":selected").val();
+        let packages_payload = {
+            "ids": packages_array,
+            "picklist_id": picklist_id
+        };
+        
         $.ajax({
             type: "POST",
-            url: "/packages/checkout",
+            url: "/packages/picklists/add",
             headers: {"X-CSRFToken": csrfToken},
-            data: packagesPayload,
+            data: JSON.stringify(packages_payload),
+            contentType: "application/json", // Specify the content type
             success: function(response) {
                 if (response.success) {
                     window.location.href = response.redirect_url;
                 } else {
-                    console.error("Checkout failed:", response.errors.join("; "));
+                    console.error("Addition to picklist failed:", response.errors.join("; "));
                 }
             },
             error: function(xhr, status, error) {
