@@ -1,11 +1,11 @@
 {% block content %}
 <div class="container input-group">
-    <form id="search_form" action="{{ search_url }}" method="get">
+    <form class="w-25" id="search_form" action="{{ search_url }}" method="get">
         <div id="search_input_container" class="input-group-append">
             <input name="q" type="text" class="form-control" placeholder="Search..." value="{{ query }}">
         </div>
         <div id="customer_select_container" class="input-group-append d-none">
-            <select name="cid" id="customer_select" class="form-control"></select> <!-- Renamed name attribute -->
+            <select name="cid" id="customer_select" class="form-control"></select>
         </div>
         <div id="filter_select_container" class="input-group-append">
             <select name="filter" id="filter_select" class="form-control">
@@ -18,10 +18,21 @@
         <button id="checkoutbtn" class="btn btn-primary">Check Out Packages</button>
         {% endif %}
     </form>
+    {% if picklists %}
+    <div class="position-absolute bottom-50 end-0 w-25">
+        <h4 class="float-end">Select Picklist</h4>
+        <br />
+        <select class="end-0 w-100" id="picklist-select"></select>
+    </div>
+    {% endif %}
 </div>
 {% load static %}
 <script>
     let selected_packages = new Set({{ selected|safe }});
+
+    {% if picklist_data %}
+    let picklist_data = {{ picklist_data|safe }};
+    {% endif %}
 </script>
 <script src="{% static 'js/searchbox.js' %}"></script>
 {% endblock content %}

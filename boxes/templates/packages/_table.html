@@ -3,6 +3,10 @@
         {% load static %}
         <script src="{% static 'js/checkout.js' %}"></script>
     {% endif %}
+    {% if picklists %}
+        {% load static %}
+        <script src="{% static 'js/picklist.js' %}"></script>
+    {% endif %}
     {% if page_obj %}
         {% include "_paginate.html" %}
 
@@ -10,7 +14,7 @@
             <table class="table table-bordered" style="user-select: none">
                 <thead class="thead-dark">
                     <tr>
-                        {% if checkout %}
+                        {% if checkout or picklists %}
                         <th></th>
                         {% endif %}
                         <th>Account</th>
@@ -26,7 +30,7 @@
                 <tbody>
                     {% for package in page_obj %}
                     <tr>
-                        {% if checkout %}
+                        {% if checkout or picklists %}
                         <td>
                             <input class="form-check-input package-checkbox"
                                    type="checkbox"

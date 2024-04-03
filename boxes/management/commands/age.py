@@ -1,8 +1,8 @@
 from datetime import timedelta
 from django.core.management.base import BaseCommand
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Count, ProtectedError
 from django.utils import timezone
-from boxes.models import Package, PackageLedger, Account, AccountLedger
+from boxes.models import *
 
 class Command(BaseCommand):
     help = ""
@@ -27,6 +27,9 @@ class Command(BaseCommand):
 
         # Update the balance for every account given the ledger
         self.total_accounts()
+
+        self.stdout.write(self.style.NOTICE("Picklist maintenance"))
+        self.age_picklists()
 
         self.stdout.write(self.style.SUCCESS("Aging completed successfully"))
 
@@ -83,3 +86,28 @@ class Command(BaseCommand):
                 if new_balance != account.balance:
                     account.balance = new_balance
                     account.save(update_fields=["balance"])
+
+    def age_picklists(self):
+        today = timezone.now().date()
+        future_date = today + timedelta(days=14)
+
+        # Ensure Picklist entries exist for today through 14 days from now
+        for single_date in (today + timedelta(n) for n in range((future_date - today).days + 1)):
+            Picklist.objects.get_or_create(date=single_date)
+
+        # Remove Picklist entries older than today with no corresponding PackagePicklist entries
+        Picklist.objects.filter(date__lt=today, packagepicklist__isnull=True).delete()
+
+        # Identify Picklist entries older than a week that have corresponding PackagePicklist entries
+        week_old_date = today - timedelta(days=7)
+        picklists_older_than_week_with_packages = Picklist.objects.filter(
+            date__lt=week_old_date
+        ).annotate(
+            package_count=Count("packagepicklist")
+        ).filter(package_count__gt=0).values_list("id", flat=True)
+
+        # First, delete related PackagePicklist entries in bulk
+        PackagePicklist.objects.filter(picklist_id__in=picklists_older_than_week_with_packages).delete()
+
+        # Then, delete the Picklist entries
+        Picklist.objects.filter(id__in=picklists_older_than_week_with_packages).delete()
