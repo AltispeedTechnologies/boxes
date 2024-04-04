@@ -14,5 +14,5 @@ class Picklist(models.Model):
         super(Picklist, self).save(*args, **kwargs)
 
 class PackagePicklist(models.Model):
-    package = models.ForeignKey("Package", on_delete=models.RESTRICT)
+    package = models.OneToOneField("Package", on_delete=models.RESTRICT)
     picklist = models.ForeignKey(Picklist, on_delete=models.RESTRICT)

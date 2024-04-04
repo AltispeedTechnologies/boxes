@@ -17,7 +17,7 @@ def picklists(request):
 
 def search_picklist_packages(request):
     try:
-        packages = _search_packages_helper(request)
+        packages = _search_packages_helper(request, packagepicklist__picklist_id__isnull=True)
     except ValueError as e:
         messages.error(request, str(e))
         return redirect("picklists")
@@ -59,6 +59,52 @@ def add_package_picklist(request):
         messages.error(request, "An unknown error occurred.")
         return JsonResponse({"success": False, "errors": [str(e)]})
 
+@require_POST
+def move_package_picklist(request):
+    try:
+        data = json.loads(request.body)
+        package_id = int(data["row_id"])
+        new_picklist_id = int(data["item_id"])
+
+        updated_count = PackagePicklist.objects.filter(package_id=package_id).update(picklist_id=new_picklist_id)
+        if updated_count == 0:
+            PackagePicklist.objects.create(package_id=package_id, picklist_id=new_picklist_id)
+            message = "Successfully added to picklist"
+        else:
+            message = "Successfully moved to picklist"
+
+        messages.success(request, message)
+        return JsonResponse({"success": True})
+    except ValueError:
+        messages.error(request, "Invalid input")
+        return JsonResponse({"success": False, "errors": ["Invalid input provided."]})
+    except Exception as e:
+        messages.error(request, "An unknown error occurred.")
+        return JsonResponse({"success": False, "errors": [str(e)]})
+
+@require_POST
+def remove_package_picklist(request):
+    try:
+        data = json.loads(request.body)
+        print(data)
+        package_ids = data.get("ids", [])
+
+        if not package_ids:
+            messages.error(request, "No package IDs provided.")
+            return JsonResponse({"success": False, "errors": ["No package IDs provided."]})
+
+        package_ids = [int(pkg_id) for pkg_id in package_ids if isinstance(pkg_id, int) or pkg_id.isdigit()]
+        PackagePicklist.objects.filter(package_id__in=package_ids).delete()
+
+        messages.success(request, "Successfully removed packages from picklist")
+        return JsonResponse({"success": True})
+    except ValueError:
+        messages.error(request, "Invalid input")
+        return JsonResponse({"success": False, "errors": ["Invalid input provided. Ensure all package IDs are integers."]})
+    except Exception as e:
+        messages.error(request, "An unknown error occurred.")
+        return JsonResponse({"success": False, "errors": [str(e)]})
+
 def picklist_show(request, pk):
     picklist = get_object_or_404(Picklist, pk=pk)
     package_ids = PackagePicklist.objects.filter(picklist_id=picklist.id).values_list("package_id", flat=True)
@@ -72,10 +118,15 @@ def picklist_show(request, pk):
 
     return render(request, "packages/picklist.html", {"search_url": reverse("search_packages"),
                                                       "page_obj": page_obj,
+                                                      "picklists": True,
+                                                      "picklist_data": _picklist_data(exclude=picklist.id),
                                                       "picklist_title": picklist_title})
 
 
-def _picklist_data():
-    picklists = Picklist.objects.all()
+def _picklist_data(exclude=None):
+    if exclude:
+        picklists = Picklist.objects.exclude(id=exclude)
+    else:
+        picklists = Picklist.objects.all()
     picklist_data = [{"id": picklist.id, "text": f"{picklist.date}"} for picklist in picklists]
     return picklist_data

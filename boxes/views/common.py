@@ -6,9 +6,9 @@ PACKAGES_PER_PAGE = 10
 def _get_packages(**kwargs):
     # Organized by size of expected data, manually
     # Revisit this section after we have data to test with scale
-    packages = Package.objects.select_related("account", "carrier", "packagetype").values(
+    packages = Package.objects.select_related("account", "carrier", "packagetype", "packagepicklist").values(
         "id",
-        "package_type__shortcode",
+        "packagepicklist__picklist_id",
         "price",
         "carrier__name",
         "account__description",
@@ -21,7 +21,7 @@ def _get_packages(**kwargs):
 
     return paginator
 
-def _search_packages_helper(request):
+def _search_packages_helper(request, **kwargs):
     filters = request.GET.get("filter", "").strip()
     allowed_filters = ["tracking_code", "customer"]
     if filters not in allowed_filters:
@@ -29,9 +29,9 @@ def _search_packages_helper(request):
 
     if filters == "tracking_code":
         query = request.GET.get("q", "").strip()
-        packages = _get_packages(tracking_code__icontains=query, current_state=1)
+        packages = _get_packages(tracking_code__icontains=query, current_state=1, **kwargs)
     elif filters == "customer":
         account_id = request.GET.get("cid", "").strip()
-        packages = _get_packages(account__id=account_id, current_state=1)
+        packages = _get_packages(account__id=account_id, current_state=1, **kwargs)
     
     return packages
