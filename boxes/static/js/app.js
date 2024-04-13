@@ -16,3 +16,8 @@ function get_cookie(name) {
     }
     return cookie_value;
 }
+
+$("[data-bs-target=\"#print\"]").on("click", function() {
+    row_id = $(this).data("row-id");
+    window.open("/packages/label?ids=" + row_id);
+});

@@ -39,6 +39,8 @@ document.getElementById("filter_select").addEventListener("change", function() {
     }
 });
 
-$("#picklist-select").select2({
-    data: picklist_data
-});
+if (picklist_data) {
+    $("#picklist-select").select2({
+        data: picklist_data
+    });
+}

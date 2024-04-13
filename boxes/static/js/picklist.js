@@ -9,7 +9,6 @@ $(document).ready(function() {
     // Directly attaching the event listener to ensure it's registered immediately
     $(document).on("click", ".package-checkbox", function(e) {
         let package_id = this.id.split("-")[1];
-        console.log(package_id);
         
         // Check for the first click with a more reliable condition
         if (!last_checked) {
@@ -93,12 +92,6 @@ $(document).ready(function() {
         });
     });
 
-    $("[data-bs-target=\"#print\"]").on("click", function() {
-        row_id = $(this).data("row-id"); // Capture the row ID from button
-        console.log(row_id);
-        window.open("/packages/label?ids=" + row_id);
-    });
-
     $("[data-bs-target=\"#moveModal\"]").on("click", function() {
         row_id = $(this).data("row-id"); // Capture the row ID from button
     });
@@ -135,7 +128,6 @@ $(document).ready(function() {
 
     $("[data-bs-target=\"#removeModal\"]").on("click", function() {
         row_id = $(this).data("row-id"); // Capture the row ID from button
-        console.log(row_id);
     });
 
     // Handle "Save Changes" click in the modal
