@@ -56,23 +56,25 @@
                         <td>{{ package.package_type__description }}</td>
                         <td>{{ package.comments }}</td>
                         <td>
-                            <button class="btn btn-warning" data-row-id="{{ package.id }}" data-bs-target="#print">&#128438;</button>
-                            <button class="btn btn-info"
-                                    onclick="window.location.href='/packages/{{ package.id }}';">&#x2139;</button>
+                            <button class="btn btn-warning" data-row-id="{{ package.id }}" data-bs-target="#print">
+                                <i class="fas fa-print"></i>
+                            </button>
+                            <button class="btn btn-info" onclick="window.location.href='/packages/{{ package.id }}';">
+                                <i class="fas fa-info-circle"></i>
+                            </button>
                             {% if picklists %}
                                 <button type="button" class="btn btn-success" data-bs-toggle="modal" 
                                         data-bs-target="#moveModal" data-row-id="{{ package.id }}">
-                                    &#129030;
+                                    <i class="fas fa-arrows-alt"></i>
                                 </button>
                                 {% if picklist_title %}
                                     <button type="button" class="btn btn-danger" data-bs-toggle="modal" 
                                             data-bs-target="#removeModal" data-row-id="{{ package.id }}">
-                                        &#128465;
+                                        <i class="fas fa-trash-alt"></i>
                                     </button>
                                 {% endif %}
                             {% endif %}
                         </td>
-                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
