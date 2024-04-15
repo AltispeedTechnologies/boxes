@@ -1,12 +1,28 @@
 from boxes.models import *
 from django.core.paginator import Paginator
+from django.db.models import OuterRef, Subquery
 
 PACKAGES_PER_PAGE = 10
 
 def _get_packages(**kwargs):
+    check_in_subquery = PackageLedger.objects.filter(
+        package_id=OuterRef("pk"),
+        state=1
+    ).order_by("-timestamp").values("timestamp")[:1]
+
+    check_out_subquery = PackageLedger.objects.filter(
+        package_id=OuterRef("pk"),
+        state=2
+    ).order_by("-timestamp").values("timestamp")[:1]
+
     # Organized by size of expected data, manually
     # Revisit this section after we have data to test with scale
-    packages = Package.objects.select_related("account", "carrier", "packagetype", "packagepicklist").values(
+    packages = Package.objects.select_related(
+        "account", "carrier", "packagetype", "packagepicklist"
+    ).annotate(
+        check_in_time=Subquery(check_in_subquery),
+        check_out_time=Subquery(check_out_subquery)
+    ).values(
         "id",
         "packagepicklist__picklist_id",
         "price",
@@ -15,6 +31,8 @@ def _get_packages(**kwargs):
         "package_type__description",
         "tracking_code",
         "comments",
+        "check_in_time",
+        "check_out_time"
     ).filter(**kwargs).order_by("id")
 
     paginator = Paginator(packages, PACKAGES_PER_PAGE)

@@ -12,11 +12,12 @@
 
         <div class="table-responsive mt-3">
             <table class="table table-bordered" style="user-select: none">
-                <thead class="thead-dark">
+                <thead class="thead-dark align-top">
                     <tr>
                         {% if checkout or picklists %}
                         <th></th>
                         {% endif %}
+                        <th>Check In Time</br>Check Out Time</th>
                         <th>Account</th>
                         <th>Tracking Code</th>
                         <th>Price</th>
@@ -40,6 +41,15 @@
                                    {% endif %}>
                         </td>
                         {% endif %}
+                        <td>
+                            <p class="timestamp" data-timestamp="{{ package.check_in_time.isoformat }}">
+                                {{ package.check_in_time|default_if_none:"" }}
+                            </p>
+                            <br />
+                            <p class="timestamp" data-timestamp="{{ package.check_out_time.isoformat }}">
+                                {{ package.check_out_time|default_if_none:"" }}
+                            </p>
+                        </td>
                         <td>{{ package.account__description }}</td>
                         <td>{{ package.tracking_code }}</td>
                         <td>${{ package.price }}</td>

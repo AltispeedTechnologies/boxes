@@ -1,5 +1,11 @@
 $(document).ready(function() {
     $(".select-select2").select2();
+
+    $(".timestamp").each(function() {
+        var iso_timestamp = $(this).data("timestamp");
+        var local_time = new Date(iso_timestamp).toLocaleString();
+        $(this).text(local_time);
+    });
 });
 
 function get_cookie(name) {
