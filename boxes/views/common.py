@@ -33,7 +33,8 @@ def _get_packages(**kwargs):
         "comments",
         "check_in_time",
         "check_out_time"
-    ).filter(**kwargs).order_by("id")
+    ).filter(**kwargs
+    ).order_by("-id")
 
     paginator = Paginator(packages, PACKAGES_PER_PAGE)
 
