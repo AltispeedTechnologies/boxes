@@ -14,8 +14,9 @@ urlpatterns = [
     path("login/", sign_in, name="login"),
     path("logout/", sign_out, name="logout"),
 
-    # Backend endpoint for searching packages
+    # Backend endpoints
     path("accounts/search/", is_staff(account_search), name="account_search"),
+    path("carriers/search/", is_staff(carrier_search), name="carrier_search"),
 
     # Generic package information
     path("packages/", is_staff(all_packages), name="packages"),

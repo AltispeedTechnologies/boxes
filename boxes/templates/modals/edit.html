@@ -25,11 +25,11 @@
                     <div class="row my-2">
                         <div class="col">
                             <strong><label for="carrier_id">Carrier:</label></strong>
-                            <select id="carrier_id" name="carrier_id" class="form-control"></select>
+                            {% include "dropdowns/carrier.html" %}
                         </div>
                         <div class="col">
                             <strong><label for="id_account_id">Customer:</label></strong>
-                            <select name="account_id" class="form-control select2 mr-2" id="id_account_id" style="flex-grow: 1;"></select>
+                            {% include "dropdowns/account.html" %}
                         </div>
                         <div class="col">
                             <strong><label for="package_type_id">Type:</label></strong>

@@ -1,7 +1,9 @@
 $(document).ready(function() {
     let packages = new Set();
-
     let acct_is_locked = true;
+
+    window.initialize_async_select2("account", "/accounts/search/");
+    window.initialize_async_select2("carrier", "/carriers/search/");
 
     $("#toggle_lock_btn").click(function() {
         acct_is_locked = !acct_is_locked;

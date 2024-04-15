@@ -29,31 +29,8 @@ $(document).ready(function() {
     $("#editModal").on("shown.bs.modal", function () {
         let csrf_token = window.get_cookie("csrftoken");
 
-        $("#id_account_id").select2({
-            ajax: {
-                url: "/accounts/search/",
-                dataType: "json",
-                delay: 250,
-                beforeSend: function(xhr) {
-                    xhr.setRequestHeader("X-CSRFToken", csrf_token);
-                },
-                data: function(params) {
-                    return {
-                        term: params.term,
-                        page: params.page
-                    };
-                },
-                processResults: function(data, params) {
-                    return {
-                        results: data.results,
-                    };
-                },
-                cache: true
-            },
-            placeholder: "Search for an account",
-            minimumInputLength: 1,
-            dropdownParent: $("#editModal"),
-        });
+        window.initialize_async_select2("account", "/accounts/search", "#editModal");
+        window.initialize_async_select2("carrier", "/carriers/search", "#editModal");
 
         var option = new Option(package_data.account, package_data.account_id, true, true);
         $("#id_account_id").append(option).trigger("change");

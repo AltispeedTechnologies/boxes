@@ -13,12 +13,12 @@
     <div class="row my-2">
         <div class="col">
             <strong><label for="{{ form.carrier_id.id_for_label }}">Carrier:</label></strong>
-            {{ form.carrier_id }}
+            {% include "dropdowns/carrier.html" %}
         </div>
         <div class="col">
             <strong><label for="id_account_id">Customer:</label></strong>
             <div class="d-flex align-items-center">
-                <select name="account_id" class="form-control select2 mr-2" id="id_account_id" style="flex-grow: 1;"></select>
+                {% include "dropdowns/account.html" %}
                 <button id="toggle_lock_btn" class="btn btn-sm btn-primary">
                     <i id="lock_icon" class="fas fa-lock"></i>
                 </button>
@@ -41,8 +41,5 @@
         </div>
     </div>
 </div>
-
-{% load static %}
-<script src="{% static 'js/createbox.js' %}"></script>
 
 {% endblock content %}
