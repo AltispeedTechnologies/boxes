@@ -19,7 +19,7 @@ env = environ.Env(
     DEFAULT_FROM_EMAIL=(str,"webmaster@localhost"),
     EMAIL_SUBJECT_PREFIX=(str,"[Django] "),
     SECURE_PROXY_SSL_HEADER=(str,None),
-    LOGGING_FILE=(str,"/var/log/boxes.log")
+    LOGGING_FILE=(str,"/var/log/boxes.log"),
 )
 
 # Set the project base directory
@@ -676,10 +676,10 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
         },
-      'file': {
-         'class': 'logging.FileHandler',
-         'filename': env(LOGGING_FILE),
-      },
+        'file': {
+           'class': 'logging.FileHandler',
+           'filename': env('LOGGING_FILE'),
+        },
     },
     'loggers': {
         'django.db.backends': {
