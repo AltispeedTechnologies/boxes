@@ -3,7 +3,7 @@ $(document).ready(function() {
 
     $(".timestamp").each(function() {
         var iso_timestamp = $(this).data("timestamp");
-        if (iso_timestamp !== "" {
+        if (iso_timestamp !== "") {
             var local_time = new Date(iso_timestamp).toLocaleString();
             $(this).text(local_time);
         }

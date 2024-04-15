@@ -1,3 +1,18 @@
+function get_cookie(name) {
+    var cookie_value = null;
+    if (document.cookie && document.cookie !== "") {
+        var cookies = document.cookie.split(";");
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                cookie_value = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookie_value;
+}
+
 document.getElementById("filter_select").addEventListener("change", function() {
     var selected_filter = this.value;
     var search_input_container = document.getElementById("search_input_container");
