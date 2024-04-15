@@ -42,11 +42,10 @@
                         </td>
                         {% endif %}
                         <td>
-                            <p class="timestamp" data-timestamp="{{ package.check_in_time.isoformat }}">
+                            <p class="timestamp" data-timestamp="{{ package.check_in_time.isoformat|default_if_none:"" }}">
                                 {{ package.check_in_time|default_if_none:"" }}
                             </p>
-                            <br />
-                            <p class="timestamp" data-timestamp="{{ package.check_out_time.isoformat }}">
+                            <p class="timestamp" data-timestamp="{{ package.check_out_time.isoformat|default_if_none:"" }}">
                                 {{ package.check_out_time|default_if_none:"" }}
                             </p>
                         </td>
