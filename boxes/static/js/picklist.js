@@ -4,7 +4,7 @@ $(document).ready(function() {
 
     let last_checked = null;
     var row_id;
-    let csrfToken = get_cookie("csrftoken");
+    let csrfToken = window.get_cookie("csrftoken");
 
     // Directly attaching the event listener to ensure it's registered immediately
     $(document).on("click", ".package-checkbox", function(e) {

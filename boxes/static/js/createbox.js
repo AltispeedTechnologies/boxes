@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    var csrfToken = get_cookie("csrftoken");
+    var csrfToken = window.get_cookie("csrftoken");
 
     $("#id_account_id").select2({
         ajax: {

@@ -10,7 +10,7 @@ $(document).ready(function() {
     });
 });
 
-function get_cookie(name) {
+window.get_cookie = function(name) {
     var cookie_value = null;
     if (document.cookie && document.cookie !== "") {
         var cookies = document.cookie.split(";");

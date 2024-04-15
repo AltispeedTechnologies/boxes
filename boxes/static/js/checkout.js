@@ -56,7 +56,7 @@ $(document).ready(function() {
 
     $("#checkoutbtn").click(function(event) {
         event.preventDefault();
-        let csrfToken = get_cookie("csrftoken");
+        let csrfToken = window.get_cookie("csrftoken");
         let packagesArray = Array.from(selected_packages);
         let packagesPayload = {"ids": packagesArray};
 
