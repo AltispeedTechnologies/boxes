@@ -6,6 +6,12 @@ $(document).ready(function() {
     var row_id;
     let csrfToken = window.get_cookie("csrftoken");
 
+    if (picklist_data) {
+        $("#picklist-select").select2({
+            data: picklist_data
+        });
+    }
+
     // Directly attaching the event listener to ensure it's registered immediately
     $(document).on("click", ".package-checkbox", function(e) {
         let package_id = this.id.split("-")[1];

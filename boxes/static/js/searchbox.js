@@ -38,10 +38,3 @@ document.getElementById("filter_select").addEventListener("change", function() {
         search_input_container.classList.remove("d-none");
     }
 });
-
-var picklist_data = typeof picklist_data === "undefined" ? null : picklist_data;
-if (picklist_data) {
-    $("#picklist-select").select2({
-        data: picklist_data
-    });
-}

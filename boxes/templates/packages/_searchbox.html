@@ -38,6 +38,8 @@
 
     {% if picklist_data %}
     let picklist_data = {{ picklist_data|safe }};
+    {% else %}
+    let picklist_data = null;
     {% endif %}
 </script>
 <script src="{% static 'js/searchbox.js' %}"></script>
