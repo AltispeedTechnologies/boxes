@@ -1,5 +1,8 @@
 {% block content %}
 
+{% load static %}
+<script src="{% static 'js/edit.js' %}"></script>
+
 <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -26,12 +29,7 @@
                         </div>
                         <div class="col">
                             <strong><label for="id_account_id">Customer:</label></strong>
-                            <div class="d-flex align-items-center">
-                                <select name="account_id" class="form-control select2 mr-2" id="id_account_id" style="flex-grow: 1;"></select>
-                                <button id="toggle_lock_btn" class="btn btn-sm btn-primary">
-                                    <i id="lock_icon" class="fas fa-lock"></i>
-                                </button>
-                            </div>
+                            <select name="account_id" class="form-control select2 mr-2" id="id_account_id" style="flex-grow: 1;"></select>
                         </div>
                         <div class="col">
                             <strong><label for="package_type_id">Type:</label></strong>

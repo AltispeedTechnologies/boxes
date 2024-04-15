@@ -8,7 +8,6 @@
         <script src="{% static 'js/picklist.js' %}"></script>
         {% include "modals/picklist.html" %}
     {% endif %}
-    <script src="{% static 'js/edit.js' %}"></script>
     {% include "modals/edit.html" %}
 
     {% if page_obj %}
@@ -53,7 +52,7 @@
                                 {{ package.check_out_time|default_if_none:"" }}
                             </p>
                         </td>
-                        <td data-type="account">{{ package.account__description }}</td>
+                        <td data-type="account" data-id="{{ package.account__id }}">{{ package.account__description }}</td>
                         <td data-type="tracking_code">{{ package.tracking_code }}</td>
                         <td data-type="price">${{ package.price }}</td>
                         <td data-type="carrier">{{ package.carrier__name }}</td>

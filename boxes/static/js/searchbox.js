@@ -7,7 +7,7 @@ document.getElementById("filter_select").addEventListener("change", function() {
         search_input_container.classList.add("d-none");
         customer_select_container.classList.remove("d-none");
         
-        let csrf_token = window.get_cookie("csrftoken"); // Retrieve the CSRF token
+        let csrf_token = window.get_cookie("csrftoken");
 
         $("#customer_select").select2({
             ajax: {
