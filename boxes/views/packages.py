@@ -14,7 +14,7 @@ from django.urls import reverse
 
 def all_packages(request):
     # Only get checked in packages
-    packages = _get_packages(current_state = 1)
+    packages = _get_packages()
 
     # Paginate
     page_number = request.GET.get("page")
