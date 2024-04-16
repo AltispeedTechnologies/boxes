@@ -1,10 +1,11 @@
 $(document).ready(function() {
     var package_data = {};
+    var row_id = null;
 
     $('[data-bs-target="#editModal"]').on("click", function () {
         let csrf_token = window.get_cookie("csrftoken");
         package_data = {};
-        var row_id = $(this).data("row-id");
+        row_id = $(this).data("row-id");
         var tr = $(this).closest("tr");
 
         // Only grab packages with a defined data type
@@ -13,13 +14,11 @@ $(document).ready(function() {
             var type = $(this).data("type");
             if (text !== "") {
                 package_data[type] = text;
-                console.log(type + " - " + text);
             }
 
             // Extra data
             if (type === "account" || type === "carrier" || type === "package_type") {
                 package_data[type + "_id"] = $(this).data("id");
-                console.log(package_data);
             }
         });
 
@@ -59,6 +58,67 @@ $(document).ready(function() {
             type: "select2:select",
             params: {
                 data: { id: package_data.package_type_id, text: package_data.package_type }
+            }
+        });
+    });
+
+    $("#editModal .btn-primary").on("click", function() {
+        let csrf_token = window.get_cookie("csrftoken");
+        var $tr = $('tr[data-row-id="' + row_id + '"]');
+
+        var tracking_code = $("#editModal").find("#tracking_code").val();
+        var price = $("#editModal").find("#price").val();
+        var comments = $("#editModal").find("#comments").val();
+        var account_id = $("#id_account_id").val();
+        var account = $("#id_account_id option:selected").text();
+        var carrier_id = $("#id_carrier_id").val();
+        var carrier = $("#id_carrier_id option:selected").text();
+        var package_type_id = $("#id_type_id").val();
+        var package_type = $("#id_type_id option:selected").text();
+
+        // Prepare data for POST request
+        var post_data = {
+            tracking_code: tracking_code,
+            price: price,
+            comments: comments,
+            account_id: account_id,
+            carrier_id: carrier_id,
+            package_type_id: package_type_id
+        };
+
+        $.ajax({
+            type: "POST",
+            url: "/packages/" + row_id + "/update",
+            headers: {"X-CSRFToken": csrf_token},
+            data: JSON.stringify(post_data),
+            contentType: "application/json",
+            success: function(response) {
+                if (response.success) {
+                    $tr.find("td").each(function() {
+                        var type = $(this).data("type");
+
+                        if (type) {
+                            if (type === "price") {
+                                $(this).text("$" + post_data[type]);
+                            } else if (type === "account") {
+                                $(this).text(account);
+                            } else if (type === "carrier") {
+                                $(this).text(carrier);
+                            } else if (type === "package_type") {
+                                $(this).text(package_type);
+                            } else {
+                                $(this).text(post_data[type]);
+                            }
+                        }
+                    });
+
+                    $("#editModal").modal("hide");
+                } else {
+                    console.error("Update failed:", response.errors ? response.errors.join("; ") : "Unknown error");
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("An error occurred:", error);
             }
         });
     });

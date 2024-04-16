@@ -1,14 +1,16 @@
+import json
 import re
 from .common import _get_packages, _search_packages_helper
 from boxes.forms import PackageForm
 from boxes.models import *
+from decimal import Decimal
 from django.shortcuts import render
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_slug
 from django.db.models import Sum
 from django.http import JsonResponse
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
@@ -88,6 +90,38 @@ def update_packages_util(request, state, debit_credit_switch=False):
     except Exception as e:
         response_data["errors"] = [str(e)]
     return response_data
+
+@require_http_methods(["POST"])
+def update_package(request, pk):
+    request_data = json.loads(request.body)
+    package = get_object_or_404(Package, pk=pk)
+    fields_to_update = {
+        "tracking_code": str,
+        "price": Decimal,
+        "comments": str,
+        "account_id": int,
+        "carrier_id": int,
+        "package_type_id": int
+    }
+    
+    try:
+        updates = {}
+        for field, type_func in fields_to_update.items():
+            value = request_data[field]
+            if value:
+                updates[field] = type_func(value.strip())
+            elif field == "comments":
+                updates[field] = ""
+
+        for field, value in updates.items():
+            setattr(package, field, value)
+        
+        if updates:
+            package.save()
+        return JsonResponse({"success": True})
+
+    except (ValueError, Decimal.InvalidOperation, TypeError) as e:
+        return JsonResponse({"success": False, "errors": [f"Error updating {field}: {str(e)}"]})
 
 def check_in_packages(request):
     if request.method == "POST":
