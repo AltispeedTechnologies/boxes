@@ -1,7 +1,63 @@
-$(document).ready(function() {
-    let packages = new Set();
-    let acct_is_locked = true;
+let packages = new Set();
+let acct_is_locked = true;
 
+function handle_create_package() {
+    var csrf = window.get_cookie("csrftoken");
+    var tracking_code = $("#id_tracking_code").val();
+    var price = $("#id_price").val();
+    var carrier_id = $("#id_carrier_id").val();
+    var account_id = $("#id_account_id").val();
+    var package_type_id = $("#id_type_id").val();
+    var comments = $("#id_comments").val();
+    var carrier = $("#id_carrier_id").find(":selected").text();
+    var account = $("#id_account_id").find(":selected").text();
+    var package_type = $("#id_type_id").find(":selected").text();
+
+    var form_data = {
+        "tracking_code": tracking_code,
+        "price": price,
+        "carrier_id": carrier_id,
+        "account_id": account_id,
+        "package_type_id": package_type_id,
+        "comments": comments
+    };
+
+    $.ajax({
+        type: "POST",
+        url: "/packages/new",
+        headers: {
+            "X-CSRFToken": csrf
+        },
+        data: form_data,
+        success: function(response) {
+            if (response.success) {
+                packages.add(response.id);
+                displayErrorMessage();
+
+                var new_row = document.querySelector(".visually-hidden").cloneNode(true);
+                new_row.classList.remove("visually-hidden");
+                new_row.querySelector("td:nth-child(1)").innerText = account;
+                new_row.querySelector("td:nth-child(2)").innerText = tracking_code;
+                new_row.querySelector("td:nth-child(3)").innerText = "$".concat(price);
+                new_row.querySelector("td:nth-child(4)").innerText = carrier;
+                new_row.querySelector("td:nth-child(5)").innerText = package_type;
+                new_row.querySelector("td:nth-child(6)").innerText = comments;
+                document.querySelector("tbody").appendChild(new_row);
+
+                if (!acct_is_locked) {
+                    $("#id_account_id").val(null).trigger("change");
+                }
+            } else {
+                displayErrorMessage(response.errors);
+            }
+        },
+        error: function(xhr, status, error) {
+            displayErrorMessage(xhr.responseJSON.errors);
+        }
+    });
+}
+
+$(document).ready(function() {
     window.initialize_async_select2("account", "/accounts/search/");
     window.initialize_async_select2("carrier", "/carriers/search/");
     window.initialize_async_select2("type", "/types/search/");
@@ -17,7 +73,7 @@ $(document).ready(function() {
 
     $("#checkinbtn").click(function(event) {
         event.preventDefault();
-        var csrf = getCookie("csrftoken");
+        var csrf = window.get_cookie("csrftoken");
 
         let packages_array = [...packages];
         let packages_payload = {"ids": packages_array};
@@ -45,86 +101,16 @@ $(document).ready(function() {
 
     $("#createbtn").click(function(event) {
         event.preventDefault();
-        var csrf = getCookie("csrftoken");
+        handle_create_package();
+    });
 
-        // Get form field values
-        var tracking_code = $("#id_tracking_code").val();
-        var price = $("#id_price").val();
-        var carrier_id = $("#id_carrier_id").val();
-        var account_id = $("#id_account_id").val();
-        var package_type_id = $("#id_package_type_id").val();
-        var comments = $("#id_comments").val();
-
-        // Get the human-readable values, for the table
-        var carrier = $("#id_carrier_id").find(":selected").text();
-        var account = $("#id_account_id").find(":selected").text();
-        var package_type = $("#id_package_type_id").find(":selected").text();
-
-        // Create form data object
-        var form_data = {
-            "tracking_code": tracking_code,
-            "price": price,
-            "carrier_id": carrier_id,
-            "account_id": account_id,
-            "package_type_id": package_type_id,
-            "comments": comments
-        };
-
-        // Send form data via AJAX POST request
-        $.ajax({
-            type: "POST",
-            url: "/packages/new",
-            headers: {
-                "X-CSRFToken": csrf
-            },
-            data: form_data,
-            success: function(response) {
-                if (response.success) {
-                    packages.add(response.id);
-                    console.log(packages);
-                    // Clear the existing error message if there is one
-                    displayErrorMessage();
-
-                    // Visually create the new row
-                    var new_row = document.querySelector(".visually-hidden").cloneNode(true);
-                    new_row.classList.remove("visually-hidden");
-                    new_row.querySelector("td:nth-child(1)").innerText = account;
-                    new_row.querySelector("td:nth-child(2)").innerText = tracking_code;
-                    new_row.querySelector("td:nth-child(3)").innerText = "$".concat(price);
-                    new_row.querySelector("td:nth-child(4)").innerText = carrier;
-                    new_row.querySelector("td:nth-child(5)").innerText = package_type;
-                    new_row.querySelector("td:nth-child(6)").innerText = comments;
-                    document.querySelector("tbody").appendChild(new_row);
-
-                    // If the account is not locked, remove the existing selection
-                    if (!acct_is_locked) {
-                        $("#id_account_id").val(null).trigger("change");
-                    }
-                } else {
-                    displayErrorMessage(response.errors);
-                }
-            },
-            error: function(xhr, status, error) {
-                displayErrorMessage(response.errors);
-            }
-        });
+    $("#id_tracking_code").keydown(function(event) {
+        if (event.keyCode === 13) {  // 13 is the Enter key
+            event.preventDefault();
+            handle_create_package();
+        }
     });
 });
-
-function getCookie(name) {
-    var cookie_value = null;
-    if (document.cookie && document.cookie !== "") {
-        var cookies = document.cookie.split(";");
-        for (var i = 0; i < cookies.length; i++) {
-            var cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + "=")) {
-                cookie_value = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookie_value;
-}
 
 function displayErrorMessage(errors) {
     var messages_div = $(".messages");

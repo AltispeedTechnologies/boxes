@@ -161,6 +161,31 @@ def create_package(request):
         form = PackageForm()
         return render(request, "packages/create.html", {"form": form})
 
+def create_package(request):
+    if request.method == "POST":
+        form = PackageForm(request.POST)
+        if form.is_valid():
+            try:
+                package = form.save(commit=False)
+                print(request.POST.get("account_id"))
+                print(request.POST.get("carrier_id"))
+                print(request.POST.get("package_type_id"))
+                package.account_id = request.POST.get("account_id")
+                package.carrier_id = request.POST.get("carrier_id")
+                package.package_type_id = request.POST.get("package_type_id")
+                print(package)
+
+                package.save()
+                return JsonResponse({"success": True, "id": package.id})
+            except Exception as e:
+                return JsonResponse({"success": False, "errors": str(e)})
+        else:
+            errors = dict(form.errors.items()) if form.errors else {}
+            return JsonResponse({"success": False, "errors": errors})
+    else:
+        form = PackageForm()
+        return render(request, "packages/create.html", {"form": form})
+
 def search_check_out_packages(request):
     try:
         packages = _search_packages_helper(request)
