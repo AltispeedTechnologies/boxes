@@ -10,37 +10,35 @@
                 <h5 class="modal-title" id="editModalLabel">Edit Package Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <div class="container bg-light">
-                    <div class="row my-2">
-                        <div class="col">
-                            <strong><label for="tracking_code">Tracking code:</label></strong>
-                            <input type="text" id="tracking_code" name="tracking_code" class="form-control">
-                        </div>
-                        <div class="col">
-                            <strong><label for="price">Price (USD):</label></strong>
-                            <input type="text" id="price" name="price" class="form-control">
-                        </div>
+            <div class="modal-body container bg-light">
+                <div class="row my-2">
+                    <div class="col">
+                        <strong><label for="tracking_code">Tracking code:</label></strong>
+                        <input type="text" id="tracking_code" name="tracking_code" class="form-control">
                     </div>
-                    <div class="row my-2">
-                        <div class="col">
-                            <strong><label for="carrier_id">Carrier:</label></strong>
-                            {% include "dropdowns/carrier.html" %}
-                        </div>
-                        <div class="col">
-                            <strong><label for="id_account_id">Customer:</label></strong>
-                            {% include "dropdowns/account.html" %}
-                        </div>
-                        <div class="col">
-                            <strong><label for="package_type_id">Type:</label></strong>
-                            <select id="package_type_id" name="package_type_id" class="form-control"></select>
-                        </div>
+                    <div class="col">
+                        <strong><label for="price">Price (USD):</label></strong>
+                        <input type="text" id="price" name="price" class="form-control">
                     </div>
-                    <div class="row my-2">
-                        <div class="col">
-                            <strong><label for="comments">Comments:</label></strong>
-                            <textarea id="comments" name="comments" class="form-control" rows="3"></textarea>
-                        </div>
+                </div>
+                <div class="row my-2">
+                    <div class="col">
+                        <strong><label for="carrier_id">Carrier:</label></strong>
+                        {% include "dropdowns/carrier.html" %}
+                    </div>
+                    <div class="col">
+                        <strong><label for="id_account_id">Customer:</label></strong>
+                        {% include "dropdowns/account.html" %}
+                    </div>
+                    <div class="col">
+                        <strong><label for="package_type_id">Type:</label></strong>
+                        {% include "dropdowns/type.html" %}
+                    </div>
+                </div>
+                <div class="row my-2">
+                    <div class="col">
+                        <strong><label for="comments">Comments:</label></strong>
+                        <textarea id="comments" name="comments" class="form-control" rows="3"></textarea>
                     </div>
                 </div>
             </div>

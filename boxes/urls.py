@@ -17,6 +17,7 @@ urlpatterns = [
     # Backend endpoints
     path("accounts/search/", is_staff(account_search), name="account_search"),
     path("carriers/search/", is_staff(carrier_search), name="carrier_search"),
+    path("types/search/", is_staff(type_search), name="type_search"),
 
     # Generic package information
     path("packages/", is_staff(all_packages), name="packages"),

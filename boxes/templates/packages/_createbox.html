@@ -26,7 +26,7 @@
         </div>
         <div class="col">
             <strong><label for="{{ form.package_type_id.id_for_label }}">Type:</label></strong>
-            {{ form.package_type_id }}
+            {% include "dropdowns/type.html" %}
         </div>
     </div>
     <div class="row my-2">

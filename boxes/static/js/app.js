@@ -49,8 +49,9 @@ window.initialize_async_select2 = function(field_name, search_url, dropdown_pare
             },
             cache: true
         },
-        placeholder: "Search for a " + field_name,
-        minimumInputLength: 1
+        placeholder: "Search for " + field_name,
+        minimumInputLength: 1,
+        width: "100%"
     };
 
     // Add the dropdownParent option only if dropdown_parent_selector is provided

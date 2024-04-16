@@ -10,6 +10,7 @@ from django.db.models import Sum
 from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.views.decorators.http import require_http_methods
 
 
 def all_packages(request):
@@ -146,6 +147,13 @@ def search_check_out_packages(request):
                                                              "selected": selected,
                                                              "query": query,
                                                              "filter": filter_info})
+
+@require_http_methods(["GET"])
+def type_search(request):
+    search_query = request.GET.get("term", "")
+    pkgtypes = PackageType.objects.filter(description__icontains=search_query)[:10]
+    results = [{"id": pkgtype.id, "text": pkgtype.description} for pkgtype in pkgtypes]
+    return JsonResponse({"results": results})
 
 def search_packages(request):
     try:

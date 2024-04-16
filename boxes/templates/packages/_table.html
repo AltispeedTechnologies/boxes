@@ -52,11 +52,11 @@
                                 {{ package.check_out_time|default_if_none:"" }}
                             </p>
                         </td>
-                        <td data-type="account" data-id="{{ package.account__id }}">{{ package.account__description }}</td>
+                        <td data-type="account" data-id="{{ package.account_id }}">{{ package.account__description }}</td>
                         <td data-type="tracking_code">{{ package.tracking_code }}</td>
                         <td data-type="price">${{ package.price }}</td>
-                        <td data-type="carrier">{{ package.carrier__name }}</td>
-                        <td data-type="package_type" class="mutableData">{{ package.package_type__description }}</td>
+                        <td data-type="carrier" data-id="{{ package.carrier_id }}">{{ package.carrier__name }}</td>
+                        <td data-type="package_type" data-id="{{ package.package_type_id }}" class="mutableData">{{ package.package_type__description }}</td>
                         <td data-type="comments" class="mutableData">{{ package.comments }}</td>
                         <td>
                             <button class="btn btn-warning" data-row-id="{{ package.id }}" data-bs-target="#print">

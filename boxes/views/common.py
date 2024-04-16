@@ -25,7 +25,9 @@ def _get_packages(**kwargs):
     ).values(
         "id",
         "packagepicklist__picklist_id",
-        "account__id",
+        "account_id",
+        "carrier_id",
+        "package_type_id",
         "price",
         "carrier__name",
         "account__description",
