@@ -12,8 +12,27 @@ from django.db.models import Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.utils.html import strip_tags
 from django.views.decorators.http import require_http_methods
 
+
+def get_or_create_carrier(carrier_id):
+    if not carrier_id.isdigit():
+        carrier, _ = Carrier.objects.get_or_create(name=strip_tags(carrier_id), phone_number="", website="")
+        return carrier
+    return Carrier.objects.get(id=carrier_id)
+
+def get_or_create_account(account_id, user):
+    if not account_id.isdigit():
+        account, _ = Account.objects.get_or_create(user=user, balance=Decimal(0.00), is_good_standing=True, description=strip_tags(account_id))
+        return account
+    return Account.objects.get(id=account_id)
+
+def get_or_create_package_type(package_type_id):
+    if not package_type_id.isdigit():
+        package_type, _ = PackageType.objects.get_or_create(description=strip_tags(package_type_id), shortcode="")
+        return package_type
+    return PackageType.objects.get(id=package_type_id)
 
 def all_packages(request):
     # Only get checked in packages
@@ -91,38 +110,6 @@ def update_packages_util(request, state, debit_credit_switch=False):
         response_data["errors"] = [str(e)]
     return response_data
 
-@require_http_methods(["POST"])
-def update_package(request, pk):
-    request_data = json.loads(request.body)
-    package = get_object_or_404(Package, pk=pk)
-    fields_to_update = {
-        "tracking_code": str,
-        "price": Decimal,
-        "comments": str,
-        "account_id": int,
-        "carrier_id": int,
-        "package_type_id": int
-    }
-    
-    try:
-        updates = {}
-        for field, type_func in fields_to_update.items():
-            value = request_data[field]
-            if value:
-                updates[field] = type_func(value.strip())
-            elif field == "comments":
-                updates[field] = ""
-
-        for field, value in updates.items():
-            setattr(package, field, value)
-        
-        if updates:
-            package.save()
-        return JsonResponse({"success": True})
-
-    except (ValueError, Decimal.InvalidOperation, TypeError) as e:
-        return JsonResponse({"success": False, "errors": [f"Error updating {field}: {str(e)}"]})
-
 def check_in_packages(request):
     if request.method == "POST":
         result = update_packages_util(request, state=1, debit_credit_switch=False)
@@ -147,34 +134,14 @@ def create_package(request):
     if request.method == "POST":
         form = PackageForm(request.POST)
         if form.is_valid():
-            print(request.POST)
             package = form.save(commit=False)
-            package.carrier_id = form.cleaned_data["carrier_id"]
-            package.account_id = form.cleaned_data["account_id"]
-            package.package_type_id = form.cleaned_data["package_type_id"]
-            package.save()
-            return JsonResponse({"success": True, "id": package.id})
-        else:
-            errors = dict(form.errors.items()) if form.errors else {}
-            return JsonResponse({"success": False, "errors": errors})
-    else:
-        form = PackageForm()
-        return render(request, "packages/create.html", {"form": form})
+            
+            # Use helper functions
+            package.carrier = get_or_create_carrier(form.cleaned_data["carrier_id"])
+            package.account = get_or_create_account(form.cleaned_data["account_id"], request.user)
+            package.package_type = get_or_create_package_type(form.cleaned_data["package_type_id"])
 
-def create_package(request):
-    if request.method == "POST":
-        form = PackageForm(request.POST)
-        if form.is_valid():
             try:
-                package = form.save(commit=False)
-                print(request.POST.get("account_id"))
-                print(request.POST.get("carrier_id"))
-                print(request.POST.get("package_type_id"))
-                package.account_id = request.POST.get("account_id")
-                package.carrier_id = request.POST.get("carrier_id")
-                package.package_type_id = request.POST.get("package_type_id")
-                print(package)
-
                 package.save()
                 return JsonResponse({"success": True, "id": package.id})
             except Exception as e:
@@ -185,6 +152,51 @@ def create_package(request):
     else:
         form = PackageForm()
         return render(request, "packages/create.html", {"form": form})
+
+@require_http_methods(["POST"])
+def update_package(request, pk):
+    request_data = json.loads(request.body)
+    package = get_object_or_404(Package, pk=pk)
+
+    fields_to_update = {
+        "tracking_code": str,
+        "price": Decimal,
+        "comments": str,
+        "account_id": int,
+        "carrier_id": int,
+        "package_type_id": int
+    }
+
+    try:
+        updates = {}
+        for field, type_func in fields_to_update.items():
+            value = request_data.get(field)
+            if value:
+                if field in ["account_id", "carrier_id", "package_type_id"]:
+                    if field == "account_id":
+                        entity = get_or_create_account(value.strip(), request.user)
+                        setattr(package, "account", entity)
+                    elif field == "carrier_id":
+                        entity = get_or_create_carrier(value.strip())
+                        setattr(package, "carrier", entity)
+                    elif field == "package_type_id":
+                        entity = get_or_create_package_type(value.strip())
+                        setattr(package, "package_type", entity)
+                else:
+                    updates[field] = type_func(value.strip())
+            elif field == "comments":
+                updates[field] = ""
+
+        for field, value in updates.items():
+            if field not in ["account_id", "carrier_id", "package_type_id"]:
+                setattr(package, field, value)
+        
+        if updates:
+            package.save()
+        return JsonResponse({"success": True})
+
+    except (ValueError, Decimal.InvalidOperation, TypeError) as e:
+        return JsonResponse({"success": False, "errors": [f"Error updating {field}: {str(e)}"]})
 
 def search_check_out_packages(request):
     try:

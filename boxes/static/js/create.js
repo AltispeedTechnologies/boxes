@@ -9,9 +9,9 @@ function handle_create_package() {
     var account_id = $("#id_account_id").val();
     var package_type_id = $("#id_type_id").val();
     var comments = $("#id_comments").val();
-    var carrier = $("#id_carrier_id").find(":selected").text();
-    var account = $("#id_account_id").find(":selected").text();
-    var package_type = $("#id_type_id").find(":selected").text();
+    var carrier = $("#id_carrier_id").find(":selected").text().replace(" (Create new)", "");
+    var account = $("#id_account_id").find(":selected").text().replace(" (Create new)", "");
+    var package_type = $("#id_type_id").find(":selected").text().replace(" (Create new)", "");
 
     var form_data = {
         "tracking_code": tracking_code,

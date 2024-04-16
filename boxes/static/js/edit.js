@@ -101,11 +101,11 @@ $(document).ready(function() {
                             if (type === "price") {
                                 $(this).text("$" + post_data[type]);
                             } else if (type === "account") {
-                                $(this).text(account);
+                                $(this).text(account.replace(" (Create new)", ""));
                             } else if (type === "carrier") {
-                                $(this).text(carrier);
+                                $(this).text(carrier.replace(" (Create new)", ""));
                             } else if (type === "package_type") {
-                                $(this).text(package_type);
+                                $(this).text(package_type.replace(" (Create new)", ""));
                             } else {
                                 $(this).text(post_data[type]);
                             }

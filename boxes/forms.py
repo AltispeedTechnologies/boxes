@@ -50,7 +50,10 @@ class PackageForm(forms.ModelForm):
     comments = forms.CharField(widget=forms.Textarea(attrs={"rows": 2, "cols": 2}),
                                validators=[MaxLengthValidator(256)],
                                required=False)
+    account_id = forms.CharField()
+    carrier_id = forms.CharField()
+    package_type_id = forms.CharField()
 
     class Meta:
         model = Package
-        fields = ["tracking_code", "price", "comments"]
+        fields = ["tracking_code", "price", "account_id", "carrier_id", "package_type_id", "comments"]
