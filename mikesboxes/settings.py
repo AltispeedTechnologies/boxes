@@ -20,6 +20,10 @@ env = environ.Env(
     EMAIL_SUBJECT_PREFIX=(str,"[Django] "),
     SECURE_PROXY_SSL_HEADER=(str,None),
     LOGGING_FILE=(str,"/var/log/boxes.log"),
+    SESSION_COOKIE_SECURE=(bool,True),
+    CSRF_COOKIE_SECURE=(bool,True),
+    SECURE_HSTS_SECONDS=(int,60),
+    SECURE_SSL_REDIRECT=(bool,True),
 )
 
 # Set the project base directory
@@ -559,7 +563,7 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2
 # A string like "example.com", or None for standard domain cookie.
 SESSION_COOKIE_DOMAIN = None
 # Whether the session cookie should be secure (https:// only).
-SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE')
 # The path of the session cookie.
 SESSION_COOKIE_PATH = "/"
 # Whether to use the HttpOnly flag.
@@ -644,7 +648,7 @@ CSRF_COOKIE_NAME = "csrftoken"
 CSRF_COOKIE_AGE = 60 * 60 * 24 * 7 * 52
 CSRF_COOKIE_DOMAIN = None
 CSRF_COOKIE_PATH = "/"
-CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
 CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
@@ -754,8 +758,8 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 SECURE_HSTS_PRELOAD = False
-SECURE_HSTS_SECONDS = 0
+SECURE_HSTS_SECONDS = env('SECURE_HSTS_SECONDS')
 SECURE_REDIRECT_EXEMPT = []
 SECURE_REFERRER_POLICY = "same-origin"
 SECURE_SSL_HOST = None
-SECURE_SSL_REDIRECT = False
+SECURE_SSL_REDIRECT = env('SECURE_SSL_REDIRECT')
