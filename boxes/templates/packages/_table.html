@@ -32,7 +32,12 @@
                 </thead>
                 <tbody>
                     {% for package in page_obj %}
-                    <tr data-row-id="{{ package.id }}">
+                    <tr
+                        data-row-id="{{ package.id }}"
+                        {% if package.current_state != 1 %}
+                        class="table-light"
+                        {% endif %}
+                        >
                         {% if checkout or picklists %}
                         <td>
                             <input class="form-check-input package-checkbox"

@@ -28,6 +28,7 @@ def _get_packages(**kwargs):
         "account_id",
         "carrier_id",
         "package_type_id",
+        "current_state",
         "price",
         "carrier__name",
         "account__description",
@@ -37,7 +38,7 @@ def _get_packages(**kwargs):
         "check_in_time",
         "check_out_time"
     ).filter(**kwargs
-    ).order_by("-id")
+    ).order_by("current_state")
 
     paginator = Paginator(packages, PACKAGES_PER_PAGE)
 
@@ -51,9 +52,9 @@ def _search_packages_helper(request, **kwargs):
 
     if filters == "tracking_code":
         query = request.GET.get("q", "").strip()
-        packages = _get_packages(tracking_code__icontains=query, current_state=1, **kwargs)
+        packages = _get_packages(tracking_code__icontains=query, **kwargs)
     elif filters == "customer":
         account_id = request.GET.get("cid", "").strip()
-        packages = _get_packages(account__id=account_id, current_state=1, **kwargs)
+        packages = _get_packages(account__id=account_id, **kwargs)
     
     return packages
