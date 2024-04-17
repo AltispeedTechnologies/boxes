@@ -19,7 +19,8 @@ env = environ.Env(
     DEFAULT_FROM_EMAIL=(str,"webmaster@localhost"),
     EMAIL_SUBJECT_PREFIX=(str,"[Django] "),
     SECURE_PROXY_SSL_HEADER=(str,None),
-    LOGGING_FILE=(str,"/var/log/boxes.log"),
+    LOGGING_FILE=(str,"boxes.log"),
+    LOGGING_LEVEL=(str,"DEBUG"),
     SESSION_COOKIE_SECURE=(bool,True),
     CSRF_COOKIE_SECURE=(bool,True),
     SECURE_CONTENT_TYPE_NOSNIFF=(bool,True),
@@ -684,9 +685,6 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
         'file': {
            'class': 'logging.FileHandler',
            'filename': env('LOGGING_FILE'),
@@ -694,8 +692,8 @@ LOGGING = {
     },
     'loggers': {
         'django.db.backends': {
-            'level': 'DEBUG',  # Set the level as per your preference (DEBUG, INFO, etc.)
-            'handlers': ['console','file'],
+            'level': env('LOGGING_LEVEL'),  # Set the level as per your preference (DEBUG, INFO, etc.)
+            'handlers': ['file'],
         },
     },
 }
