@@ -686,8 +686,10 @@ LOGGING = {
     'disable_existing_loggers': False,
     'handlers': {
         'file': {
+           'level': env('LOGGING_LEVEL'),
            'class': 'logging.FileHandler',
            'filename': env('LOGGING_FILE'),
+           "formatter": "app",
         },
     },
     'loggers': {
