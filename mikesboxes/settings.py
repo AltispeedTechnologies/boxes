@@ -696,6 +696,15 @@ LOGGING = {
             'handlers': ['file'],
         },
     },
+    "formatters": {
+        "app": {
+            "format": (
+                u"%(asctime)s [%(levelname)-8s] "
+                "(%(module)s.%(funcName)s) %(message)s"
+            ),
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+        },
+    },
 }
 
 # Default exception reporter class used in case none has been
