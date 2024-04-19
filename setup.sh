@@ -17,7 +17,7 @@ function check () {
 }
 
 function collectstatic () {
-    python3 manage.py collectstatic
+    python3 manage.py collectstatic --no-input
 }
 
 if [ "$1" = "prod" ]
