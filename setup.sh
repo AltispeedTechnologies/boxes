@@ -20,6 +20,11 @@ function collectstatic () {
     python3 manage.py collectstatic --no-input
 }
 
+if [ "$2" != "" ]
+then
+  source $2/bin/activate
+fi
+
 if [ "$1" = "prod" ]
 then
   migrate
