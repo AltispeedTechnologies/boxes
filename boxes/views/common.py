@@ -1,6 +1,6 @@
 from boxes.models import *
 from django.core.paginator import Paginator
-from django.db.models import OuterRef, Subquery
+from django.db.models import Case, When, Value, IntegerField, OuterRef, Subquery
 
 PACKAGES_PER_PAGE = 10
 
@@ -21,7 +21,12 @@ def _get_packages(**kwargs):
         "account", "carrier", "packagetype", "packagepicklist"
     ).annotate(
         check_in_time=Subquery(check_in_subquery),
-        check_out_time=Subquery(check_out_subquery)
+        check_out_time=Subquery(check_out_subquery),
+        custom_order=Case(
+            When(current_state=1, then=Value(0)),
+            default=Value(1),
+            output_field=IntegerField()
+        )
     ).values(
         "id",
         "packagepicklist__picklist_id",
@@ -38,7 +43,7 @@ def _get_packages(**kwargs):
         "check_in_time",
         "check_out_time"
     ).filter(**kwargs
-    ).order_by("current_state")
+    ).order_by("custom_order", "current_state")
 
     paginator = Paginator(packages, PACKAGES_PER_PAGE)
 
