@@ -49,6 +49,11 @@ function handle_create_package() {
                 if (!acct_is_locked) {
                     $("#id_account_id").val(null).trigger("change");
                 }
+
+                $("#id_tracking_code").val("");
+                $("#id_price").val("6.00");
+                $("#id_type_id").val(null).trigger("change");
+                $("#id_inside").prop("checked", false);
             } else {
                 displayErrorMessage(response.errors);
             }
