@@ -53,7 +53,8 @@ class PackageForm(forms.ModelForm):
     account_id = forms.CharField()
     carrier_id = forms.CharField()
     package_type_id = forms.CharField()
+    inside = forms.BooleanField(required=False)
 
     class Meta:
         model = Package
-        fields = ["tracking_code", "price", "account_id", "carrier_id", "package_type_id", "comments"]
+        fields = ["tracking_code", "price", "account_id", "carrier_id", "package_type_id", "inside", "comments"]

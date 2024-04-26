@@ -8,6 +8,7 @@ function handle_create_package() {
     var carrier_id = $("#id_carrier_id").val();
     var account_id = $("#id_account_id").val();
     var package_type_id = $("#id_type_id").val();
+    var inside = $("#id_inside").prop("checked");
     var comments = $("#id_comments").val();
     var carrier = $("#id_carrier_id").find(":selected").text().replace(" (Create new)", "");
     var account = $("#id_account_id").find(":selected").text().replace(" (Create new)", "");
@@ -19,6 +20,7 @@ function handle_create_package() {
         "carrier_id": carrier_id,
         "account_id": account_id,
         "package_type_id": package_type_id,
+        "inside": inside,
         "comments": comments
     };
 

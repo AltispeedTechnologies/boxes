@@ -28,6 +28,15 @@
             <strong><label for="{{ form.package_type_id.id_for_label }}">Type:</label></strong>
             {% include "dropdowns/type.html" %}
         </div>
+        <div class="col-1">
+            <strong><label>Inside</label></strong>
+            <br />
+            <input class="form-check-input"
+                   id="id_inside"
+                   style="width: 1.5em; height: 1.5em;"
+                   type="checkbox"
+                   value="">
+        </div>
     </div>
     <div class="row my-2">
         <strong><label for="{{ form.comments.id_for_label }}">Comments:</label></strong>

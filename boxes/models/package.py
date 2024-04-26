@@ -16,6 +16,7 @@ class Package(models.Model):
     account = models.ForeignKey("Account", on_delete=models.RESTRICT)
     carrier = models.ForeignKey("Carrier", on_delete=models.RESTRICT)
     package_type = models.ForeignKey(PackageType, on_delete=models.RESTRICT)
+    inside = models.BooleanField(default=False)
     tracking_code = models.CharField(max_length=30, unique=True)
     current_state = models.PositiveSmallIntegerField(choices=PACKAGE_STATES, default=0)
     price = models.DecimalField(max_digits=8, decimal_places=2)

@@ -64,6 +64,11 @@
                         <td data-type="package_type" data-id="{{ package.package_type_id }}" class="mutableData">{{ package.package_type__description }}</td>
                         <td data-type="comments" class="mutableData">{{ package.comments }}</td>
                         <td>
+                            {% if package.current_state == 1 %}
+                            <button type="button" class="btn btn-success">
+                                <i class="fas fa-check-circle"></i>
+                            </button>
+                            {% endif %}
                             <button class="btn btn-warning" data-row-id="{{ package.id }}" data-bs-target="#print">
                                 <i class="fas fa-print"></i>
                             </button>
