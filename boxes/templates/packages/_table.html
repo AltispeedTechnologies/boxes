@@ -9,6 +9,7 @@
         {% include "modals/picklist.html" %}
     {% endif %}
     {% include "modals/edit.html" %}
+    {% include "modals/check_out.html" %}
 
     {% if page_obj %}
         {% include "_paginate.html" %}
@@ -65,7 +66,9 @@
                         <td data-type="comments" class="mutableData">{{ package.comments }}</td>
                         <td>
                             {% if package.current_state == 1 %}
-                            <button type="button" class="btn btn-success">
+                            <button type="button" class="btn btn-success"
+                                    data-bs-toggle="modal" data-bs-target="#checkOutModal"
+                                    data-row-id="{{ package.id }}">
                                 <i class="fas fa-check-circle"></i>
                             </button>
                             {% endif %}
