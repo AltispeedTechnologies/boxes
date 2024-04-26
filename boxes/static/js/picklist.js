@@ -10,6 +10,8 @@ $(document).ready(function() {
         $("#picklist-select").select2({
             data: picklist_data
         });
+
+        $("#picklist-select").data("select2").$container.addClass("my-2 float-end");
     }
 
     // Directly attaching the event listener to ensure it's registered immediately

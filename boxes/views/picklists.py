@@ -30,12 +30,21 @@ def search_picklist_packages(request):
     query = request.GET.get("q", "")
     filter_info = request.GET.get("filter", "")
 
+    account = None
+    if request.GET.get("filter", "").strip() == "customer":
+        account_id_raw = request.GET.get("cid", "").strip()
+        account_id = re.sub(r'\D', '', account_id_raw)
+        
+        if account_id:
+            account = Account.objects.get(id=account_id)
+
     return render(request, "packages/search_picklists.html", {"picklists": True,
                                                               "picklist_data": _picklist_data(),
                                                               "page_obj": page_obj,
                                                               "selected": selected,
                                                               "query": query,
-                                                              "filter": filter_info})
+                                                              "filter": filter_info,
+                                                              "account": account})
 
 @require_POST
 def add_package_picklist(request):

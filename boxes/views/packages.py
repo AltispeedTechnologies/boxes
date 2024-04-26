@@ -35,15 +35,7 @@ def get_or_create_package_type(package_type_id):
     return PackageType.objects.get(id=package_type_id)
 
 def all_packages(request):
-    # Only get checked in packages
-    packages = _get_packages()
-
-    # Paginate
-    page_number = request.GET.get("page")
-    page_obj = packages.get_page(page_number)
-
-    return render(request, "packages/index.html", {"search_url": reverse("search_packages"),
-                                                   "page_obj": page_obj})
+    return render(request, "packages/index.html", {"search_url": reverse("search_packages")})
 
 def package_detail(request, pk):
     package_values = Package.objects.select_related("account", "carrier", "packagetype").values(
