@@ -1,6 +1,9 @@
 $(document).ready(function() {
-    var selected_packages = selected_packages || new Set();
-    if (selected_packages.size > 0) { update_pagination_links(); }
+    if (typeof selected_packages === "undefined") {
+        var selected_packages = new Set();
+    } else if (selected_packages.size > 0) {
+        update_pagination_links();
+    }
 
     let last_checked = null;
     var row_id;
@@ -61,6 +64,9 @@ $(document).ready(function() {
         } else {
             selected_packages.delete(package_id);
         }
+
+        // If there are no packages selected, disable picklistbtn
+        $("#picklistbtn").prop("disabled", (selected_packages.size == 0));
 
         update_pagination_links();
     }

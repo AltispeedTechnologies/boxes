@@ -18,9 +18,6 @@
             {% if checkout %}
             <button id="checkoutbtn" class="btn btn-primary">Check Out Packages</button>
             {% endif %}
-            {% if picklists %}
-            <button id="picklistbtn" class="btn btn-primary">Add to Picklist</button>
-            {% endif %}
         </div>
         <hr />
         <div class="my-2">
@@ -33,6 +30,7 @@
         <br />
         <select class="w-100" id="picklist-select"></select>
         <button class="float-end mt-2 btn btn-primary" id="picklistview">View</button>
+        <button class="mt-2 btn btn-primary" disabled id="picklistbtn">Add selected items to picklist</button>
     </div>
     {% endif %}
 </div>
