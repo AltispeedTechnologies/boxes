@@ -69,6 +69,7 @@ $(document).ready(function() {
         var tracking_code = $("#editModal").find("#tracking_code").val();
         var price = $("#editModal").find("#price").val();
         var comments = $("#editModal").find("#comments").val();
+        var inside = $("#id_inside").prop("checked");
         var account_id = $("#id_account_id").val();
         var account = $("#id_account_id option:selected").text();
         var carrier_id = $("#id_carrier_id").val();
@@ -83,7 +84,8 @@ $(document).ready(function() {
             comments: comments,
             account_id: account_id,
             carrier_id: carrier_id,
-            package_type_id: package_type_id
+            package_type_id: package_type_id,
+            inside: inside
         };
 
         $.ajax({
