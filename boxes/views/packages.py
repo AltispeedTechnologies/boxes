@@ -237,6 +237,9 @@ def search_packages(request):
     page_number = request.GET.get("page")
     page_obj = packages.get_page(page_number)
 
+    selected_ids = request.GET.get("selected_ids", "")
+    selected = selected_ids.split(",") if selected_ids else []
+
     # Enable a card with the user information if the filter is customer
     account = None
     if request.GET.get("filter", "").strip() == "customer":
@@ -249,5 +252,6 @@ def search_packages(request):
     return render(request, "packages/search.html", {"page_obj": page_obj,
                                                     "query": request.GET.get("q", ""),
                                                     "filter": request.GET.get("filter", ""),
-                                                    "account": account})
+                                                    "account": account,
+                                                    "selected": selected})
 

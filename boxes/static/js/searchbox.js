@@ -50,10 +50,4 @@ $(document).ready(function() {
         var filter = $(this).val();
         change_selected_filter(filter);
     });
-
-    $("[data-bs-target=\"#bulkPrint\"]").on("click", function() {
-        console.log(selected_ids);
-        //row_id = $(this).data("row-id");
-        //window.open("/packages/label?ids=" + row_id);
-    });
 });

@@ -1,0 +1,21 @@
+{% block content %}
+{% load static %}
+<script src="{% static 'js/bulk_actions.js' %}"></script>
+<div class="col">
+    <div class="row float-end">
+        <h4>Bulk Actions</h4>
+    </div>
+
+    <br /><br />
+    <div class="row float-end">
+        <div class="col">
+            <button class="btn btn-lg btn-warning"
+                    id="bulkprintbtn"
+                    data-bs-target="#bulkPrint"
+                    disabled>
+                <i class="fas fa-print"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock content %}

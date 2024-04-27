@@ -1,18 +1,4 @@
 {% block content %}
-    {% if checkout %}
-        {% load static %}
-        <script src="{% static 'js/table_select.js' %}"></script>
-        <script src="{% static 'js/checkout.js' %}"></script>
-    {% endif %}
-    {% if picklists %}
-        {% load static %}
-        <script src="{% static 'js/table_select.js' %}"></script>
-        <script src="{% static 'js/picklist.js' %}"></script>
-        {% include "modals/picklist.html" %}
-    {% endif %}
-    {% include "modals/edit.html" %}
-    {% include "modals/check_out.html" %}
-
     {% if page_obj %}
         {% include "_paginate.html" %}
 
@@ -20,9 +6,7 @@
             <table class="table table-bordered" style="user-select: none">
                 <thead class="thead-dark align-top">
                     <tr>
-                        {% if checkout or picklists %}
                         <th></th>
-                        {% endif %}
                         <th>Check In Time</br>Check Out Time</th>
                         <th>Account</th>
                         <th>Tracking Code</th>
@@ -41,7 +25,6 @@
                         class="table-light"
                         {% endif %}
                         >
-                        {% if checkout or picklists %}
                         <td>
                             <input class="form-check-input package-checkbox"
                                    type="checkbox"
@@ -51,7 +34,6 @@
                                        checked
                                    {% endif %}>
                         </td>
-                        {% endif %}
                         <td>
                             <p class="timestamp mb-0" data-timestamp="{{ package.check_in_time.isoformat|default_if_none:"" }}">
                                 {{ package.check_in_time|default_if_none:"" }}
@@ -104,14 +86,26 @@
         <p class="mt-3">No packages found.</p>
     {% endif %}
 
-<script>
-    window.selected_packages = new Set({{ selected|safe }});
-    let account_id = "{{ account.id }}";
-    let account_description = "{{ account.description }}";
-    let filter = "{{ filter }}";
-
-    {% if picklist_data %}
-    let picklist_data = {{ picklist_data|safe }};
+    {% load static %}
+    {% if checkout %}
+        <script src="{% static 'js/checkout.js' %}"></script>
     {% endif %}
-</script>
+    {% if picklists %}
+        <script src="{% static 'js/picklist.js' %}"></script>
+        {% include "modals/picklist.html" %}
+    {% endif %}
+    <script src="{% static 'js/table_select.js' %}"></script>
+    {% include "modals/edit.html" %}
+    {% include "modals/check_out.html" %}
+
+    <script>
+        window.selected_packages = new Set({{ selected|safe }});
+        let account_id = "{{ account.id }}";
+        let account_description = "{{ account.description }}";
+        let filter = "{{ filter }}";
+
+        {% if picklist_data %}
+        let picklist_data = {{ picklist_data|safe }};
+        {% endif %}
+    </script>
 {% endblock %}

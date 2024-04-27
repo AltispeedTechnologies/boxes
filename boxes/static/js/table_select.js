@@ -10,6 +10,8 @@ function update_pagination_links() {
         url.searchParams.set("selected_ids", selected_ids_str);
         link.href = url.toString();
     });
+
+    $(document).trigger("selectedPackagesUpdated");
 }
 
 function handle_shift_select(current, last) {
@@ -28,18 +30,11 @@ function update_package_selection(is_checked, package_id) {
         window.selected_packages.delete(package_id);
     }
 
-    // If there are no packages selected, disable picklistbtn
-    $(document).trigger("selectedPackagesUpdated");
-
     update_pagination_links();
-    console.log(window.selected_packages);
 }
 
 $(document).ready(function() {
-    if (window.selected_packages.size > 0) {
-        update_pagination_links();
-        $(document).trigger("selectedPackagesUpdated");
-    }
+    if (window.selected_packages.size > 0) { update_pagination_links(); }
 
     $(document).on("click", ".package-checkbox", function(e) {
         let package_id = this.id.split("-")[1];
