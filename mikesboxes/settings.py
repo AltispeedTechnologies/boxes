@@ -121,25 +121,15 @@ SERVER_EMAIL = env('SERVER_EMAIL')
 
 # Database connection info. If left empty, will default to the dummy backend.
 DATABASES = {
-    "default": env.db()
+    "default": {
+        "ENGINE": env("DB_ENGINE"),
+        "NAME": env("DB_NAME"),
+        "USER": env("DB_USER"),
+        "PASSWORD": env("DB_PASSWORD"),
+        "HOST": env("DB_HOST"),
+        "PORT": env("DB_PORT"),
+    }
 }
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": "boxes",
-#         "USER": "boxes_user",
-#         "PASSWORD": "changem3",
-#         "HOST": "localhost",
-#         "PORT": "5432",
-#     }
-# }
 
 # Classes used to implement DB routing behavior.
 DATABASE_ROUTERS = []
