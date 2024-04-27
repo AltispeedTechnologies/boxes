@@ -24,15 +24,24 @@
             <button class="btn btn-primary">Show All Packages</button>
         </div>
     </form>
-    {% if picklists %}
     <div class="position-absolute end-0 w-25">
-        <h4 class="float-end">Select Picklist</h4>
-        <br />
-        <select class="w-100" id="picklist-select"></select>
-        <button class="float-end mt-2 btn btn-primary" id="picklistview">View</button>
-        <button class="mt-2 btn btn-primary" disabled id="picklistbtn">Add selected items to picklist</button>
+        {% if picklists %}
+            <h4 class="float-end">Select Picklist</h4>
+            <br />
+            <select class="w-100" id="picklist-select"></select>
+            <button class="float-end mt-2 btn btn-primary" id="picklistview">View</button>
+            <button class="mt-2 btn btn-primary" disabled id="picklistbtn">Add selected items to picklist</button>
+        {% elif page_obj %}
+            <h4 class="float-end">Bulk Actions</h4>
+            <br />
+            <br />
+            <div class="float-end">
+                <button class="btn btn-warning" data-bs-target="#bulkPrint">
+                    <i class="fas fa-print"></i>
+                </button>
+            </div>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
 {% load static %}
 <script src="{% static 'js/searchbox.js' %}"></script>
