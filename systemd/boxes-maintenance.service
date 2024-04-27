@@ -1,0 +1,14 @@
+[Unit]
+Description=Mike's Boxes Maintenance
+After=postgresql@14-main.service
+Before=gunicorn.service nginx.service
+
+[Service]
+WorkingDirectory=/var/www/mikes-boxes
+ExecStart=/var/www/mikes-boxes/manage.py age
+User=localadmin
+Group=localadmin
+Restart=no
+
+[Install]
+WantedBy=multi-user.target

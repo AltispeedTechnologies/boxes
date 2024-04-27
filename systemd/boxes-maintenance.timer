@@ -1,0 +1,10 @@
+[Unit]
+Description=Mike's Boxes Maintenance Timer
+
+[Timer]
+OnCalendar=*-*-* *:00/30:00
+Unit=boxes-maintenance.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,18 @@
+[Unit]
+Description=gunicorn daemon
+After=network.target postgresql@14-main.service
+Before=nginx.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/home/localadmin/mikes-boxes
+ExecStartPre=/usr/bin/mkdir -p /run/mikesboxes
+ExecStartPre=/usr/bin/chown www-data:www-data /run/mikesboxes
+RuntimeDirectory=mikesboxes
+RuntimeDirectoryMode=0755
+ExecStart=/usr/bin/gunicorn --reload --access-logfile - --workers 6 --bind unix:/run/mikesboxes/mikesboxes.sock mikesboxes.wsgi:application
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
