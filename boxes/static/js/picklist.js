@@ -1,8 +1,7 @@
 $(document).ready(function() {
-    if (typeof selected_packages === "undefined") {
-        var selected_packages = new Set();
-    } else if (selected_packages.size > 0) {
+    if (selected_packages.size > 0) {
         update_pagination_links();
+        $("#picklistbtn").prop("disabled", false);
     }
 
     let last_checked = null;
