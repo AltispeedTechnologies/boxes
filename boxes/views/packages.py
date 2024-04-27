@@ -205,10 +205,19 @@ def search_check_out_packages(request):
     query = request.GET.get("q", "")
     filter_info = request.GET.get("filter", "")
 
+    account = None
+    if request.GET.get("filter", "").strip() == "customer":
+        account_id_raw = request.GET.get("cid", "").strip()
+        account_id = re.sub(r'\D', '', account_id_raw)
+
+        if account_id:
+            account = Account.objects.get(id=account_id)
+
     return render(request, "packages/search_checkout.html", {"checkout": True,
                                                              "page_obj": page_obj,
                                                              "selected": selected,
                                                              "query": query,
+                                                             "account": account,
                                                              "filter": filter_info})
 
 @require_http_methods(["GET"])
@@ -233,7 +242,7 @@ def search_packages(request):
     if request.GET.get("filter", "").strip() == "customer":
         account_id_raw = request.GET.get("cid", "").strip()
         account_id = re.sub(r'\D', '', account_id_raw)
-        
+
         if account_id:
             account = Account.objects.get(id=account_id)
 
