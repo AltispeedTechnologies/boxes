@@ -101,4 +101,15 @@
     {% elif query %}
         <p class="mt-3">No packages found.</p>
     {% endif %}
+
+<script>
+    let selected_packages = new Set({{ selected|safe }});
+    let account_id = "{{ account.id }}";
+    let account_description = "{{ account.description }}";
+    let filter = "{{ filter }}";
+
+    {% if picklist_data %}
+    let picklist_data = {{ picklist_data|safe }};
+    {% endif %}
+</script>
 {% endblock %}

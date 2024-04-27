@@ -35,15 +35,5 @@
     {% endif %}
 </div>
 {% load static %}
-<script>
-    let selected_packages = new Set({{ selected|safe }});
-    let account_id = "{{ account.id }}";
-    let account_description = "{{ account.description }}";
-    let filter = "{{ filter }}";
-
-    {% if picklist_data %}
-    let picklist_data = {{ picklist_data|safe }};
-    {% endif %}
-</script>
 <script src="{% static 'js/searchbox.js' %}"></script>
 {% endblock content %}
