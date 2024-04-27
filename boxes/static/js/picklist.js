@@ -6,7 +6,7 @@ $(document).ready(function() {
     var row_id;
     let csrfToken = window.get_cookie("csrftoken");
 
-    if (picklist_data) {
+    if (typeof picklist_data !== "undefined") {
         $("#picklist-select").select2({
             data: picklist_data
         });

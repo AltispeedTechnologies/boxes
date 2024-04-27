@@ -82,17 +82,15 @@
                                     data-bs-target="#editModal" data-row-id="{{ package.id }}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            {% if picklists %}
+                            {% if picklists and picklist_title %}
                                 <button type="button" class="btn btn-success" data-bs-toggle="modal" 
                                         data-bs-target="#moveModal" data-row-id="{{ package.id }}">
                                     <i class="fas fa-arrows-alt"></i>
                                 </button>
-                                {% if picklist_title %}
-                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" 
-                                            data-bs-target="#removeModal" data-row-id="{{ package.id }}">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                {% endif %}
+                                <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                        data-bs-target="#removeModal" data-row-id="{{ package.id }}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
                             {% endif %}
                         </td>
                     </tr>
