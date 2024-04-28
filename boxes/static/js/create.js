@@ -7,12 +7,12 @@ function handle_create_package() {
     var price = $("#id_price").val();
     var carrier_id = $("#id_carrier_id").val();
     var account_id = $("#id_account_id").val();
-    var package_type_id = $("#id_type_id").val();
+    var package_type_id = $("#id_package_type_id").val();
     var inside = $("#id_inside").prop("checked");
     var comments = $("#id_comments").val();
     var carrier = $("#id_carrier_id").find(":selected").text().replace(" (Create new)", "");
     var account = $("#id_account_id").find(":selected").text().replace(" (Create new)", "");
-    var package_type = $("#id_type_id").find(":selected").text().replace(" (Create new)", "");
+    var package_type = $("#id_package_type_id").find(":selected").text().replace(" (Create new)", "");
 
     var form_data = {
         "tracking_code": tracking_code,
@@ -32,6 +32,8 @@ function handle_create_package() {
         },
         data: form_data,
         success: function(response) {
+            $(".is-invalid").removeClass("is-invalid");
+
             if (response.success) {
                 packages.add(response.id);
                 window.display_error_message();
@@ -52,10 +54,17 @@ function handle_create_package() {
 
                 $("#id_tracking_code").val("");
                 $("#id_price").val("6.00");
-                $("#id_type_id").val(null).trigger("change");
+                $("#id_package_type_id").val(null).trigger("change");
                 $("#id_inside").prop("checked", false);
-            } else {
+            } else if (response.errors) {
                 window.display_error_message(response.errors);
+            } else if (response.form_errors) {
+                $.each(response.form_errors, function(field, errors) {
+                    if (errors.length > 0) {
+                        $("#id_" + field).addClass("is-invalid");
+                        $("#id_" + field).next(".invalid-feedback").text(errors[0]).show();
+                    }
+                });
             }
         },
         error: function(xhr, status, error) {

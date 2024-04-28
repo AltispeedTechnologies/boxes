@@ -124,6 +124,7 @@ def check_out_packages(request):
 
 def create_package(request):
     if request.method == "POST":
+        print(request.POST)
         form = PackageForm(request.POST)
         if form.is_valid():
             package = form.save(commit=False)
@@ -139,8 +140,7 @@ def create_package(request):
             except Exception as e:
                 return JsonResponse({"success": False, "errors": str(e)})
         else:
-            errors = dict(form.errors.items()) if form.errors else {}
-            return JsonResponse({"success": False, "errors": errors})
+            return JsonResponse({"success": False, "form_errors": form.errors})
     else:
         form = PackageForm()
         return render(request, "packages/create.html", {"form": form})

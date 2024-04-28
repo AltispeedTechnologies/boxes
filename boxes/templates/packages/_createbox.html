@@ -4,21 +4,25 @@
         <div class="col">
             <strong><label for="{{ form.tracking_code.id_for_label }}">Tracking code:</label></strong>
             {{ form.tracking_code }}
+            <div class="invalid-feedback"></div>
         </div>
         <div class="col">
             <strong><label for="{{ form.price.id_for_label }}">Price (USD):</label></strong>
             {{ form.price }}
+            <div class="invalid-feedback"></div>
         </div>
     </div>
     <div class="row my-2">
         <div class="col">
             <strong><label for="{{ form.carrier_id.id_for_label }}">Carrier:</label></strong>
             {% include "dropdowns/carrier.html" %}
+            <div class="invalid-feedback"></div>
         </div>
         <div class="col">
             <strong><label for="id_account_id">Customer:</label></strong>
-            <div class="d-flex align-items-center">
-                {% include "dropdowns/account.html" %}
+            <div class="d-flex align-items-center position-relative">
+                <select name="account_id" class="form-control select2 mr-2" id="id_account_id"></select>
+                <div class="invalid-feedback" style="position: absolute; left: 0; bottom: -25px; width: 100%;"></div>
                 <button id="toggle_lock_btn" class="btn btn-sm btn-primary">
                     <i id="lock_icon" class="fas fa-lock"></i>
                 </button>
@@ -27,6 +31,7 @@
         <div class="col">
             <strong><label for="{{ form.package_type_id.id_for_label }}">Type:</label></strong>
             {% include "dropdowns/type.html" %}
+            <div class="invalid-feedback"></div>
         </div>
         <div class="col-1">
             <strong><label>Inside</label></strong>
@@ -36,12 +41,14 @@
                    style="width: 1.5em; height: 1.5em;"
                    type="checkbox"
                    value="">
+            <div class="invalid-feedback"></div>
         </div>
     </div>
     <div class="row my-2">
         <strong><label for="{{ form.comments.id_for_label }}">Comments:</label></strong>
         <br />
         {{ form.comments }}
+        <div class="invalid-feedback"></div>
     </div>
     <div class="row">
         <div class="col">

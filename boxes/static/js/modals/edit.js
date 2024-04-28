@@ -55,8 +55,8 @@ $(document).ready(function() {
 
         /// type
         var type_option = new Option(package_data.package_type, package_data.package_type_id, true, true);
-        $("#id_type_id").append(type_option).trigger("change");
-        $("#id_type_id").trigger({
+        $("#id_package_type_id").append(type_option).trigger("change");
+        $("#id_package_type_id").trigger({
             type: "select2:select",
             params: {
                 data: { id: package_data.package_type_id, text: package_data.package_type }
@@ -76,8 +76,8 @@ $(document).ready(function() {
         var account = $("#id_account_id option:selected").text();
         var carrier_id = $("#editModal").find("#id_carrier_id").val();
         var carrier = $("#editModal").find("#id_carrier_id option:selected").text();
-        var package_type_id = $("#id_type_id").val();
-        var package_type = $("#id_type_id option:selected").text();
+        var package_type_id = $("#id_package_type_id").val();
+        var package_type = $("#id_package_type_id option:selected").text();
 
         // Prepare data for POST request
         var post_data = {
