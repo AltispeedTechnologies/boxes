@@ -106,6 +106,7 @@ $(document).ready(function() {
                     window.display_error_message();
                     window.open("/packages/label?ids=".concat(packages_array.toString()), "_blank");
                     document.querySelectorAll("tbody tr:not(.visually-hidden)").forEach(row => row.remove());
+                    packages = new Set();
                 } else {
                     window.display_error_message(response.errors);
                 }
