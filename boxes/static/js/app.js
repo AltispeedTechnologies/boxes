@@ -86,6 +86,8 @@ window.initialize_async_select2 = function(field_name, search_url, dropdown_pare
     } else {
         $("#id_" + field_name + "_id").select2(select2_options);
     }
+
+    window.select2properheight("#id_" + field_name + "_id");
 }
 
 $("[data-bs-target=\"#print\"]").on("click", function() {
