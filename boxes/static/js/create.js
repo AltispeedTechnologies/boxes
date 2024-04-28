@@ -76,7 +76,7 @@ function handle_create_package() {
 $(document).ready(function() {
     window.initialize_async_select2("account", "/accounts/search/");
     window.initialize_async_select2("carrier", "/carriers/search/");
-    window.initialize_async_select2("type", "/types/search/");
+    window.initialize_async_select2("package_type", "/types/search/");
 
     $("#toggle_lock_btn").click(function() {
         acct_is_locked = !acct_is_locked;

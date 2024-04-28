@@ -49,7 +49,7 @@ window.initialize_async_select2 = function(field_name, search_url, dropdown_pare
             },
             cache: true
         },
-        placeholder: "Search for " + field_name,
+        placeholder: "Search for " + field_name.replace("_", " "),
         minimumInputLength: 1,
         width: "100%",
         tags: true,
@@ -82,9 +82,10 @@ window.initialize_async_select2 = function(field_name, search_url, dropdown_pare
     // Add the dropdownParent option only if dropdown_parent_selector is provided
     if (dropdown_parent_selector) {
         select2_options.dropdownParent = $(dropdown_parent_selector);
+        $(dropdown_parent_selector).find("#id_" + field_name + "_id").select2(select2_options);
+    } else {
+        $("#id_" + field_name + "_id").select2(select2_options);
     }
-
-    $(dropdown_parent_selector).find("#id_" + field_name + "_id").select2(select2_options);
 }
 
 $("[data-bs-target=\"#print\"]").on("click", function() {
