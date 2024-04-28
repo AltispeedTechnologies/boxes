@@ -91,3 +91,23 @@ $("[data-bs-target=\"#print\"]").on("click", function() {
     row_id = $(this).data("row-id");
     window.open("/packages/label?ids=" + row_id);
 });
+
+window.select2properheight = function(select2_name) {
+    var $select2container = $(select2_name).next(".select2-container");
+    var $selection = $select2container.find(".select2-selection--single");
+
+    $selection.css({
+        "height": "38px",
+        "padding": "0"
+    });
+
+    $selection.find(".select2-selection__rendered").css({
+        "line-height": "38px"
+    });
+
+    $selection.find(".select2-selection__arrow").css({
+        "height": "38px",
+        "top": "50%",
+        "transform": "translateY(-50%)"
+    });
+}

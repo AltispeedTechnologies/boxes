@@ -1,11 +1,11 @@
 {% block content %}
 <div class="container input-group">
-    <form id="search_form" action="{{ search_url }}" method="get">
+    <form id="search_form w-25" action="{{ search_url }}" method="get">
         <div id="search_input_container" class="input-group-append">
             <input name="q" type="text" class="form-control" placeholder="Search..." value="{{ query }}">
         </div>
         <div id="customer_select_container" class="input-group-append d-none">
-            <select name="cid" id="customer_select" class="form-control"></select>
+            <select name="cid" id="customer_select" class="form-control w-100"></select>
         </div>
         <div id="filter_select_container" class="input-group-append">
             <select name="filter" id="filter_select" class="form-control">

@@ -39,7 +39,9 @@ $(document).ready(function() {
         },
         placeholder: "Search for an account",
         minimumInputLength: 1,
+        width: "240px",
     });
+    window.select2properheight("#customer_select");
 
     if (account_id && account_description) {
         var new_option = new Option(account_description, account_id, true, true);
