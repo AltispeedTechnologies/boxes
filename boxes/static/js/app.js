@@ -111,3 +111,31 @@ window.select2properheight = function(select2_name) {
         "transform": "translateY(-50%)"
     });
 }
+
+window.display_error_message = function(errors) {
+    var messages_div = $(".messages");
+
+    // Clear all existing messages if errors are not provided
+    if (!errors) {
+        messages_div.empty();
+        return;
+    }
+
+    var error_message = "";
+
+    // Loop through the errors object and concatenate error messages
+    Object.keys(errors).forEach(function(key) {
+        error_message += errors[key][0] + " "; // Append the first error message for each key
+    });
+
+    // Create and append alert div with the concatenated error message
+    var alert_div = $("<div></div>").addClass("alert alert-danger").text(error_message.trim());
+    
+    // Clear all existing messages before appending the new error message
+    messages_div.empty();
+
+    // Append alert_div only if error_message is not empty
+    if (error_message.trim() !== "") {
+        messages_div.append(alert_div);
+    }
+}

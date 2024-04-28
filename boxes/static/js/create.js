@@ -34,7 +34,7 @@ function handle_create_package() {
         success: function(response) {
             if (response.success) {
                 packages.add(response.id);
-                displayErrorMessage();
+                window.display_error_message();
 
                 var new_row = document.querySelector(".visually-hidden").cloneNode(true);
                 new_row.classList.remove("visually-hidden");
@@ -55,11 +55,11 @@ function handle_create_package() {
                 $("#id_type_id").val(null).trigger("change");
                 $("#id_inside").prop("checked", false);
             } else {
-                displayErrorMessage(response.errors);
+                window.display_error_message(response.errors);
             }
         },
         error: function(xhr, status, error) {
-            displayErrorMessage(xhr.responseJSON.errors);
+            window.display_error_message(xhr.responseJSON.errors);
         }
     });
 }
@@ -94,10 +94,11 @@ $(document).ready(function() {
             data: packages_payload,
             success: function(response) {
                 if (response.success) {
+                    window.display_error_message();
                     window.open("/packages/label?ids=".concat(packages_array.toString()), "_blank");
                     document.querySelectorAll("tbody tr:not(.visually-hidden)").forEach(row => row.remove());
                 } else {
-                    console.log("Not successful");
+                    window.display_error_message(response.errors);
                 }
             },
             error: function(xhr, status, error) {
@@ -119,30 +120,3 @@ $(document).ready(function() {
     });
 });
 
-function displayErrorMessage(errors) {
-    var messages_div = $(".messages");
-
-    // Clear all existing messages if errors are not provided
-    if (!errors) {
-        messages_div.empty();
-        return;
-    }
-
-    var error_message = "";
-
-    // Loop through the errors object and concatenate error messages
-    Object.keys(errors).forEach(function(key) {
-        error_message += errors[key][0] + " "; // Append the first error message for each key
-    });
-
-    // Create and append alert div with the concatenated error message
-    var alert_div = $("<div></div>").addClass("alert alert-danger").text(error_message.trim());
-    
-    // Clear all existing messages before appending the new error message
-    messages_div.empty();
-
-    // Append alert_div only if error_message is not empty
-    if(error_message.trim() !== "") {
-        messages_div.append(alert_div);
-    }
-}

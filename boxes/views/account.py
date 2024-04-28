@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
 from boxes.models import Account, AccountLedger
+from .common import _get_matching_users
 
 @require_http_methods(["GET"])
 def account_search(request):
@@ -11,6 +12,11 @@ def account_search(request):
     accounts = Account.objects.filter(description__icontains=search_query)[:10]
     results = [{"id": account.id, "text": account.description} for account in accounts]
     return JsonResponse({"results": results})
+
+@require_http_methods(["GET"])
+def account_edit(request, pk):
+    user, account = _get_matching_users(pk)
+    return render(request, "accounts/edit.html", {"custom_user": user, "account": account})
 
 @require_http_methods(["GET"])
 def account_detail(request, pk):

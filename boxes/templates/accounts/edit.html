@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+{% load static %}
+<script src="{% static 'js/user_edit.js' %}"></script>
+
+{% include "_messages.html" %}
+
+{% include "accounts/_accountbox.html" %}
+
+<h4>Edit Details</h4>
+
+<div class="container">
+    <form id="userform" data-user-id="{{ custom_user.id }}">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="prefix" class="form-label">Prefix</label>
+                <input type="text" class="form-control" id="prefix" name="prefix" value="{{ custom_user.prefix }}">
+                <div class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="first_name" class="form-label">First Name</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ custom_user.first_name }}">
+                <div class="invalid-feedback"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="middle_name" class="form-label">Middle Name</label>
+                <input type="text" class="form-control" id="middle_name" name="middle_name" value="{{ custom_user.middle_name }}">
+                <div class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="last_name" class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ custom_user.last_name }}">
+                <div class="invalid-feedback"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="suffix" class="form-label">Suffix</label>
+                <input type="text" class="form-control" id="suffix" name="suffix" value="{{ custom_user.suffix }}">
+                <div class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="company" class="form-label">Company</label>
+                <input type="text" class="form-control" id="company" name="company" value="{{ custom_user.company }}">
+                <div class="invalid-feedback"></div>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="comments" class="form-label">Comments</label>
+            <textarea class="form-control" id="comments" name="comments" rows="3">{{ custom_user.comments }}</textarea>
+            <div class="invalid-feedback"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+</div>
+
+{% endblock %}

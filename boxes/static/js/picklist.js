@@ -40,7 +40,7 @@ $(document).ready(function() {
                 if (response.success) {
                     window.location.href = response.redirect_url;
                 } else {
-                    console.error("Addition to picklist failed:", response.errors.join("; "));
+                    window.display_error_message(response.errors);
                 }
             },
             error: function(xhr, status, error) {
@@ -75,6 +75,7 @@ $(document).ready(function() {
                     window.location.reload();
                 } else {
                     console.error("Move to picklist failed:", response.errors.join("; "));
+                    window.display_error_message(response.errors);
                 }
             },
             error: function(xhr, status, error) {
@@ -106,7 +107,7 @@ $(document).ready(function() {
                 if (response.success) {
                     window.location.reload();
                 } else {
-                    console.error("Removal from picklist failed:", response.errors.join("; "));
+                    window.display_error_message(response.errors);
                 }
             },
             error: function(xhr, status, error) {

@@ -16,6 +16,7 @@ urlpatterns = [
 
     # Accounts
     path("accounts/<int:pk>", is_staff(account_detail), name="account_detail"),
+    path("accounts/<int:pk>/edit", is_staff(account_edit), name="account_edit"),
     path("accounts/<int:pk>/update", is_staff(update_account), name="update_account"),
     path("accounts/search/", is_staff(account_search), name="account_search"),
 
@@ -50,4 +51,7 @@ urlpatterns = [
 
     # Label printing
     path("packages/label", is_staff(generate_label), name="generate_label"),
+
+    # Users
+    path("users/update", is_staff(update_user), name="update_user"),
 ]

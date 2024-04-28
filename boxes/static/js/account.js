@@ -29,7 +29,7 @@ $(document).ready(function() {
                     $("#descedit").addClass("d-none");
                     $("#descdisplay").removeClass("d-none");
                 } else {
-                    console.log(response.errors);
+                    window.display_error_message(response.errors);
                 }
             },
             error: function(xhr, status, error) {

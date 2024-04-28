@@ -14,8 +14,9 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     window.location.href = response.redirect_url;
+                    window.display_error_message();
                 } else {
-                    console.error("Checkout failed:", response.errors.join("; "));
+                    window.display_error_message(response.errors);
                 }
             },
             error: function(xhr, status, error) {

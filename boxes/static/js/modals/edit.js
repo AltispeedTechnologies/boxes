@@ -117,8 +117,9 @@ $(document).ready(function() {
                     });
 
                     $("#editModal").modal("hide");
+                    window.display_error_message();
                 } else {
-                    console.error("Update failed:", response.errors ? response.errors.join("; ") : "Unknown error");
+                    window.display_error_message(response.errors);
                 }
             },
             error: function(xhr, status, error) {

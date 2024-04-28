@@ -44,9 +44,10 @@ $(document).ready(function() {
                         });
                     });
 
+                    window.display_error_message();
                     $("#bulkEditModal").modal("hide");
                 } else {
-                    console.error("Update failed:", response.errors ? response.errors.join("; ") : "Unknown error");
+                    window.display_error_message(response.errors);
                 }
             },
             error: function(xhr, status, error) {
