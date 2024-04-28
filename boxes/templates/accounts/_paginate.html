@@ -1,0 +1,42 @@
+{% block content %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
+
+        <!-- Display the very first page -->
+        <li class="page-item {% if page_obj.number == 1 %}active{% endif %}"><a class="page-link" href="?page=1">1</a></li>
+
+        <!-- Ellipsis for jumping back -->
+        {% if page_obj.number > 5 %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.number|add:'-5' }}">...</a></li>
+        {% endif %}
+
+        <!-- Display pages around current page (e.g., 5 before to 5 after) -->
+        {% for num in page_obj.paginator.page_range %}
+            {% if num > page_obj.number|add:'-6' and num < page_obj.number|add:'6' and num > 1 and num < page_obj.paginator.num_pages %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Ellipsis for jumping ahead -->
+        {% if page_obj.number < page_obj.paginator.num_pages|add:'-5' %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.number|add:'5' }}">...</a></li>
+        {% endif %}
+
+        <!-- Display the very last page -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <li class="page-item {% if page_obj.number == page_obj.paginator.num_pages %}active{% endif %}"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a></li>
+        {% endif %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endblock content %}

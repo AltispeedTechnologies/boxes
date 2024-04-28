@@ -14,8 +14,12 @@ urlpatterns = [
     path("login/", sign_in, name="login"),
     path("logout/", sign_out, name="logout"),
 
-    # Backend endpoints
+    # Accounts
+    path("accounts/<int:pk>", is_staff(account_detail), name="account_detail"),
+    path("accounts/<int:pk>/update", is_staff(update_account), name="update_account"),
     path("accounts/search/", is_staff(account_search), name="account_search"),
+
+    # Backend endpoints
     path("carriers/search/", is_staff(carrier_search), name="carrier_search"),
     path("types/search/", is_staff(type_search), name="type_search"),
 

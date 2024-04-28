@@ -1,6 +1,6 @@
 {% block content %}
     {% if page_obj %}
-        {% include "_paginate.html" %}
+        {% include "packages/_paginate.html" %}
 
         <div class="table-responsive mt-3">
             <table class="table table-bordered" style="user-select: none">
@@ -42,7 +42,11 @@
                                 {{ package.check_out_time|default_if_none:"" }}
                             </p>
                         </td>
-                        <td data-type="account" data-id="{{ package.account_id }}">{{ package.account__description }}</td>
+                        <td data-type="account" data-id="{{ package.account_id }}">
+                            <a href="/accounts/{{ package.account_id }}">
+                                {{ package.account__description }}
+                            </a>
+                        </td>
                         <td data-type="tracking_code">{{ package.tracking_code }}</td>
                         <td data-type="price">${{ package.price }}</td>
                         <td data-type="carrier" data-id="{{ package.carrier_id }}">{{ package.carrier__name }}</td>

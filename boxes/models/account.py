@@ -6,6 +6,15 @@ class Account(models.Model):
     is_good_standing = models.BooleanField()
     description = models.CharField(max_length=256, null=True)
 
+    def hr_balance(self):
+        if self.balance >= 0:
+            balance = f"${self.balance:.2f}"
+        else:
+            positive_balance = self.balance * -1
+            balance = f"$({positive_balance:.2f})"
+
+        return balance
+
 class AccountLedger(models.Model):
     user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
