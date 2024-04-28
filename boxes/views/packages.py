@@ -315,5 +315,6 @@ def search_packages(request):
                                                     "query": request.GET.get("q", ""),
                                                     "filter": request.GET.get("filter", ""),
                                                     "account": account,
-                                                    "selected": selected})
+                                                    "selected": selected,
+                                                    "account_packages": True})
 

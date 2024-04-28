@@ -32,7 +32,8 @@ def account_detail(request, pk):
 
     return render(request, "accounts/account.html", {"account": account,
                                                      "page_obj": page_obj,
-                                                     "account_id": pk})
+                                                     "account_id": pk,
+                                                     "account_ledger": True})
 
 @require_http_methods(["POST"])
 def update_account(request, pk):
