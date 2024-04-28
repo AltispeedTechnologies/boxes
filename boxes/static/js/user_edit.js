@@ -20,12 +20,13 @@ $(document).ready(function() {
             headers: {"X-CSRFToken": csrf_token},
             data: JSON.stringify(payload),
             success: function(response) {
+                $form.find(".is-invalid").removeClass("is-invalid");
+
                 if (response.success) {
                     window.display_error_message();
                 } else if (response.errors) {
                     window.display_error_message(response.errors);
                 } else if (response.form_errors) {
-                    $form.find(".is-invalid").removeClass("is-invalid");
                     $.each(response.form_errors, function(field, errors) {
                         if (errors.length > 0) {
                             $form.find("#" + field).addClass("is-invalid");
