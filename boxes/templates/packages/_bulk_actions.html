@@ -15,7 +15,15 @@
                     disabled>
                 <i class="fas fa-print"></i>
             </button>
+            <button class="btn btn-lg btn-primary"
+                    id="bulkeditbtn"
+                    data-bs-target="#bulkEditModal"
+                    data-bs-toggle="modal" 
+                    disabled>
+                <i class="fas fa-edit"></i>
+            </button>
         </div>
     </div>
 </div>
+{% include "modals/bulk_edit.html" %}
 {% endblock content %}

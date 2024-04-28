@@ -27,6 +27,7 @@ urlpatterns = [
     path("packages/", is_staff(all_packages), name="packages"),
     path("packages/<int:pk>", is_staff(package_detail), name="package_detail"),
     path("packages/<int:pk>/update", is_staff(update_package), name="update_package"),
+    path("packages/update", is_staff(update_packages), name="update_packages"),
 
     # Search page
     path("packages/search", is_staff(search_packages), name="search_packages"),

@@ -22,8 +22,10 @@ $(document).ready(function() {
             }
         });
 
+        console.log(package_data);
+
         $("#tracking_code").val(package_data.tracking_code);
-        $("#price").val(package_data.price.replace("$", ""));
+        $("#editModal").find("#price").val(package_data.price.replace("$", ""));
         $("#comments").val(package_data.comments);
 
         window.initialize_async_select2("account", "/accounts/search", "#editModal");
@@ -43,8 +45,8 @@ $(document).ready(function() {
 
         /// carrier
         var carrier_option = new Option(package_data.carrier, package_data.carrier_id, true, true);
-        $("#id_carrier_id").append(carrier_option).trigger("change");
-        $("#id_carrier_id").trigger({
+        $("#editModal").find("#id_carrier_id").append(carrier_option).trigger("change");
+        $("#editModal").find("#id_carrier_id").trigger({
             type: "select2:select",
             params: {
                 data: { id: package_data.carrier_id, text: package_data.carrier }
@@ -72,8 +74,8 @@ $(document).ready(function() {
         var inside = $("#id_inside").prop("checked");
         var account_id = $("#id_account_id").val();
         var account = $("#id_account_id option:selected").text();
-        var carrier_id = $("#id_carrier_id").val();
-        var carrier = $("#id_carrier_id option:selected").text();
+        var carrier_id = $("#editModal").find("#id_carrier_id").val();
+        var carrier = $("#editModal").find("#id_carrier_id option:selected").text();
         var package_type_id = $("#id_type_id").val();
         var package_type = $("#id_type_id option:selected").text();
 

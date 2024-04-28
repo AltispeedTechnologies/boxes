@@ -145,10 +145,10 @@ def create_package(request):
         form = PackageForm()
         return render(request, "packages/create.html", {"form": form})
 
-@require_http_methods(["POST"])
-def update_package(request, pk):
-    request_data = json.loads(request.body)
-    package = get_object_or_404(Package, pk=pk)
+def update_packages_fields(package_ids, package_data, user):
+    packages = Package.objects.filter(pk__in=package_ids)
+    updates = []
+    errors = []
 
     fields_to_update = {
         "tracking_code": str,
@@ -159,36 +159,98 @@ def update_package(request, pk):
         "package_type_id": int
     }
 
-    try:
-        updates = {}
-        for field, type_func in fields_to_update.items():
-            value = request_data.get(field)
-            if value:
-                if field in ["account_id", "carrier_id", "package_type_id"]:
-                    if field == "account_id":
-                        entity = get_or_create_account(value.strip(), request.user)
-                        setattr(package, "account", entity)
-                    elif field == "carrier_id":
-                        entity = get_or_create_carrier(value.strip())
-                        setattr(package, "carrier", entity)
-                    elif field == "package_type_id":
-                        entity = get_or_create_package_type(value.strip())
-                        setattr(package, "package_type", entity)
+    accounts, account_ledger = {}, []
+
+    for package in packages:
+        try:
+            for field, type_func in fields_to_update.items():
+                if field not in package_data.keys():
+                    continue
+                elif package_data[field] is None:
+                    continue
+
+                field_data = package_data[field].strip()
+
+                if field == "account_id":
+                    entity = get_or_create_account(field_data, user)
+                    setattr(package, "account", entity)
+                elif field == "carrier_id":
+                    entity = get_or_create_carrier(field_data)
+                    setattr(package, "carrier", entity)
+                elif field == "package_type_id":
+                    entity = get_or_create_package_type(field_data)
+                    setattr(package, "package_type", entity)
+                elif field == "comments" and package_data[field] is None:
+                    setattr(package, field, "")
+                elif field == "price":
+                    field_data = type_func(field_data)
+                    if package.price == field_data:
+                        continue
+
+                    # Calculate the change in price
+                    change_in_price = package.price - field_data
+                    if change_in_price > 0:
+                        credit = change_in_price
+                        debit = 0
+                    else:
+                        credit = 0
+                        debit = change_in_price * -1
+
+                    # Update the balance for the account
+                    account_id = package.account_id
+
+                    if account_id in accounts:
+                        account = accounts[account_id]
+                        account.balance += change_in_price
+                    else:
+                        current_balance = Account.objects.filter(pk=package.account_id).values_list("balance", flat=True).first()
+                        if current_balance is not None:
+                            new_balance = current_balance + change_in_price
+                            account = Account(id=package.account_id, balance=new_balance)
+                            accounts[account_id] = account
+
+                    # Create the new ledger entry for the price change
+                    acct_entry = AccountLedger(user_id=user.id, package_id=package.id,
+                                               account_id=package.account_id, debit=debit, 
+                                               credit=credit, description="")
+                    account_ledger.append(acct_entry)
+
+                    setattr(package, field, type_func(field_data))
                 else:
-                    updates[field] = type_func(value.strip())
-            elif field == "comments":
-                updates[field] = ""
+                    setattr(package, field, type_func(field_data))
+            updates.append(package)
+        except (ValueError, Decimal.InvalidOperation, TypeError) as e:
+            errors.append(f"Error updating Package ID {package.pk}: {str(e)}")
 
-        for field, value in updates.items():
-            if field not in ["account_id", "carrier_id", "package_type_id"]:
-                setattr(package, field, value)
-        
-        if updates:
-            package.save()
-        return JsonResponse({"success": True})
+    if updates:
+        Package.objects.bulk_update(updates, package_data.keys())
 
-    except (ValueError, Decimal.InvalidOperation, TypeError) as e:
-        return JsonResponse({"success": False, "errors": [f"Error updating {field}: {str(e)}"]})
+    if accounts:
+        accounts_to_update = list(accounts.values())
+        Account.objects.bulk_update(accounts_to_update, ["balance"])
+
+    if account_ledger:
+        AccountLedger.objects.bulk_create(account_ledger)
+
+    if errors:
+        return {"success": False, "errors": errors}
+    return {"success": True}
+
+@require_http_methods(["POST"])
+def update_package(request, pk):
+    request_data = json.loads(request.body)
+    result = update_packages_fields([pk], request_data, request.user)
+    return JsonResponse(result)
+
+@require_http_methods(["POST"])
+def update_packages(request):
+    request_data = json.loads(request.body)
+    package_ids = request_data.get("ids")
+    package_data = request_data.get("values")
+    print(request_data)
+
+    result = update_packages_fields(package_ids, package_data, request.user)
+    return JsonResponse(result)
 
 def search_check_out_packages(request):
     try:

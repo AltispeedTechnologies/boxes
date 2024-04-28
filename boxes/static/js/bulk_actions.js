@@ -8,5 +8,8 @@ $(document).ready(function() {
 });
 
 $(document).on("selectedPackagesUpdated", function(event) {
-    $("#bulkprintbtn").prop("disabled", (window.selected_packages.size == 0));
+    var no_selected_packages = (window.selected_packages.size == 0);
+
+    $("#bulkprintbtn").prop("disabled", no_selected_packages);
+    $("#bulkeditbtn").prop("disabled", no_selected_packages);
 });

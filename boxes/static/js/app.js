@@ -84,7 +84,7 @@ window.initialize_async_select2 = function(field_name, search_url, dropdown_pare
         select2_options.dropdownParent = $(dropdown_parent_selector);
     }
 
-    $("#id_" + field_name + "_id").select2(select2_options);
+    $(dropdown_parent_selector).find("#id_" + field_name + "_id").select2(select2_options);
 }
 
 $("[data-bs-target=\"#print\"]").on("click", function() {
