@@ -24,6 +24,10 @@ $(document).ready(function() {
 
                 if (response.success) {
                     window.display_error_message();
+                    $("#success-icon").show();
+                    setTimeout(function() {
+                        $("#success-icon").fadeOut();
+                    }, 3000);
                 } else if (response.errors) {
                     window.display_error_message(response.errors);
                 } else if (response.form_errors) {
