@@ -3,7 +3,7 @@
         {% include "packages/_paginate.html" %}
 
         <div class="table-responsive mt-3">
-            <table class="table table-bordered" style="user-select: none">
+            <table class="table table-bordered">
                 <thead class="thead-dark align-top">
                     <tr>
                         <th></th>
@@ -51,7 +51,7 @@
                         <td data-type="price">${{ package.price }}</td>
                         <td data-type="carrier" data-id="{{ package.carrier_id }}">{{ package.carrier__name }}</td>
                         <td data-type="package_type" data-id="{{ package.package_type_id }}" class="mutableData">{{ package.package_type__description }}</td>
-                        <td data-type="comments" class="mutableData">{{ package.comments }}</td>
+                        <td data-type="comments" class="mutableData">{{ package.comments|default:"" }}</td>
                         <td>
                             {% if package.current_state == 1 %}
                             <button type="button" class="btn btn-success"

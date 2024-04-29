@@ -9,7 +9,7 @@ from .common import _get_matching_users
 @require_http_methods(["GET"])
 def account_search(request):
     search_query = request.GET.get("term", "")
-    accounts = Account.objects.filter(description__icontains=search_query)[:10]
+    accounts = Account.objects.filter(name__icontains=search_query)[:10]
     results = [{"id": account.id, "text": account.name} for account in accounts]
     return JsonResponse({"results": results})
 
@@ -65,7 +65,6 @@ def update_account(request, pk):
             setattr(account, field, value)
         
         if updates:
-            print(updates)
             account.save()
 
         return JsonResponse({"success": True})
