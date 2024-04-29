@@ -10,7 +10,7 @@ from .common import _get_matching_users
 def account_search(request):
     search_query = request.GET.get("term", "")
     accounts = Account.objects.filter(description__icontains=search_query)[:10]
-    results = [{"id": account.id, "text": account.description} for account in accounts]
+    results = [{"id": account.id, "text": account.name} for account in accounts]
     return JsonResponse({"results": results})
 
 @require_http_methods(["GET"])
@@ -50,20 +50,22 @@ def update_account(request, pk):
     fields_to_update = {
         "balance": float,
         "is_good_standing": bool,
-        "description": str
+        "name": str,
+        "comments": str
     }
 
     try:
         updates = {}
         for field, type_func in fields_to_update.items():
             value = request_data.get(field)
-            if value:
+            if value != None:
                 updates[field] = type_func(value.strip())
 
         for field, value in updates.items():
             setattr(account, field, value)
         
         if updates:
+            print(updates)
             account.save()
 
         return JsonResponse({"success": True})

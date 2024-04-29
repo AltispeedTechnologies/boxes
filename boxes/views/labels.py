@@ -59,7 +59,7 @@ def generate_label(request):
     response["Content-Disposition"] = "inline; filename='label.pdf'"
 
     p = canvas.Canvas(response, pagesize=(4*inch, 6*inch))
-    packages = Package.objects.filter(id__in=ids).select_related("account").values_list("account__description", "tracking_code")
+    packages = Package.objects.filter(id__in=ids).select_related("account").values_list("account__name", "tracking_code")
 
     central_timezone = pytz.timezone("America/Chicago")
     now_utc = datetime.datetime.now(pytz.utc)

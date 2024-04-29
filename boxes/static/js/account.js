@@ -1,4 +1,6 @@
 $(document).ready(function() {
+    var csrf = window.get_cookie("csrftoken");
+
     $("#editaccountdesc").click(function(event) {
         event.preventDefault();
         $("#descdisplay").addClass("d-none");
@@ -10,11 +12,10 @@ $(document).ready(function() {
 
     $("#saveaccountdesc").click(function(event) {
         event.preventDefault();
-        var csrf = window.get_cookie("csrftoken");
         let account_id = $("#saveaccountdesc").data("accountId");
 
-        let new_desc = $("#accountdesceditbox").val();
-        let payload = JSON.stringify({"description": new_desc});
+        let new_name = $("#accountdesceditbox").val();
+        let payload = JSON.stringify({"name": new_name});
 
         $.ajax({
             type: "POST",
@@ -37,4 +38,34 @@ $(document).ready(function() {
             }
         });
     });
+
+    $("#accountnotes").on("input", window.debounce(function() {
+        $("#savingnotes").removeClass("d-none");
+        let account_id = $("#saveaccountdesc").data("accountId");
+
+        new_comments = $(this).val();
+        let payload = JSON.stringify({"comments": new_comments});
+
+        $.ajax({
+            type: "POST",
+            url: "/accounts/" + account_id + "/update",
+            headers: {
+                "X-CSRFToken": csrf
+            },
+            data: payload,
+            success: function(response) {
+                if (response.success) {
+                    $("#savingnotes").addClass("d-none");
+                    $("#donesavingnotes").show();
+                    $("#donesavingnotes").fadeOut(1000);
+                } else {
+                    //window.display_error_message(response.errors);
+                    console.log(response);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.log(error);
+            }
+        });
+    }, 500));
 });

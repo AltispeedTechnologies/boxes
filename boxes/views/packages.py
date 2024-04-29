@@ -24,7 +24,7 @@ def get_or_create_carrier(carrier_id):
 
 def get_or_create_account(account_id, user):
     if not account_id.isdigit():
-        account, _ = Account.objects.get_or_create(user=user, balance=Decimal(0.00), is_good_standing=True, description=strip_tags(account_id))
+        account, _ = Account.objects.get_or_create(user=user, balance=Decimal(0.00), is_good_standing=True, name=strip_tags(account_id))
         return account
     return Account.objects.get(id=account_id)
 
@@ -42,7 +42,7 @@ def package_detail(request, pk):
         "id",
         "price",
         "carrier__name",
-        "account__description",
+        "account__name",
         "package_type__description",
         "tracking_code",
         "comments",
@@ -160,11 +160,11 @@ def queue_packages(request, pk):
         "package__carrier"
     ).values(
         "package__id", 
-        "package__account__description", 
+        "package__account__name",
         "package__tracking_code", 
         "package__price", 
         "package__carrier__name",
-        "package__package_type__description", 
+        "package__package_type__description",
         "package__comments"
     )
 

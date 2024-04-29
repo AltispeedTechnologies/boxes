@@ -2,9 +2,10 @@ from django.db import models
 
 class Account(models.Model):
     user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
+    name = models.CharField(max_length=64)
     balance = models.DecimalField(max_digits=8, decimal_places=2)
     is_good_standing = models.BooleanField()
-    description = models.CharField(max_length=256, null=True)
+    comments = models.CharField(max_length=256, null=True)
 
     def hr_balance(self):
         if self.balance >= 0:

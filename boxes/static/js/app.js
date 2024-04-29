@@ -142,3 +142,12 @@ window.display_error_message = function(errors) {
         messages_div.append(alert_div);
     }
 }
+
+window.debounce = function(func, wait) {
+    let timeout;
+    return function() {
+        const context = this, args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), wait);
+    };
+}

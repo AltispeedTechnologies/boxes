@@ -6,7 +6,7 @@
 <div class="container">
     <div class="row">
         <div class="col" id="descdisplay" style="display: flex; align-items: center;">
-            <h2 id="accountdesc">{{ account.description }}</h2>
+            <h2 id="accountdesc">{{ account.name }}</h2>
             <i class="fas fa-pencil"
                id="editaccountdesc"
                style="cursor: pointer;
@@ -27,7 +27,17 @@
             <h4><strong>Balance:</strong> {{ account.hr_balance }}</h4>
         </div>
     </div>
-    <hr />
+    <div class="row">
+        <div class="position-relative mb-2">
+            <textarea class="form-control" id="accountnotes" rows="2" placeholder="Enter notes here...">{{ account.comments }}</textarea>
+            <div id="savingnotes" class="d-none text-warning position-absolute bottom-0 end-0 me-3 p-2">
+                <i class="fas fa-spinner fa-spin"></i>
+            </div>
+            <div id="donesavingnotes" class="text-success position-absolute bottom-0 end-0 me-3 p-2" style="display: none;">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        </div>
+    </div>
     <div class="row bg-light">
         <nav class="nav nav-pills flex-column flex-sm-row">
           <a class="flex-sm-fill text-sm-center nav-link {% if account_packages %}active{% endif %}"

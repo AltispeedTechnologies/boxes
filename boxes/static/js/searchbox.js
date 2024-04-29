@@ -43,8 +43,8 @@ $(document).ready(function() {
     });
     window.select2properheight("#customer_select");
 
-    if (account_id && account_description) {
-        var new_option = new Option(account_description, account_id, true, true);
+    if (account_id && account_name) {
+        var new_option = new Option(account_name, account_id, true, true);
         $("#customer_select").append(new_option).trigger("change");
     }
     

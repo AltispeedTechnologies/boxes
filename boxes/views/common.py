@@ -39,7 +39,7 @@ def _get_packages(**kwargs):
         "current_state",
         "price",
         "carrier__name",
-        "account__description",
+        "account__name",
         "package_type__description",
         "tracking_code",
         "comments",
@@ -86,8 +86,8 @@ def _get_matching_users(account_id):
             return custom_users, account
     else:
         # If no UserAccount entry exists, create a CustomUser
-        # Split the account description into name parts
-        name_parts = account.description.split(" ")
+        # Split the account.name into name parts
+        name_parts = account.name.split(" ")
         
         # Determine how to assign the name parts
         first_name = name_parts[0] if len(name_parts) > 0 else ""
@@ -96,7 +96,7 @@ def _get_matching_users(account_id):
         
         # Create a CustomUser with a useless password and login disabled
         new_custom_user = CustomUser.objects.create(
-            username=account.description[:150],
+            username=account.name[:150],
             first_name=first_name,
             middle_name=middle_name,
             last_name=last_name,

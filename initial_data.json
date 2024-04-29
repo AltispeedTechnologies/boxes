@@ -32,7 +32,7 @@
       "user": 1,
       "balance": "1000.00",
       "is_good_standing": true,
-      "description": "Company A"
+      "name": "Company A"
     }
   },
   {
@@ -42,7 +42,7 @@
       "user": 1,
       "balance": "0.00",
       "is_good_standing": true,
-      "description": "Company B"
+      "name": "Company B"
     }
   },
   {
@@ -52,7 +52,7 @@
       "user": 1,
       "balance": "6.00",
       "is_good_standing": true,
-      "description": "John Doe"
+      "name": "John Doe"
     }
   },
   {
@@ -62,7 +62,7 @@
       "user": 1,
       "balance": "12.00",
       "is_good_standing": true,
-      "description": "Jane Doe"
+      "name": "Jane Doe"
     }
   },
   {
