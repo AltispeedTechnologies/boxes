@@ -30,7 +30,7 @@ $(document).ready(function() {
 
         window.initialize_async_select2("account", "/accounts/search", "#editModal");
         window.initialize_async_select2("carrier", "/carriers/search", "#editModal");
-        window.initialize_async_select2("type", "/types/search/", "#editModal");
+        window.initialize_async_select2("type", "/types/search", "#editModal");
 
         // Preload options into the various dropdowns
         /// account

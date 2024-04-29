@@ -113,17 +113,15 @@ def check_in_packages(request):
         else:
             return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
 
+@require_http_methods(["POST"])
 def check_out_packages(request):
-    if request.method == "POST":
-        result = update_packages_util(request, state=2, debit_credit_switch=True)
-        if result["success"]:
-            messages.success(request, "Successfully checked out")
-            return JsonResponse({"success": True, "redirect_url": reverse("check_out_packages")})
-        else:
-            messages.error(request, "Checkout failed")
-            return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
+    result = update_packages_util(request, state=2, debit_credit_switch=True)
+    if result["success"]:
+        messages.success(request, "Successfully checked out")
+        return JsonResponse({"success": True, "redirect_url": reverse("check_out_packages")})
     else:
-        return render(request, "packages/check_out.html", {"search_url": reverse("search_check_out_packages")})
+        messages.error(request, "Checkout failed")
+        return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
 
 def create_package(request):
     if request.method == "POST":
@@ -278,36 +276,6 @@ def update_packages(request):
 
     result = update_packages_fields(package_ids, package_data, request.user)
     return JsonResponse(result)
-
-def search_check_out_packages(request):
-    try:
-        packages = _search_packages_helper(request)
-    except ValueError as e:
-        messages.error(request, str(e))
-        return redirect("packages")
-
-    page_number = request.GET.get("page")
-    page_obj = packages.get_page(page_number)
-
-    selected_ids = request.GET.get("selected_ids", "")
-    selected = selected_ids.split(",") if selected_ids else []
-    query = request.GET.get("q", "")
-    filter_info = request.GET.get("filter", "")
-
-    account = None
-    if request.GET.get("filter", "").strip() == "customer":
-        account_id_raw = request.GET.get("cid", "").strip()
-        account_id = re.sub(r'\D', '', account_id_raw)
-
-        if account_id:
-            account = Account.objects.get(id=account_id)
-
-    return render(request, "packages/search_checkout.html", {"checkout": True,
-                                                             "page_obj": page_obj,
-                                                             "selected": selected,
-                                                             "query": query,
-                                                             "account": account,
-                                                             "filter": filter_info})
 
 @require_http_methods(["GET"])
 def type_search(request):

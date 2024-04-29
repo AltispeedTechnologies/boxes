@@ -18,11 +18,12 @@ urlpatterns = [
     path("accounts/<int:pk>", is_staff(account_detail), name="account_detail"),
     path("accounts/<int:pk>/edit", is_staff(account_edit), name="account_edit"),
     path("accounts/<int:pk>/update", is_staff(update_account), name="update_account"),
-    path("accounts/search/", is_staff(account_search), name="account_search"),
+    path("accounts/search", is_staff(account_search), name="account_search"),
 
     # Backend endpoints
-    path("carriers/search/", is_staff(carrier_search), name="carrier_search"),
-    path("types/search/", is_staff(type_search), name="type_search"),
+    path("carriers/search", is_staff(carrier_search), name="carrier_search"),
+    path("types/search", is_staff(type_search), name="type_search"),
+    path("packages/checkout", is_staff(check_out_packages), name="check_out_packages"),
 
     # Generic package information
     path("packages/", is_staff(all_packages), name="packages"),
@@ -36,10 +37,6 @@ urlpatterns = [
     # Check in page
     path("packages/checkin", is_staff(check_in_packages), name="check_in_packages"),
     path("packages/new", is_staff(create_package), name="create_package"),
-
-    # Check out page
-    path("packages/checkout", is_staff(check_out_packages), name="check_out_packages"),
-    path("packages/checkout/search", is_staff(search_check_out_packages), name="search_check_out_packages"),
 
     # Picklists page
     path("packages/picklists", is_staff(picklists), name="picklists"),

@@ -91,9 +91,6 @@
     {% endif %}
 
     {% load static %}
-    {% if checkout %}
-        <script src="{% static 'js/checkout.js' %}"></script>
-    {% endif %}
     {% if picklists %}
         <script src="{% static 'js/picklist.js' %}"></script>
         {% include "modals/picklist.html" %}

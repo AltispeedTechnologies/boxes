@@ -18,7 +18,7 @@ $(document).ready(function() {
 
     $("#customer_select").select2({
         ajax: {
-            url: "/accounts/search/",
+            url: "/accounts/search",
             dataType: "json",
             delay: 250,
             beforeSend: function(xhr) {
