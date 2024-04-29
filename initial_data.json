@@ -198,5 +198,29 @@
       "groups": [3],
       "user_permissions": []
     }
+  },
+  {
+    "model": "boxes.queue",
+    "pk": 1,
+    "fields": {
+      "description": "Front Desk",
+      "check_in": true
+    }
+  },
+  {
+    "model": "boxes.queue",
+    "pk": 2,
+    "fields": {
+      "description": "Check In Station 1",
+      "check_in": true
+    }
+  },
+  {
+    "model": "boxes.queue",
+    "pk": 3,
+    "fields": {
+      "description": "Check In Station 2",
+      "check_in": true
+    }
   }
 ]
