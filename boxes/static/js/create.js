@@ -52,6 +52,8 @@ function handle_create_package() {
             window.display_error_message(xhr.responseJSON.errors);
         }
     });
+
+    $("#checkinbtn").prop("disabled", (packages.size == 0));
 }
 
 function reset_form_fields() {
@@ -65,6 +67,8 @@ function reset_form_fields() {
 }
 
 function display_packages(response) {
+    $("#checkinbtn").prop("disabled", false);
+
     let new_row = document.querySelector(".visually-hidden").cloneNode(true);
     new_row.classList.remove("visually-hidden");
     new_row.querySelector("td:nth-child(1)").innerText = response.account;
@@ -108,6 +112,7 @@ function handle_checkin() {
                 window.open(`/packages/label?ids=${packages_array.toString()}`, "_blank");
                 document.querySelectorAll("tbody tr:not(.visually-hidden)").forEach(row => row.remove());
                 packages.clear();
+                $("#checkinbtn").prop("disabled", true);
             } else {
                 window.display_error_message(response.errors);
             }
@@ -116,6 +121,7 @@ function handle_checkin() {
             console.log("Error: " + error);
         }
     });
+
 }
 
 function load_queue(selected_queue) {
@@ -143,7 +149,8 @@ function load_queue(selected_queue) {
                     packages.add(package.package__id);
                     display_packages(package);
                 });
-                console.log(packages);
+            } else if (response.success && response.packages.length == 0) {
+                $("#checkinbtn").prop("disabled", true);
             } else if (!response.success) {
                 console.log("No packages available for the selected queue.");
             }
