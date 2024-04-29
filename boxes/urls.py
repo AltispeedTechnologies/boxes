@@ -52,6 +52,9 @@ urlpatterns = [
     # Label printing
     path("packages/label", is_staff(generate_label), name="generate_label"),
 
+    # Basic queue data
+    path("queues/<int:pk>/packages", is_staff(queue_packages), name="queue_packages"),
+
     # Users
     path("users/update", is_staff(update_user), name="update_user"),
 ]

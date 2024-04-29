@@ -104,6 +104,9 @@ def update_packages_util(request, state, debit_credit_switch=False):
 
 def check_in_packages(request):
     if request.method == "POST":
+        queue_id = request.POST.get("queue_id")
+        PackageQueue.objects.filter(queue_id=queue_id).delete()
+
         result = update_packages_util(request, state=1, debit_credit_switch=False)
         if result["success"]:
             return JsonResponse({"success": True})
@@ -124,10 +127,11 @@ def check_out_packages(request):
 
 def create_package(request):
     if request.method == "POST":
-        print(request.POST)
         form = PackageForm(request.POST)
         if form.is_valid():
             package = form.save(commit=False)
+
+            queue_id = form.cleaned_data["queue_id"]
             
             # Use helper functions
             package.carrier = get_or_create_carrier(form.cleaned_data["carrier_id"])
@@ -136,6 +140,7 @@ def create_package(request):
 
             try:
                 package.save()
+                PackageQueue.objects.create(package=package, queue_id=queue_id)
                 return JsonResponse({"success": True, "id": package.id})
             except Exception as e:
                 return JsonResponse({"success": False, "errors": str(e)})
@@ -143,7 +148,29 @@ def create_package(request):
             return JsonResponse({"success": False, "form_errors": form.errors})
     else:
         form = PackageForm()
-        return render(request, "packages/create.html", {"form": form})
+        queues = Queue.objects.filter(check_in=True)
+        return render(request, "packages/create.html", {"form": form,
+                                                        "queues": queues})
+
+@require_http_methods(["GET"])
+def queue_packages(request, pk):
+    packages = PackageQueue.objects.filter(queue=pk).select_related(
+        "package__account",
+        "package__package_type",
+        "package__carrier"
+    ).values(
+        "package__id", 
+        "package__account__description", 
+        "package__tracking_code", 
+        "package__price", 
+        "package__carrier__name",
+        "package__package_type__description", 
+        "package__comments"
+    )
+
+    packages_list = list(packages)
+
+    return JsonResponse({"success": True, "packages": packages_list})
 
 def update_packages_fields(package_ids, package_data, user):
     packages = Package.objects.filter(pk__in=package_ids)

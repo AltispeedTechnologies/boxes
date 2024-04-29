@@ -8,6 +8,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.hashers import check_password
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+from django.views.decorators.csrf import csrf_exempt
 from boxes.forms import RegisterForm
 from boxes.models import CustomUser
 
@@ -34,6 +35,7 @@ def register(request):
             # Also returns a message on the screen
             return render(request, "register.html", {"form": form})
 
+@csrf_exempt
 def sign_in(request):
     if request.method == "GET":
         return render(request, "login.html", {"form": AuthenticationForm()})
@@ -43,7 +45,7 @@ def sign_in(request):
         password = request.POST.get("password", "").strip()
 
         try:
-            user = CustomUser.objects.only('id', 'password', 'is_active').get(username=username)
+            user = CustomUser.objects.only("id", "password", "is_active").get(username=username)
 
             if check_password(password, user.password):
                 if user.is_active:

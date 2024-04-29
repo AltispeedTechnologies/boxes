@@ -1,7 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Check In</h2>
+    <div class="row">
+        <div class="col">
+            <h2>Check In</h2>
+        </div>
+        <div class="col-auto ms-auto d-flex align-items-center">
+            <h5 class="mb-0 me-2">Queue:</h5>
+            <div class="w-100">
+                <select id="queue_select" name="queue" class="form-control">
+                    {% for queue in queues %}
+                        <option value="{{ queue.id }}">{{ queue.description }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
 
     {% include "_messages.html" %}
     {% include "packages/_createbox.html" %}

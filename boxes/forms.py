@@ -2,7 +2,7 @@ from boxes.models import CustomUser, Package, Carrier, Account, PackageType
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxLengthValidator
+from django.core.validators import MaxLengthValidator, RegexValidator
 
 class PriceInput(forms.widgets.TextInput):
     def __init__(self, attrs=None):
@@ -43,6 +43,7 @@ class RegisterForm(UserCreationForm):
         model=CustomUser
         fields = ["username", "email", "company", "prefix", "first_name", "middle_name", "last_name", "suffix", "password1", "password2"]
 
+
 class CustomUserForm(UserChangeForm):
     class Meta:
         model = CustomUser
@@ -66,6 +67,10 @@ class PackageForm(forms.ModelForm):
     carrier_id = forms.CharField()
     package_type_id = forms.CharField()
     inside = forms.BooleanField(required=False)
+    queue_id = forms.CharField(validators=[
+                                   MaxLengthValidator(4),
+                                   RegexValidator(r'^\d+$')
+                               ])
 
     class Meta:
         model = Package
