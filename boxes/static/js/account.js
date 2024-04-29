@@ -57,7 +57,7 @@ $(document).ready(function() {
                 if (response.success) {
                     $("#savingnotes").addClass("d-none");
                     $("#donesavingnotes").show();
-                    $("#donesavingnotes").fadeOut(1000);
+                    $("#donesavingnotes").fadeOut(2000);
                 } else {
                     //window.display_error_message(response.errors);
                     console.log(response);
