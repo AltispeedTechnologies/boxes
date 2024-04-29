@@ -26,7 +26,7 @@ $(document).ready(function() {
             data: payload,
             success: function(response) {
                 if (response.success) {
-                    $("#accountdesc").text(new_desc);
+                    $("#accountdesc").text(new_name);
                     $("#descedit").addClass("d-none");
                     $("#descdisplay").removeClass("d-none");
                 } else {
