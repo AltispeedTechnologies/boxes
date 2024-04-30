@@ -44,7 +44,7 @@ env = environ.Env(
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Take environment variables from .env file
-environ.Env.read_env("/etc/mikes-boxes.env")
+environ.Env.read_env(env.str('ENV_PATH', '/etc/mikes-boxes.env'))
 
 # This is defined here as a do-nothing function because we can't import
 # django.utils.translation -- that module depends on the settings.
