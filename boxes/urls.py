@@ -15,8 +15,9 @@ urlpatterns = [
     path("logout/", sign_out, name="logout"),
 
     # Accounts
-    path("accounts/<int:pk>", is_staff(account_detail), name="account_detail"),
     path("accounts/<int:pk>/edit", is_staff(account_edit), name="account_edit"),
+    path("accounts/<int:pk>/ledger", is_staff(account_ledger), name="account_ledger"),
+    path("accounts/<int:pk>/packages", is_staff(account_packages), name="account_packages"),
     path("accounts/<int:pk>/update", is_staff(update_account), name="update_account"),
     path("accounts/search", is_staff(account_search), name="account_search"),
 

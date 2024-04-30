@@ -40,12 +40,12 @@
     </div>
     <div class="row bg-light">
         <nav class="nav nav-pills flex-column flex-sm-row">
-          <a class="flex-sm-fill text-sm-center nav-link {% if account_packages %}active{% endif %}"
-             href="/packages/search?cid={{ account.id }}&filter=customer"
+          <a class="flex-sm-fill text-sm-center nav-link {% if view_type == "packages" %}active{% endif %}"
+             href="/accounts/{{ account.id }}/packages"
              aria-current="page">Packages</a>
-          <a class="flex-sm-fill text-sm-center nav-link {% if account_ledger %}active{% endif %}"
-             href="/accounts/{{ account.id }}">Ledger</a>
-          <a class="flex-sm-fill text-sm-center nav-link {% if custom_user %}active{% endif %}"
+          <a class="flex-sm-fill text-sm-center nav-link {% if view_type == "ledger" %}active{% endif %}"
+             href="/accounts/{{ account.id }}/ledger">Ledger</a>
+          <a class="flex-sm-fill text-sm-center nav-link {% if view_type == "edit" %}active{% endif %}"
              href="/accounts/{{ account.id }}/edit">Edit</a>
         </nav>
     </div>

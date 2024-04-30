@@ -1,6 +1,6 @@
 {% block content %}
 <div class="container input-group">
-    <form id="search_form w-25" action="{{ search_url }}" method="get">
+    <form id="search_form" method="get">
         <div id="search_input_container" class="input-group-append">
             <input name="q" type="text" class="form-control" placeholder="Search..." value="{{ query }}">
         </div>
@@ -14,7 +14,7 @@
             </select>
         </div>
         <div class="mt-2">
-            <button type="submit" class="btn btn-primary">Search</button>
+            <button class="btn btn-primary" id="searchbtn" data-search="{{ search_url }}">Search</button>
         </div>
         <hr />
         <div class="my-2">

@@ -53,17 +53,8 @@ def _get_packages(**kwargs):
     return paginator
 
 def _search_packages_helper(request, **kwargs):
-    filters = request.GET.get("filter", "").strip()
-    allowed_filters = ["tracking_code", "customer"]
-    if filters not in allowed_filters:
-        raise ValueError("Invalid filter value")
-
-    if filters == "tracking_code":
-        query = request.GET.get("q", "").strip()
-        packages = _get_packages(tracking_code__icontains=query, **kwargs)
-    elif filters == "customer":
-        account_id = request.GET.get("cid", "").strip()
-        packages = _get_packages(account__id=account_id, **kwargs)
+    query = request.GET.get("q", "").strip()
+    packages = _get_packages(tracking_code__icontains=query, **kwargs)
     
     return packages
 

@@ -294,7 +294,11 @@ def type_search(request):
     results = [{"id": pkgtype.id, "text": pkgtype.description} for pkgtype in pkgtypes]
     return JsonResponse({"results": results})
 
+@require_http_methods(["GET"])
 def search_packages(request):
+    if request.GET.get("filter").strip() != "tracking_code":
+        return
+
     try:
         packages = _search_packages_helper(request)
     except ValueError as e:
@@ -307,19 +311,9 @@ def search_packages(request):
     selected_ids = request.GET.get("selected_ids", "")
     selected = selected_ids.split(",") if selected_ids else []
 
-    # Enable a card with the user information if the filter is customer
-    account = None
-    if request.GET.get("filter", "").strip() == "customer":
-        account_id_raw = request.GET.get("cid", "").strip()
-        account_id = re.sub(r'\D', '', account_id_raw)
-
-        if account_id:
-            account = Account.objects.get(id=account_id)
-
     return render(request, "packages/search.html", {"page_obj": page_obj,
                                                     "query": request.GET.get("q", ""),
                                                     "filter": request.GET.get("filter", ""),
-                                                    "account": account,
                                                     "selected": selected,
                                                     "account_packages": True})
 

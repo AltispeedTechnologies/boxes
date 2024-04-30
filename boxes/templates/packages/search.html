@@ -1,20 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% if account %}
-        {% include "accounts/_accountbox.html" %}
-    {% else %}
-        <div class="d-flex justify-content-between align-items-center">
-            {% if query != "" %}
-            <h2>Search: {{ query }}</h2>
-            {% else %}
-            <h2>All Packages</h2>
-            {% endif %}
-        </div>
-    {% endif %}
+    <div class="d-flex justify-content-between align-items-center">
+        {% if query != "" %}
+        <h2>Search: {{ query }}</h2>
+        {% else %}
+        <h2>All Packages</h2>
+        {% endif %}
+    </div>
 
-  {% include "_messages.html" %}
-  {% include "packages/_searchbox.html" %}
-  {% include "packages/_table.html" %}
+    {% include "_messages.html" %}
+    {% include "packages/_searchbox.html" %}
+    {% include "packages/_table.html" %}
 
 {% endblock %}

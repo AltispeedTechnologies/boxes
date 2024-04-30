@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
 from boxes.models import Account, AccountLedger
-from .common import _get_matching_users
+from .common import _get_packages, _get_matching_users
 
 @require_http_methods(["GET"])
 def account_search(request):
@@ -16,10 +16,12 @@ def account_search(request):
 @require_http_methods(["GET"])
 def account_edit(request, pk):
     user, account = _get_matching_users(pk)
-    return render(request, "accounts/edit.html", {"custom_user": user, "account": account})
+    return render(request, "accounts/edit.html", {"custom_user": user,
+                                                  "account": account,
+                                                  "view_type": "edit"})
 
 @require_http_methods(["GET"])
-def account_detail(request, pk):
+def account_ledger(request, pk):
     account = Account.objects.filter(id=pk).first()
     ledger = AccountLedger.objects.select_related("user", "package").values(
         "credit",
@@ -39,7 +41,19 @@ def account_detail(request, pk):
     return render(request, "accounts/account.html", {"account": account,
                                                      "page_obj": page_obj,
                                                      "account_id": pk,
-                                                     "account_ledger": True})
+                                                     "view_type": "ledger"})
+
+@require_http_methods(["GET"])
+def account_packages(request, pk):
+    account = Account.objects.filter(id=pk).first()
+    packages = _get_packages(account__id=account.id)
+
+    page_number = request.GET.get("page")
+    page_obj = packages.get_page(page_number)
+
+    return render(request, "accounts/packages.html", {"account": account,
+                                                      "page_obj": page_obj,
+                                                      "view_type": "packages"})
 
 @require_http_methods(["POST"])
 def update_account(request, pk):

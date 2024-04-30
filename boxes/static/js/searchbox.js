@@ -52,4 +52,20 @@ $(document).ready(function() {
         var filter = $(this).val();
         change_selected_filter(filter);
     });
+
+    $("#searchbtn").click(function(event) {
+        event.preventDefault();
+        var form = $(this).closest("form");
+        var filter = form.find('select[name="filter"]').val();
+
+        if (filter === "customer") {
+            var customer_id = $("#customer_select").val();
+            window.location.href = "/accounts/" + customer_id + "/packages";
+        } else if (filter === "tracking_code") {
+            var query = form.find('input[name="q"]').val();
+            var search_url = $(this).data("search");
+            var full_url = search_url + "?q=" + encodeURIComponent(query) + "&filter=" + encodeURIComponent(filter);
+            window.location.href = full_url;
+        }
+    });
 });

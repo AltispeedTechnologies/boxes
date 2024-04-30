@@ -45,11 +45,15 @@
                             {% endif %}
                         </td>
                         <td data-type="account" data-id="{{ package.account_id }}">
-                            <a href="/accounts/{{ package.account_id }}">
+                            <a href="/accounts/{{ package.account_id }}/packages">
                                 {{ package.account__name }}
                             </a>
                         </td>
-                        <td data-type="tracking_code">{{ package.tracking_code }}</td>
+                        <td data-type="tracking_code">
+                            <a href="/packages/{{ package.id }}">
+                                {{ package.tracking_code }}
+                            </a>
+                        </td>
                         <td data-type="price">${{ package.price }}</td>
                         <td data-type="carrier" data-id="{{ package.carrier_id }}">{{ package.carrier__name }}</td>
                         <td data-type="package_type" data-id="{{ package.package_type_id }}" class="mutableData">{{ package.package_type__description }}</td>
