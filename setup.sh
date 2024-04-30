@@ -1,6 +1,13 @@
 #!/bin/bash
 
-VENV_DIR="env"
+# Allow for custom venv names while defaulting to env if none is provided
+if [ "$2" != "" ]
+then
+    VENV_DIR="$2"
+else
+    VENV_DIR="env"
+fi
+
 PYTHON_PATH="$VENV_DIR/bin/python3"
 
 function setup_virtualenv() {
