@@ -38,9 +38,11 @@
                             <p class="timestamp mb-0" data-timestamp="{{ package.check_in_time.isoformat|default_if_none:"" }}">
                                 {{ package.check_in_time|default_if_none:"" }}
                             </p>
+                            {% if package.current_state == 2 %}
                             <p class="timestamp mt-0 mb-0" data-timestamp="{{ package.check_out_time.isoformat|default_if_none:"" }}">
                                 {{ package.check_out_time|default_if_none:"" }}
                             </p>
+                            {% endif %}
                         </td>
                         <td data-type="account" data-id="{{ package.account_id }}">
                             <a href="/accounts/{{ package.account_id }}">
@@ -58,6 +60,12 @@
                                     data-bs-toggle="modal" data-bs-target="#checkOutModal"
                                     data-row-id="{{ package.id }}">
                                 <i class="fas fa-check-circle"></i>
+                            </button>
+                            {% elif package.current_state == 2 %}
+                            <button type="button" class="btn bg-secondary"
+                                    data-bs-toggle="modal" data-bs-target="#checkBackInModal"
+                                    data-row-id="{{ package.id }}">
+                                <i class="fas fa-arrow-right"></i>
                             </button>
                             {% endif %}
                             <button class="btn btn-warning" data-row-id="{{ package.id }}" data-bs-target="#print">
@@ -98,6 +106,7 @@
     <script src="{% static 'js/table_select.js' %}"></script>
     {% include "modals/edit.html" %}
     {% include "modals/check_out.html" %}
+    {% include "modals/check_back_in.html" %}
 
     <script>
         window.selected_packages = new Set({{ selected|safe }});

@@ -38,4 +38,6 @@ $(document).on("selectedPackagesUpdated", function(event) {
 
     $("#bulkprintbtn").prop("disabled", no_selected_packages);
     $("#bulkeditbtn").prop("disabled", no_selected_packages);
+    $("#bulkcheckoutbtn").prop("disabled", no_selected_packages);
+    $("#bulkcheckbackinbtn").prop("disabled", no_selected_packages);
 });

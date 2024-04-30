@@ -12,6 +12,7 @@
             <button class="btn btn-lg btn-warning"
                     id="bulkprintbtn"
                     data-bs-target="#bulkPrint"
+                    data-bs-tooltip="yes" title="Print"
                     disabled>
                 <i class="fas fa-print"></i>
             </button>
@@ -19,11 +20,30 @@
                     id="bulkeditbtn"
                     data-bs-target="#bulkEditModal"
                     data-bs-toggle="modal" 
+                    data-bs-tooltip="yes" title="Edit"
                     disabled>
                 <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-lg btn-success"
+                    id="bulkcheckoutbtn"
+                    data-bs-target="#bulkCheckOutModal"
+                    data-bs-toggle="modal" 
+                    data-bs-tooltip="yes" title="Check Out"
+                    disabled>
+                <i class="fas fa-check-circle"></i>
+            </button>
+            <button class="btn btn-lg bg-light"
+                    id="bulkcheckbackinbtn"
+                    data-bs-target="#bulkCheckBackInModal"
+                    data-bs-toggle="modal" 
+                    data-bs-tooltip="yes" title="Check Back In"
+                    disabled>
+                <i class="fas fa-arrow-right"></i>
             </button>
         </div>
     </div>
 </div>
 {% include "modals/bulk_edit.html" %}
+{% include "modals/bulk_check_out.html" %}
+{% include "modals/bulk_check_back_in.html" %}
 {% endblock content %}

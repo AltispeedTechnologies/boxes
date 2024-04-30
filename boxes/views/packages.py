@@ -102,25 +102,35 @@ def update_packages_util(request, state, debit_credit_switch=False):
         response_data["errors"] = [str(e)]
     return response_data
 
+@require_http_methods(["POST"])
 def check_in_packages(request):
-    if request.method == "POST":
-        queue_id = request.POST.get("queue_id")
-        PackageQueue.objects.filter(queue_id=queue_id).delete()
+    queue_id = request.POST.get("queue_id")
+    PackageQueue.objects.filter(queue_id=queue_id).delete()
 
-        result = update_packages_util(request, state=1, debit_credit_switch=False)
-        if result["success"]:
-            return JsonResponse({"success": True})
-        else:
-            return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
+    result = update_packages_util(request, state=1, debit_credit_switch=False)
+    if result["success"]:
+        return JsonResponse({"success": True})
+    else:
+        return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
 
 @require_http_methods(["POST"])
 def check_out_packages(request):
     result = update_packages_util(request, state=2, debit_credit_switch=True)
     if result["success"]:
         messages.success(request, "Successfully checked out")
-        return JsonResponse({"success": True, "redirect_url": reverse("check_out_packages")})
+        return JsonResponse({"success": True})
     else:
         messages.error(request, "Checkout failed")
+        return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
+
+@require_http_methods(["POST"])
+def check_out_packages_reverse(request):
+    result = update_packages_util(request, state=1, debit_credit_switch=False)
+    if result["success"]:
+        messages.success(request, "Successfully checked back in")
+        return JsonResponse({"success": True})
+    else:
+        messages.error(request, "Checking back in failed")
         return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
 
 def create_package(request):

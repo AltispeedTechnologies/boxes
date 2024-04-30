@@ -1,6 +1,4 @@
 $(document).ready(function() {
-    $(".select-select2").select2();
-
     $(".timestamp").each(function() {
         var iso_timestamp = $(this).data("timestamp");
         if (iso_timestamp !== "") {
@@ -8,6 +6,11 @@ $(document).ready(function() {
             $(this).text(local_time);
         }
     });
+
+    var tooltip_trigger_list = [].slice.call(document.querySelectorAll('[data-bs-tooltip="yes"]'))
+    var tooltip_list = tooltip_trigger_list.map(function (tooltip_trigger_el) {
+        return new bootstrap.Tooltip(tooltip_trigger_el)
+    })
 });
 
 window.get_cookie = function(name) {
