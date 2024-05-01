@@ -23,7 +23,8 @@ $(document).ready(function() {
     });
 
     $("[data-bs-target=\"#addPicklistModal\"]").on("click", function() {
-        row_id = $(this).data("row-id");
+        var tr = $(this).closest("tr");
+        row_id = tr.data("row-id");
     });
 
     $("#addPicklistModal .btn-primary").on("click", function() {

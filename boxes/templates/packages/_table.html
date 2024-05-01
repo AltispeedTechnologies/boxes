@@ -59,37 +59,35 @@
                         <td data-type="package_type" data-id="{{ package.package_type_id }}" class="mutableData">{{ package.package_type__description }}</td>
                         <td data-type="comments" class="mutableData">{{ package.comments|default:"" }}</td>
                         <td>
-                            <button class="btn btn-warning" data-row-id="{{ package.id }}" data-bs-target="#print">
+                            <button class="btn btn-warning" data-bs-target="#print">
                                 <i class="fas fa-print"></i>
                             </button>
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
-                                    data-bs-target="#editModal" data-row-id="{{ package.id }}">
+                                    data-bs-target="#editModal">
                                 <i class="fas fa-edit"></i>
                             </button>
                             <button type="button" class="btn btn-info" data-bs-toggle="modal"
-                                    data-bs-target="#addPicklistModal" data-row-id="{{ package.id }}">
+                                    data-bs-target="#addPicklistModal">
                                 <i class="fas fa-plus"></i>
                             </button>
                             {% if package.current_state == 1 %}
                                 <button type="button" class="btn btn-success"
-                                        data-bs-toggle="modal" data-bs-target="#checkOutModal"
-                                        data-row-id="{{ package.id }}">
+                                        data-bs-toggle="modal" data-bs-target="#checkOutModal">
                                     <i class="fas fa-check-circle"></i>
                                 </button>
                             {% elif package.current_state == 2 %}
                                 <button type="button" class="btn bg-secondary"
-                                        data-bs-toggle="modal" data-bs-target="#checkBackInModal"
-                                        data-row-id="{{ package.id }}">
+                                        data-bs-toggle="modal" data-bs-target="#checkBackInModal">
                                     <i class="fas fa-arrow-right"></i>
                                 </button>
                             {% endif %}
                             {% if picklist_title %}
                                 <button type="button" class="btn btn-success" data-bs-toggle="modal" 
-                                        data-bs-target="#moveModal" data-row-id="{{ package.id }}">
+                                        data-bs-target="#moveModal">
                                     <i class="fas fa-arrows-alt"></i>
                                 </button>
                                 <button type="button" class="btn btn-danger" data-bs-toggle="modal"
-                                        data-bs-target="#removeModal" data-row-id="{{ package.id }}">
+                                        data-bs-target="#removeModal">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             {% endif %}

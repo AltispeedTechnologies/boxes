@@ -3,7 +3,8 @@ $(document).ready(function() {
     var row_id = null;
 
     $('[data-bs-target="#checkBackInModal"]').on("click", function () {
-        row_id = $(this).data("row-id");
+        var tr = $(this).closest("tr");
+        row_id = tr.data("row-id");
     });
 
     $("#checkBackInModal .btn-primary").on("click", function() {

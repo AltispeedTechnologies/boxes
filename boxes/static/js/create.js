@@ -38,12 +38,14 @@ function handle_create_package() {
             $(".is-invalid").removeClass("is-invalid");
             if (response.success) {
                 packages.add(response.id);
+                form_data.id = response.id;
                 form_data.carrier = carrier;
                 form_data.account = account;
                 form_data.package_type = package_type;
 
                 display_packages(form_data);
                 reset_form_fields();
+                $(document).trigger("rowsUpdated");
             } else {
                 handle_errors(response);
             }
@@ -69,15 +71,22 @@ function reset_form_fields() {
 function display_packages(response) {
     $("#checkinbtn").prop("disabled", false);
 
-    let new_row = document.querySelector(".visually-hidden").cloneNode(true);
-    new_row.classList.remove("visually-hidden");
-    new_row.querySelector("td:nth-child(1)").innerText = response.account;
-    new_row.querySelector("td:nth-child(2)").innerText = response.tracking_code;
-    new_row.querySelector("td:nth-child(3)").innerText = `$${response.price}`;
-    new_row.querySelector("td:nth-child(4)").innerText = response.carrier;
-    new_row.querySelector("td:nth-child(5)").innerText = response.package_type;
-    new_row.querySelector("td:nth-child(6)").innerText = response.comments;
-    document.querySelector("tbody").appendChild(new_row);
+    let new_row = $(".visually-hidden")
+        .clone()
+        .removeClass("visually-hidden")
+        .attr("data-row-id", response.id);
+
+    new_row.find("td:nth-child(1)").text(response.account)
+        .attr("data-id", response.account_id);
+    new_row.find("td:nth-child(2)").text(response.tracking_code);
+    new_row.find("td:nth-child(3)").text(`$${response.price}`);
+    new_row.find("td:nth-child(4)").text(response.carrier)
+        .attr("data-id", response.carrier_id);
+    new_row.find("td:nth-child(5)").text(response.package_type)
+        .attr("data-id", response.package_type_id);
+    new_row.find("td:nth-child(6)").text(response.comments);
+
+    $("tbody").append(new_row);
 }
 
 function handle_errors(response) {
@@ -111,6 +120,7 @@ function handle_checkin() {
                 window.display_error_message();
                 window.open(`/packages/label?ids=${packages_array.toString()}`, "_blank");
                 document.querySelectorAll("tbody tr:not(.visually-hidden)").forEach(row => row.remove());
+                $(document).trigger("rowsUpdated");
                 packages.clear();
                 $("#checkinbtn").prop("disabled", true);
             } else {
@@ -139,16 +149,11 @@ function load_queue(selected_queue) {
 
             if (response.success && response.packages.length > 0) {
                 response.packages.forEach(function(package) {
-                    package.account = package.package__account__description;
-                    package.tracking_code = package.package__tracking_code;
-                    package.price = package.package__price;
-                    package.carrier = package.package__carrier__name;
-                    package.package_type = package.package__package_type__description;
-                    package.comments = package.package__comments;
-
-                    packages.add(package.package__id);
+                    packages.add(package.id);
                     display_packages(package);
                 });
+
+                $(document).trigger("rowsUpdated");
             } else if (response.success && response.packages.length == 0) {
                 $("#checkinbtn").prop("disabled", true);
             } else if (!response.success) {
