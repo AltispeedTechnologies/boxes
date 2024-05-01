@@ -59,30 +59,31 @@
                         <td data-type="package_type" data-id="{{ package.package_type_id }}" class="mutableData">{{ package.package_type__description }}</td>
                         <td data-type="comments" class="mutableData">{{ package.comments|default:"" }}</td>
                         <td>
-                            {% if package.current_state == 1 %}
-                            <button type="button" class="btn btn-success"
-                                    data-bs-toggle="modal" data-bs-target="#checkOutModal"
-                                    data-row-id="{{ package.id }}">
-                                <i class="fas fa-check-circle"></i>
-                            </button>
-                            {% elif package.current_state == 2 %}
-                            <button type="button" class="btn bg-secondary"
-                                    data-bs-toggle="modal" data-bs-target="#checkBackInModal"
-                                    data-row-id="{{ package.id }}">
-                                <i class="fas fa-arrow-right"></i>
-                            </button>
-                            {% endif %}
                             <button class="btn btn-warning" data-row-id="{{ package.id }}" data-bs-target="#print">
                                 <i class="fas fa-print"></i>
-                            </button>
-                            <button class="btn btn-info" onclick="window.location.href='/packages/{{ package.id }}';">
-                                <i class="fas fa-info-circle"></i>
                             </button>
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
                                     data-bs-target="#editModal" data-row-id="{{ package.id }}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            {% if picklists and picklist_title %}
+                            <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                                    data-bs-target="#addPicklistModal" data-row-id="{{ package.id }}">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            {% if package.current_state == 1 %}
+                                <button type="button" class="btn btn-success"
+                                        data-bs-toggle="modal" data-bs-target="#checkOutModal"
+                                        data-row-id="{{ package.id }}">
+                                    <i class="fas fa-check-circle"></i>
+                                </button>
+                            {% elif package.current_state == 2 %}
+                                <button type="button" class="btn bg-secondary"
+                                        data-bs-toggle="modal" data-bs-target="#checkBackInModal"
+                                        data-row-id="{{ package.id }}">
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                            {% endif %}
+                            {% if picklist_title %}
                                 <button type="button" class="btn btn-success" data-bs-toggle="modal" 
                                         data-bs-target="#moveModal" data-row-id="{{ package.id }}">
                                     <i class="fas fa-arrows-alt"></i>
@@ -111,6 +112,7 @@
     {% include "modals/edit.html" %}
     {% include "modals/check_out.html" %}
     {% include "modals/check_back_in.html" %}
+    {% include "modals/add_picklist.html" %}
 
     <script>
         window.selected_packages = new Set({{ selected|safe }});

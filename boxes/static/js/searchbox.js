@@ -68,4 +68,10 @@ $(document).ready(function() {
             window.location.href = full_url;
         }
     });
+
+    $("#showallbtn").click(function(event) {
+        event.preventDefault();
+
+        window.location.href = $(this).data("search") + "?q=&filter=";
+    });
 });

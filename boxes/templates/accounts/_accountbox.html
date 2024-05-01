@@ -50,7 +50,10 @@
         </nav>
     </div>
     <hr />
+    {% if view_type == "packages" %}
     {% include "packages/_bulk_actions.html" %}
+    <br style="clear: both;" />
+    {% endif %}
 </div>
 {% endif %}
 {% endblock content %}

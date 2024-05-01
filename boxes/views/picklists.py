@@ -7,13 +7,18 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 
 def picklists(request):
     return render(request, "packages/search_picklists.html", {"picklists": True,
                                                               "picklist_data": _picklist_data(),
                                                               "search_url": reverse("search_picklist_packages")})
+
+@require_http_methods(["GET"])
+def picklist_query(request):
+    results = _picklist_data()
+    return JsonResponse({"results": results})
 
 def search_picklist_packages(request):
     try:
@@ -46,18 +51,24 @@ def search_picklist_packages(request):
                                                               "filter": filter_info,
                                                               "account": account})
 
-@require_POST
+@require_http_methods(["POST"])
 def add_package_picklist(request):
     try:
         data = json.loads(request.body)
         picklist_id = int(data.get("picklist_id"))
-        package_ids = data.get("ids", [])
+        package_ids = set(data.get("ids", []))
 
-        package_picklist_objects = [
-            PackagePicklist(package_id=pkgid, picklist_id=picklist_id) for pkgid in package_ids
-        ]
+        existing_entries = PackagePicklist.objects.filter(package_id__in=package_ids)
+        existing_entries.update(picklist_id=picklist_id)
+        existing_package_ids = set(existing_entries.values_list("package_id", flat=True))
+        existing_package_ids = {str(pkg_id) for pkg_id in existing_package_ids}
+
+        new_package_ids = package_ids - existing_package_ids
+        print(package_ids, existing_package_ids, new_package_ids)
+        new_objects = [PackagePicklist(package_id=pkg_id, picklist_id=picklist_id) for pkg_id in new_package_ids]
+
         with transaction.atomic():
-            PackagePicklist.objects.bulk_create(package_picklist_objects)
+            PackagePicklist.objects.bulk_create(new_objects)
         
         messages.success(request, "Successfully added to picklist")
         return JsonResponse({"success": True, "redirect_url": reverse("picklists")})
@@ -68,7 +79,7 @@ def add_package_picklist(request):
         messages.error(request, "An unknown error occurred.")
         return JsonResponse({"success": False, "errors": [str(e)]})
 
-@require_POST
+@require_http_methods(["POST"])
 def move_package_picklist(request):
     try:
         data = json.loads(request.body)
@@ -91,11 +102,10 @@ def move_package_picklist(request):
         messages.error(request, "An unknown error occurred.")
         return JsonResponse({"success": False, "errors": [str(e)]})
 
-@require_POST
+@require_http_methods(["POST"])
 def remove_package_picklist(request):
     try:
         data = json.loads(request.body)
-        print(data)
         package_ids = data.get("ids", [])
 
         if not package_ids:
@@ -137,5 +147,7 @@ def _picklist_data(exclude=None):
         picklists = Picklist.objects.exclude(id=exclude)
     else:
         picklists = Picklist.objects.all()
+
     picklist_data = [{"id": picklist.id, "text": f"{picklist.date}"} for picklist in picklists]
+
     return picklist_data

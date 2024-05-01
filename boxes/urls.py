@@ -23,6 +23,7 @@ urlpatterns = [
 
     # Backend endpoints
     path("carriers/search", is_staff(carrier_search), name="carrier_search"),
+    path("picklists/query", is_staff(picklist_query), name="picklist_query"),
     path("types/search", is_staff(type_search), name="type_search"),
     path("packages/checkout", is_staff(check_out_packages), name="check_out_packages"),
     path("packages/checkout/reverse", is_staff(check_out_packages_reverse), name="check_out_packages_reverse"),

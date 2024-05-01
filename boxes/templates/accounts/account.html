@@ -33,7 +33,7 @@
                     </td>
                     <td>${{ entry.credit }}</td>
                     <td>${{ entry.debit }}</td>
-                    <td>{{ entry.description }}</td>
+                    <td>{{ entry.description|default_if_none:"" }}</td>
                     <td class="timestamp" data-timestamp="{{ ledger.timestamp.isoformat }}">
                         {{ entry.timestamp }}
                     </td>

@@ -296,7 +296,8 @@ def type_search(request):
 
 @require_http_methods(["GET"])
 def search_packages(request):
-    if request.GET.get("filter").strip() != "tracking_code":
+    req_filter = request.GET.get("filter").strip()
+    if req_filter not in ["tracking_code", ""]:
         return
 
     try:

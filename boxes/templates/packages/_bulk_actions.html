@@ -24,6 +24,14 @@
                     disabled>
                 <i class="fas fa-edit"></i>
             </button>
+            <button class="btn btn-lg btn-info"
+                    id="bulkpicklistbtn"
+                    data-bs-target="#bulkAddPicklistModal"
+                    data-bs-toggle="modal"
+                    data-bs-tooltip="yes" title="Add to Picklist"
+                    disabled>
+                <i class="fas fa-plus"></i>
+            </button>
             <button class="btn btn-lg btn-success"
                     id="bulkcheckoutbtn"
                     data-bs-target="#bulkCheckOutModal"
@@ -46,4 +54,5 @@
 {% include "modals/bulk_edit.html" %}
 {% include "modals/bulk_check_out.html" %}
 {% include "modals/bulk_check_back_in.html" %}
+{% include "modals/bulk_add_picklist.html" %}
 {% endblock content %}
