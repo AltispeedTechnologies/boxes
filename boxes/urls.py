@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponseForbidden
-from django.urls import path
+from django.urls import include, path
 from .views import *
 
 def is_staff(view_func):
@@ -27,6 +27,8 @@ urlpatterns = [
     path("types/search", is_staff(type_search), name="type_search"),
     path("packages/checkout", is_staff(check_out_packages), name="check_out_packages"),
     path("packages/checkout/reverse", is_staff(check_out_packages_reverse), name="check_out_packages_reverse"),
+    path("modals/bulk", is_staff(get_bulk_modals), name="get_bulk_modals"),
+    path("modals/actions", is_staff(get_actions_modals), name="get_actions_modals"),
 
     # Generic package information
     path("packages/", is_staff(all_packages), name="packages"),
@@ -42,7 +44,7 @@ urlpatterns = [
     path("packages/new", is_staff(create_package), name="create_package"),
 
     # Picklists page
-    path("packages/picklists", is_staff(picklists), name="picklists"),
+    path("packages/picklists", is_staff(picklist_show), name="picklists"),
     path("packages/picklists/<int:pk>", is_staff(picklist_show), name="picklist_show"),
     path("packages/picklists/add", is_staff(add_package_picklist), name="add_package_picklist"),
     path("packages/picklists/move", is_staff(move_package_picklist), name="move_package_picklist"),
@@ -58,3 +60,10 @@ urlpatterns = [
     # Users
     path("users/update", is_staff(update_user), name="update_user"),
 ]
+
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns

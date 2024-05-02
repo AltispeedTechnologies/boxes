@@ -1,6 +1,19 @@
-$(document).ready(function() {
-    let csrf_token = window.get_cookie("csrftoken");
+function update_package_rows(price, carrier) {
+    window.selected_packages.forEach(function(package_id) {
+        var $tr = $('tr[data-row-id="' + package_id + '"]');
+        $tr.find("td").each(function() {
+            var type = $(this).data("type");
+            if (type === "price") {
+                $(this).text("$" + price);
+            } else if (type === "carrier" && carrier != "") {
+                $(this).text(carrier.replace(" (Create new)", ""));
+            }
+        });
+    });
+    window.display_error_message();
+}
 
+function setup_bulk_actions() {
     $("[data-bs-target=\"#bulkPrint\"]").on("click", function() {
         var row_ids = Array.from(window.selected_packages).join(",");
         window.open("/packages/label?ids=" + row_ids);
@@ -30,6 +43,112 @@ $(document).ready(function() {
                 console.error("An error occurred:", error);
             }
         });
+    });
+
+    $("#bulkAddPicklistModal .btn-primary").on("click", function() {
+        let picklist_id = $("#picklist-select-bulk").find(":selected").val();
+        let packages_payload = {
+            "ids": [...window.selected_packages],
+            "picklist_id": picklist_id
+        };
+
+        $.ajax({
+            type: "POST",
+            url: "/packages/picklists/add",
+            headers: {"X-CSRFToken": csrf_token},
+            data: JSON.stringify(packages_payload),
+            contentType: "application/json",
+            success: function(response) {
+                if (response.success) {
+                    window.location.reload();
+                } else {
+                    window.display_error_message(response.errors);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("An error occurred:", error);
+            }
+        });
+    });
+
+    // Handle the bulk check back in and out modal logic
+    $("#bulkCheckBackInModal .btn-primary, #bulkCheckOutModal .btn-primary").on("click", function() {
+        let url = $(this).closest(".modal").attr("id") === "bulkCheckBackInModal" ? "/packages/checkout/reverse" : "/packages/checkout";
+        let packages = {"ids": [...window.selected_packages]};
+
+        $.ajax({
+            type: "POST",
+            url: url,
+            headers: {"X-CSRFToken": csrf_token},
+            data: packages,
+            success: function(response) {
+                if (response.success) {
+                    window.location.reload();
+                } else {
+                    window.display_error_message(response.errors);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("An error occurred:", error);
+            }
+        });
+    });
+
+    // Handle the bulk edit modal logic
+    $('[data-bs-target="#bulkEditModal"]').on("click", function() {
+        $("#bulkEditModal").find("#price").val("6.00");
+        window.initialize_async_select2("carrier", "/carriers/search", "#bulkEditModal");
+    });
+
+    $("#bulkEditModal .btn-primary").on("click", function() {
+        let price = $("#bulkEditModal").find("#price").val();
+        let carrier_id = $("#bulkEditModal").find("#id_carrier_id").val();
+        let carrier = $("#bulkEditModal").find("#id_carrier_id option:selected").text();
+
+        var post_data = {
+            ids: Array.from(window.selected_packages),
+            values: {
+                price: price,
+                carrier_id: carrier_id,
+            },
+        };
+
+        $.ajax({
+            type: "POST",
+            url: "/packages/update",
+            headers: {"X-CSRFToken": csrf_token},
+            data: JSON.stringify(post_data),
+            contentType: "application/json",
+            success: function(response) {
+                if (response.success) {
+                    $("#bulkEditModal").modal("hide");
+                    update_package_rows(price, carrier);
+                } else {
+                    window.display_error_message(response.errors);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("An error occurred:", error);
+            }
+        });
+    });
+}
+
+$(document).ready(function() {
+    let csrf_token = window.get_cookie("csrftoken");
+    $.ajax({
+        url: "/modals/bulk",
+        type: "GET",
+        headers: {
+            "X-CSRFToken": csrf_token
+        },
+        success: function(response) {
+            $("#bulkModalContainer").html(response);
+            setup_bulk_actions();
+        },
+        error: function() {
+            console.error("Error loading modals");
+        }
     });
 });
 

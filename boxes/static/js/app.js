@@ -11,6 +11,31 @@ $(document).ready(function() {
     var tooltip_list = tooltip_trigger_list.map(function (tooltip_trigger_el) {
         return new bootstrap.Tooltip(tooltip_trigger_el)
     })
+
+    $.ajax({
+        type: "GET",
+        url: "/picklists/query",
+        headers: {
+            "X-CSRFToken": window.csrf_token
+        },
+        success: function(response) {
+            console.log(response.results);
+            $("#picklist-select").select2({
+                data: response.results,
+                dropdownParent: "#addPicklistModal",
+                width: "100%"
+            });
+
+            $("#picklist-select-bulk").select2({
+                data: response.results,
+                dropdownParent: "#bulkAddPicklistModal",
+                width: "100%"
+            });
+        },
+        error: function(xhr, status, error) {
+            window.display_error_message(error);
+        }
+    });
 });
 
 window.get_cookie = function(name) {
@@ -27,6 +52,8 @@ window.get_cookie = function(name) {
     }
     return cookie_value;
 }
+
+window.csrf_token = window.get_cookie("csrftoken");
 
 window.initialize_async_select2 = function(field_name, search_url, dropdown_parent_selector) {
     let csrf_token = window.get_cookie("csrftoken");
@@ -93,10 +120,6 @@ window.initialize_async_select2 = function(field_name, search_url, dropdown_pare
     window.select2properheight("#id_" + field_name + "_id");
 }
 
-$("[data-bs-target=\"#print\"]").on("click", function() {
-    row_id = $(this).data("row-id");
-    window.open("/packages/label?ids=" + row_id);
-});
 
 window.select2properheight = function(select2_name) {
     var $select2container = $(select2_name).next(".select2-container");

@@ -107,12 +107,11 @@
         {% include "modals/picklist.html" %}
     {% endif %}
     <script src="{% static 'js/table_select.js' %}"></script>
-    {% include "modals/edit.html" %}
-    {% include "modals/check_out.html" %}
-    {% include "modals/check_back_in.html" %}
-    {% include "modals/add_picklist.html" %}
+    <script src="{% static 'js/modals/row.js' %}"></script>
 
     <script>
         window.selected_packages = new Set({{ selected|safe }});
     </script>
+
+    <div id="modalContainer"></div>
 {% endblock %}

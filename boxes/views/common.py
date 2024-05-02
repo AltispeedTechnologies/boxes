@@ -1,6 +1,6 @@
 from boxes.models import *
 from django.core.paginator import Paginator
-from django.db.models import Case, When, Value, IntegerField, OuterRef, Subquery
+from django.db.models import Case, When, Max, F
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from django.utils import timezone
@@ -8,28 +8,17 @@ from django.utils import timezone
 PACKAGES_PER_PAGE = 10
 
 def _get_packages(**kwargs):
-    check_in_subquery = PackageLedger.objects.filter(
-        package_id=OuterRef("pk"),
-        state=1
-    ).order_by("-timestamp").values("timestamp")[:1]
-
-    check_out_subquery = PackageLedger.objects.filter(
-        package_id=OuterRef("pk"),
-        state=2
-    ).order_by("-timestamp").values("timestamp")[:1]
-
     # Organized by size of expected data, manually
     # Revisit this section after we have data to test with scale
     packages = Package.objects.select_related(
         "account", "carrier", "packagetype", "packagepicklist"
     ).annotate(
-        check_in_time=Subquery(check_in_subquery),
-        check_out_time=Subquery(check_out_subquery),
-        custom_order=Case(
-            When(current_state=1, then=Value(0)),
-            default=Value(1),
-            output_field=IntegerField()
-        )
+        check_in_time=Max(Case(
+            When(packageledger__state=1, then="packageledger__timestamp")
+        )),
+        check_out_time=Max(Case(
+            When(packageledger__state=2, then="packageledger__timestamp")
+        ))
     ).values(
         "id",
         "packagepicklist__picklist_id",
@@ -46,7 +35,7 @@ def _get_packages(**kwargs):
         "check_in_time",
         "check_out_time"
     ).filter(**kwargs
-    ).order_by("custom_order", "current_state")
+    ).order_by("current_state", "-check_in_time")
 
     paginator = Paginator(packages, PACKAGES_PER_PAGE)
 
@@ -54,7 +43,9 @@ def _get_packages(**kwargs):
 
 def _search_packages_helper(request, **kwargs):
     query = request.GET.get("q", "").strip()
-    packages = _get_packages(tracking_code__icontains=query, **kwargs)
+    packages = _get_packages(tracking_code__icontains=query,
+                             current_state__in=[1,2],
+                             **kwargs)
     
     return packages
 

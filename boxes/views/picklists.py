@@ -10,11 +10,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 
-def picklists(request):
-    return render(request, "packages/search_picklists.html", {"picklists": True,
-                                                              "picklist_data": _picklist_data(),
-                                                              "search_url": reverse("search_picklist_packages")})
-
 @require_http_methods(["GET"])
 def picklist_query(request):
     results = _picklist_data()
@@ -124,8 +119,13 @@ def remove_package_picklist(request):
         messages.error(request, "An unknown error occurred.")
         return JsonResponse({"success": False, "errors": [str(e)]})
 
-def picklist_show(request, pk):
-    picklist = get_object_or_404(Picklist, pk=pk)
+@require_http_methods(["GET"])
+def picklist_show(request, pk=None):
+    if pk:
+        picklist = get_object_or_404(Picklist, pk=pk)
+    else:
+        picklist = Picklist.objects.first()
+
     package_ids = PackagePicklist.objects.filter(picklist_id=picklist.id).values_list("package_id", flat=True)
 
     packages = _get_packages(id__in=package_ids)
