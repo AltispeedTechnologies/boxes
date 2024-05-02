@@ -59,6 +59,8 @@
                         <td data-type="package_type" data-id="{{ package.package_type_id }}" class="mutableData">{{ package.package_type__description }}</td>
                         <td data-type="comments" class="mutableData">{{ package.comments|default:"" }}</td>
                         <td>
+                            {% load cache %}
+                            {% cache 500 button_group package.current_state picklist_title %}
                             <button class="btn btn-warning" data-bs-target="#print">
                                 <i class="fas fa-print"></i>
                             </button>
@@ -91,6 +93,7 @@
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             {% endif %}
+                            {% endcache %}
                         </td>
                     </tr>
                     {% endfor %}
