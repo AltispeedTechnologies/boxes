@@ -19,6 +19,7 @@ urlpatterns = [
     path("accounts/<int:pk>/ledger", is_staff(account_ledger), name="account_ledger"),
     path("accounts/<int:pk>/packages", is_staff(account_packages), name="account_packages"),
     path("accounts/<int:pk>/update", is_staff(update_account), name="update_account"),
+    path("accounts/aliases/update", is_staff(update_package_aliases), name="update_package_aliases"),
     path("accounts/search", is_staff(account_search), name="account_search"),
 
     # Backend endpoints

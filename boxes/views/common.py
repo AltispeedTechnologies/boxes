@@ -71,10 +71,18 @@ def _get_matching_users(account_id):
         # Split the account.name into name parts
         name_parts = account.name.split(" ")
         
-        # Determine how to assign the name parts
-        first_name = name_parts[0] if len(name_parts) > 0 else ""
-        middle_name = name_parts[1] if len(name_parts) == 3 else ""
-        last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+        # If the account name is empty, do nothing
+        if len(name_parts) == 0:
+            return None, account
+
+        first_name, middle_name, last_name = name_parts[0], "", ""
+
+        if len(name_parts) >= 3:
+            middle_name = name_parts[1]
+            last_name = " ".join(name_parts[2:])
+        elif len(name_parts) == 2:
+            middle_name = ""
+            last_name = name_parts[1]
         
         # Create a CustomUser with a useless password and login disabled
         new_custom_user = CustomUser.objects.create(

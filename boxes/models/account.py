@@ -16,6 +16,21 @@ class Account(models.Model):
 
         return balance
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        
+        # Ensure there is a primary alias for this account or update it
+        self.ensure_primary_alias()
+
+    def ensure_primary_alias(self):
+        primary_alias = AccountAlias.objects.filter(account=self, primary=True).first()
+        if primary_alias:
+            primary_alias.alias = self.name
+            primary_alias.save()
+        else:
+            primary_alias = AccountAlias(account=self, alias=self.name, primary=True)
+            primary_alias.save()
+
 class AccountLedger(models.Model):
     user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
@@ -26,5 +41,10 @@ class AccountLedger(models.Model):
     package = models.ForeignKey("Package", on_delete=models.RESTRICT, null=True)
 
 class UserAccount(models.Model):
-    user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    user = models.ForeignKey("CustomUser", on_delete=models.RESTRICT)
+    account = models.ForeignKey(Account, on_delete=models.RESTRICT)
+
+class AccountAlias(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.RESTRICT)
+    alias = models.CharField(max_length=64)
+    primary = models.BooleanField()
