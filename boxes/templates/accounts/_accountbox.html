@@ -5,23 +5,8 @@
 
 <div class="container">
     <div class="row">
-        <div class="col" id="descdisplay" style="display: flex; align-items: center;">
+        <div class="col">
             <h2 id="accountdesc">{{ account.name }}</h2>
-            <i class="fas fa-pencil"
-               id="editaccountdesc"
-               style="cursor: pointer;
-                      margin-left: 10px;
-                      font-size: 1em;"></i>
-        </div>
-        <div class="col d-none" id="descedit" style="display: flex; align-items: center;">
-            <input class="form-control" id="accountdesceditbox"></input>
-            <i class="fas fa-check-square"
-               id="saveaccountdesc"
-               data-account-id="{{ account.id }}"
-               style="cursor: pointer;
-                      margin-left: 10px;
-                      font-size: 2em;
-                      color: #28a745;"></i>
         </div>
         <div class="col text-end">
             <h4><strong>Balance:</strong> {{ account.hr_balance }}</h4>
@@ -29,7 +14,7 @@
     </div>
     <div class="row">
         <div class="position-relative mb-2">
-            <textarea class="form-control" id="accountnotes" rows="2" placeholder="Enter notes here...">{{ account.comments|default:"" }}</textarea>
+            <textarea class="form-control" data-id="{{ account.id }}" id="accountnotes" rows="2" placeholder="Enter notes here...">{{ account.comments|default:"" }}</textarea>
             <div id="savingnotes" class="d-none text-warning position-absolute bottom-0 end-0 me-3 p-2">
                 <i class="fas fa-spinner fa-spin"></i>
             </div>
