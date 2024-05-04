@@ -18,6 +18,9 @@ function setup_actions() {
 
             if ($(this).data("bs-target") === "#print") {
                 window.open("/packages/label?ids=" + row_id);
+            } else if ($(this).data("bs-target") === "#moveModal") {
+                var current_picklist = $(this).attr("data-picklist-id");
+                $("#picklist-select").val(current_picklist).trigger("change");
             }
         }
     );

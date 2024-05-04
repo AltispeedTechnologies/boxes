@@ -81,12 +81,12 @@
                             {% endif %}
                             {% if package.picklist_id %}
                                 <button type="button" class="btn btn-success" data-bs-toggle="modal" 
+                                        data-picklist-id="{{ package.picklist_id }}"
                                         data-bs-target="#moveModal">
                                     <i class="fas fa-arrows-alt"></i>
                                 </button>
                             {% else %}
                                 <button type="button" class="btn btn-info" data-bs-toggle="modal"
-                                        data-picklist-id="{{ package.picklist_id }}"
                                         data-bs-target="#addPicklistModal">
                                     <i class="fas fa-list"></i>
                                 </button>
