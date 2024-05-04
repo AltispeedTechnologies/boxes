@@ -18,10 +18,7 @@ def _get_packages(**kwargs):
         )),
         check_out_time=Max(Case(
             When(packageledger__state=2, then="packageledger__timestamp")
-        )),
-        in_picklist=Exists(
-            PackagePicklist.objects.filter(package_id=OuterRef("id"))
-        )
+        ))
     ).values(
         "id",
         "packagepicklist__picklist_id",
@@ -36,8 +33,7 @@ def _get_packages(**kwargs):
         "tracking_code",
         "comments",
         "check_in_time",
-        "check_out_time",
-        "in_picklist"
+        "check_out_time"
     ).filter(**kwargs
     ).order_by("current_state", "-check_in_time")
 
