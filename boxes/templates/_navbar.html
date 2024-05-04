@@ -2,36 +2,36 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
         {% if request.user.is_authenticated %}
-            <span class="navbar-text">Hello, {{ request.user.first_name | title }}!</span>
+            <span class="navbar-text fw-bold">Hello, {{ request.user.first_name | title }}!</span>
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'home' %}">Home</a>
+                    <a class="nav-link fw-bold" href="{% url 'home' %}">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'create_package' %}">Check In</a>
+                    <a class="nav-link fw-bold" href="{% url 'create_package' %}">Check In</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'packages' %}">Search</a>
+                    <a class="nav-link fw-bold" href="{% url 'packages' %}">Search</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'picklists' %}">Picklists</a>
+                    <a class="nav-link fw-bold" href="{% url 'picklists' %}">Picklists</a>
                 </li>
             </ul>
 
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                    <a class="nav-link fw-bold" href="{% url 'logout' %}">Logout</a>
                 </li>
                 {% if request.user.is_admin %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'register' %}">Register New User</a>
+                        <a class="nav-link fw-bold" href="{% url 'register' %}">Register New User</a>
                     </li>
                 {% endif %}
             </ul>
         {% else %}
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'login' %}">Login</a>
+                    <a class="nav-link fw-bold" href="{% url 'login' %}">Login</a>
                 </li>
             </ul>
         {% endif %}
