@@ -15,38 +15,6 @@ def picklist_query(request):
     results = _picklist_data()
     return JsonResponse({"results": results})
 
-@require_http_methods(["GET"])
-def search_picklist_packages(request):
-    try:
-        packages = _search_packages_helper(request, packagepicklist__picklist_id__isnull=True)
-    except ValueError as e:
-        messages.error(request, str(e))
-        return redirect("picklists")
-
-    page_number = request.GET.get("page")
-    page_obj = packages.get_page(page_number)
-
-    selected_ids = request.GET.get("selected_ids", "")
-    selected = selected_ids.split(",") if selected_ids else []
-    query = request.GET.get("q", "")
-    filter_info = request.GET.get("filter", "")
-
-    account = None
-    if request.GET.get("filter", "").strip() == "customer":
-        account_id_raw = request.GET.get("cid", "").strip()
-        account_id = re.sub(r'\D', '', account_id_raw)
-        
-        if account_id:
-            account = Account.objects.get(id=account_id)
-
-    return render(request, "packages/search_picklists.html", {"picklists": True,
-                                                              "picklist_data": _picklist_data(),
-                                                              "page_obj": page_obj,
-                                                              "selected": selected,
-                                                              "query": query,
-                                                              "filter": filter_info,
-                                                              "account": account})
-
 @require_http_methods(["POST"])
 def modify_package_picklist(request):
     try:

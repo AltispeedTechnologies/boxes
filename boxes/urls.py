@@ -49,7 +49,6 @@ urlpatterns = [
     path("packages/picklists/<int:pk>", is_staff(picklist_show), name="picklist_show"),
     path("packages/picklists/modify", is_staff(modify_package_picklist), name="modify_package_picklist"),
     path("packages/picklists/remove", is_staff(remove_package_picklist), name="remove_package_picklist"),
-    path("packages/picklists/search", is_staff(search_picklist_packages), name="search_picklist_packages"),
 
     # Label printing
     path("packages/label", is_staff(generate_label), name="generate_label"),
