@@ -281,25 +281,23 @@ $(document).ready(function() {
     $(document).trigger("wantPicklistQuery");
 
     $(document).on("picklistQueryDone", function(event, data) {
-        if (typeof picklist_data !== "undefined") {
-            $("#picklist-select").select2({
-                data: picklist_data,
-                dropdownParent: "#moveModal",
-                width: "100%"
-            });
-        } else {
-            $("#picklist-select-row").select2({
-                data: data,
-                dropdownParent: "#addPicklistModal",
-                width: "100%"
-            });
+        $("#picklist-select").select2({
+            data: data,
+            dropdownParent: "#moveModal",
+            width: "100%"
+        });
 
-            $("#picklist-select").select2({
-                data: data,
-                dropdownParent: "#moveModal",
-                width: "100%"
-            });
-        }
+        $("#picklist-select-row").select2({
+            data: data,
+            dropdownParent: "#addPicklistModal",
+            width: "100%"
+        });
+
+        $("#picklist-select").select2({
+            data: data,
+            dropdownParent: "#moveModal",
+            width: "100%"
+        });
     });
 
     $.ajax({
