@@ -131,6 +131,56 @@ function setup_bulk_actions() {
             }
         });
     });
+
+    $("#bulkMoveModal .btn-primary").on("click", function() {
+        let picklist_id = $("#picklist-select-bulk-move").find(":selected").val();
+        var post_data = {
+            ids: Array.from(window.selected_packages),
+            picklist_id: Number(picklist_id)
+        };
+
+        $.ajax({
+            type: "POST",
+            url: "/packages/picklists/modify",
+            headers: {"X-CSRFToken": window.csrf_token},
+            data: JSON.stringify(post_data),
+            contentType: "application/json",
+            success: function(response) {
+                if (response.success) {
+                    window.location.reload();
+                } else {
+                    window.display_error_message(response.errors);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("An error occurred:", error);
+            }
+        });
+    });
+
+    $("#bulkRemoveModal .btn-primary").on("click", function() {
+        var post_data = {
+            ids: Array.from(window.selected_packages),
+        };
+
+        $.ajax({
+            type: "POST",
+            url: "/packages/picklists/remove",
+            headers: {"X-CSRFToken": window.csrf_token},
+            data: JSON.stringify(post_data),
+            contentType: "application/json",
+            success: function(response) {
+                if (response.success) {
+                    window.location.reload();
+                } else {
+                    window.display_error_message(response.errors);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("An error occurred:", error);
+            }
+        });
+    });
 }
 
 $(document).ready(function() {
@@ -140,6 +190,11 @@ $(document).ready(function() {
         $("#picklist-select-bulk").select2({
             data: data,
             dropdownParent: "#bulkAddPicklistModal",
+            width: "100%"
+        });
+        $("#picklist-select-bulk-move").select2({
+            data: data,
+            dropdownParent: "#bulkMoveModal",
             width: "100%"
         });
     });
@@ -167,6 +222,8 @@ $(document).on("selectedPackagesUpdated", function(event) {
     $("#bulkprintbtn").prop("disabled", no_selected_packages);
     $("#bulkeditbtn").prop("disabled", no_selected_packages);
     $("#bulkpicklistbtn").prop("disabled", no_selected_packages);
+    $("#bulkpicklistmovebtn").prop("disabled", no_selected_packages);
+    $("#bulkpicklistremovebtn").prop("disabled", no_selected_packages);
     $("#bulkcheckoutbtn").prop("disabled", no_selected_packages);
     $("#bulkcheckbackinbtn").prop("disabled", no_selected_packages);
 });

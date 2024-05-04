@@ -6,6 +6,10 @@ $(document).ready(function() {
             data: picklist_data,
             width: "25%"
         });
+        $("#picklist-select").select2({
+            data: picklist_data,
+            width: "25%"
+        });
     }
 
     $(document).on("click", 
@@ -27,7 +31,7 @@ $(document).ready(function() {
     // Handle "Save Changes" click in the modal
     $("#moveModal .btn-primary").on("click", function() {
         // Get the selected item's ID from the dropdown
-        var selected_item_value = $("#picklist-select-view").val();
+        var selected_item_value = $("#picklist-select").val();
 
         // Prepare data for POST request
         var post_data = {

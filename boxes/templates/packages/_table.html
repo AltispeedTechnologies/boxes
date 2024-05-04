@@ -60,17 +60,13 @@
                         <td data-type="comments" class="mutableData">{{ package.comments|default:"" }}</td>
                         <td>
                             {% load cache %}
-                            {% cache 500 button_group package.in_picklist package.current_state picklist_title %}
+                            {% cache 1200 button_group package.in_picklist package.current_state picklist_title package.picklist_id %}
                             <button class="btn btn-warning" data-bs-target="#print">
                                 <i class="fas fa-print"></i>
                             </button>
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
                                     data-bs-target="#editModal">
                                 <i class="fas fa-edit"></i>
-                            </button>
-                            <button type="button" class="btn btn-info" data-bs-toggle="modal"
-                                    data-bs-target="#addPicklistModal">
-                                <i class="fas fa-list"></i>
                             </button>
                             {% if package.current_state == 1 %}
                                 <button type="button" class="btn btn-success"
@@ -91,6 +87,12 @@
                                 <button type="button" class="btn btn-danger" data-bs-toggle="modal"
                                         data-bs-target="#removeModal">
                                     <i class="fas fa-trash-alt"></i>
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                                        data-picklist-id="{{ package.picklist_id }}"
+                                        data-bs-target="#addPicklistModal">
+                                    <i class="fas fa-list"></i>
                                 </button>
                             {% endif %}
                             {% endcache %}
