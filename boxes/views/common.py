@@ -1,6 +1,6 @@
 from boxes.models import *
 from django.core.paginator import Paginator
-from django.db.models import Case, When, Max, F
+from django.db.models import Case, Exists, When, Max, F, OuterRef
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from django.utils import timezone
@@ -18,7 +18,10 @@ def _get_packages(**kwargs):
         )),
         check_out_time=Max(Case(
             When(packageledger__state=2, then="packageledger__timestamp")
-        ))
+        )),
+        in_picklist=Exists(
+            PackagePicklist.objects.filter(package_id=OuterRef("id"))
+        )
     ).values(
         "id",
         "packagepicklist__picklist_id",
@@ -33,7 +36,8 @@ def _get_packages(**kwargs):
         "tracking_code",
         "comments",
         "check_in_time",
-        "check_out_time"
+        "check_out_time",
+        "in_picklist"
     ).filter(**kwargs
     ).order_by("current_state", "-check_in_time")
 

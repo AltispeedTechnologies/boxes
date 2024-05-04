@@ -1,7 +1,6 @@
 var row_id = null;
 
 function init_modal(event) {
-    let csrf_token = window.get_cookie("csrftoken");
     package_data = {};
     var tr = $(event.target).closest("tr");
     row_id = tr.data("row-id");
@@ -75,7 +74,6 @@ $(document).ready(function() {
     $(document).on("rowsUpdated", handle_updated_rows);
 
     $("#editModal .btn-primary").on("click", function() {
-        let csrf_token = window.get_cookie("csrftoken");
         var $tr = $('tr[data-row-id="' + row_id + '"]');
 
         var tracking_code = $("#editModal").find("#tracking_code").val();
@@ -103,7 +101,7 @@ $(document).ready(function() {
         $.ajax({
             type: "POST",
             url: "/packages/" + row_id + "/update",
-            headers: {"X-CSRFToken": csrf_token},
+            headers: {"X-CSRFToken": window.csrf_token},
             data: JSON.stringify(post_data),
             contentType: "application/json",
             success: function(response) {

@@ -22,14 +22,13 @@ function setup_bulk_actions() {
     $("#checkoutbtn").click(function(event) {
         event.preventDefault();
 
-        let csrf_token = window.get_cookie("csrftoken");
         let packages_array = Array.from(window.selected_packages);
         let packages_payload = {"ids": packages_array};
 
         $.ajax({
             type: "POST",
             url: "/packages/checkout",
-            headers: {"X-CSRFToken": csrf_token},
+            headers: {"X-CSRFToken": window.csrf_token},
             data: packages_payload,
             success: function(response) {
                 if (response.success) {
@@ -54,8 +53,8 @@ function setup_bulk_actions() {
 
         $.ajax({
             type: "POST",
-            url: "/packages/picklists/add",
-            headers: {"X-CSRFToken": csrf_token},
+            url: "/packages/picklists/modify",
+            headers: {"X-CSRFToken": window.csrf_token},
             data: JSON.stringify(packages_payload),
             contentType: "application/json",
             success: function(response) {
@@ -79,7 +78,7 @@ function setup_bulk_actions() {
         $.ajax({
             type: "POST",
             url: url,
-            headers: {"X-CSRFToken": csrf_token},
+            headers: {"X-CSRFToken": window.csrf_token},
             data: packages,
             success: function(response) {
                 if (response.success) {
@@ -116,7 +115,7 @@ function setup_bulk_actions() {
         $.ajax({
             type: "POST",
             url: "/packages/update",
-            headers: {"X-CSRFToken": csrf_token},
+            headers: {"X-CSRFToken": window.csrf_token},
             data: JSON.stringify(post_data),
             contentType: "application/json",
             success: function(response) {
@@ -135,16 +134,26 @@ function setup_bulk_actions() {
 }
 
 $(document).ready(function() {
-    let csrf_token = window.get_cookie("csrftoken");
+    $(document).trigger("wantPicklistQuery");
+
+    $(document).on("picklistQueryDone", function(event, data) {
+        $("#picklist-select-bulk").select2({
+            data: data,
+            dropdownParent: "#bulkAddPicklistModal",
+            width: "100%"
+        });
+    });
+
     $.ajax({
         url: "/modals/bulk",
         type: "GET",
         headers: {
-            "X-CSRFToken": csrf_token
+            "X-CSRFToken": window.csrf_token
         },
         success: function(response) {
             $("#bulkModalContainer").html(response);
             setup_bulk_actions();
+            $(document).trigger("picklistQuery");
         },
         error: function() {
             console.error("Error loading modals");

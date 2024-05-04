@@ -15,6 +15,7 @@ def picklist_query(request):
     results = _picklist_data()
     return JsonResponse({"results": results})
 
+@require_http_methods(["GET"])
 def search_picklist_packages(request):
     try:
         packages = _search_packages_helper(request, packagepicklist__picklist_id__isnull=True)
@@ -47,7 +48,7 @@ def search_picklist_packages(request):
                                                               "account": account})
 
 @require_http_methods(["POST"])
-def add_package_picklist(request):
+def modify_package_picklist(request):
     try:
         data = json.loads(request.body)
         picklist_id = int(data.get("picklist_id"))
@@ -56,39 +57,18 @@ def add_package_picklist(request):
         existing_entries = PackagePicklist.objects.filter(package_id__in=package_ids)
         existing_entries.update(picklist_id=picklist_id)
         existing_package_ids = set(existing_entries.values_list("package_id", flat=True))
-        existing_package_ids = {str(pkg_id) for pkg_id in existing_package_ids}
+
+        # Ensure consistent data types for the set subtraction
+        package_ids = {int(pkg_id) for pkg_id in package_ids}
+        existing_package_ids = {int(pkg_id) for pkg_id in existing_package_ids}
 
         new_package_ids = package_ids - existing_package_ids
-        print(package_ids, existing_package_ids, new_package_ids)
         new_objects = [PackagePicklist(package_id=pkg_id, picklist_id=picklist_id) for pkg_id in new_package_ids]
 
-        with transaction.atomic():
-            PackagePicklist.objects.bulk_create(new_objects)
-        
-        messages.success(request, "Successfully added to picklist")
-        return JsonResponse({"success": True, "redirect_url": reverse("picklists")})
-    except ValueError as e:
-        messages.error(request, "Invalid input")
-        return JsonResponse({"success": False, "errors": ["Invalid input provided."]})
-    except Exception as e:
-        messages.error(request, "An unknown error occurred.")
-        return JsonResponse({"success": False, "errors": [str(e)]})
+        if new_objects:
+            with transaction.atomic():
+                PackagePicklist.objects.bulk_create(new_objects)
 
-@require_http_methods(["POST"])
-def move_package_picklist(request):
-    try:
-        data = json.loads(request.body)
-        package_id = int(data["row_id"])
-        new_picklist_id = int(data["item_id"])
-
-        updated_count = PackagePicklist.objects.filter(package_id=package_id).update(picklist_id=new_picklist_id)
-        if updated_count == 0:
-            PackagePicklist.objects.create(package_id=package_id, picklist_id=new_picklist_id)
-            message = "Successfully added to picklist"
-        else:
-            message = "Successfully moved to picklist"
-
-        messages.success(request, message)
         return JsonResponse({"success": True})
     except ValueError:
         messages.error(request, "Invalid input")
@@ -101,13 +81,13 @@ def move_package_picklist(request):
 def remove_package_picklist(request):
     try:
         data = json.loads(request.body)
-        package_ids = data.get("ids", [])
+        package_ids = set(data.get("ids", []))
 
         if not package_ids:
             messages.error(request, "No package IDs provided.")
             return JsonResponse({"success": False, "errors": ["No package IDs provided."]})
 
-        package_ids = [int(pkg_id) for pkg_id in package_ids if isinstance(pkg_id, int) or pkg_id.isdigit()]
+        package_ids = [int(pkg_id) for pkg_id in package_ids]
         PackagePicklist.objects.filter(package_id__in=package_ids).delete()
 
         messages.success(request, "Successfully removed packages from picklist")

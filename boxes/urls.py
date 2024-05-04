@@ -47,8 +47,7 @@ urlpatterns = [
     # Picklists page
     path("packages/picklists", is_staff(picklist_show), name="picklists"),
     path("packages/picklists/<int:pk>", is_staff(picklist_show), name="picklist_show"),
-    path("packages/picklists/add", is_staff(add_package_picklist), name="add_package_picklist"),
-    path("packages/picklists/move", is_staff(move_package_picklist), name="move_package_picklist"),
+    path("packages/picklists/modify", is_staff(modify_package_picklist), name="modify_package_picklist"),
     path("packages/picklists/remove", is_staff(remove_package_picklist), name="remove_package_picklist"),
     path("packages/picklists/search", is_staff(search_picklist_packages), name="search_picklist_packages"),
 

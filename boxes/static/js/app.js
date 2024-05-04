@@ -12,30 +12,26 @@ $(document).ready(function() {
         return new bootstrap.Tooltip(tooltip_trigger_el)
     })
 
-    $.ajax({
-        type: "GET",
-        url: "/picklists/query",
-        headers: {
-            "X-CSRFToken": window.csrf_token
-        },
-        success: function(response) {
-            console.log(response.results);
-            $("#picklist-select").select2({
-                data: response.results,
-                dropdownParent: "#addPicklistModal",
-                width: "100%"
+    let picklist_count = 0;
+    $(document).on("picklistQuery", function(event) {
+        if (++picklist_count === picklist_total_functions) {
+            $.ajax({
+                type: "GET",
+                url: "/picklists/query",
+                headers: {
+                    "X-CSRFToken": window.csrf_token
+                },
+                success: function(response) {
+                    $(document).trigger("picklistQueryDone", [response.results]);
+                }
             });
-
-            $("#picklist-select-bulk").select2({
-                data: response.results,
-                dropdownParent: "#bulkAddPicklistModal",
-                width: "100%"
-            });
-        },
-        error: function(xhr, status, error) {
-            window.display_error_message(error);
         }
     });
+});
+
+let picklist_total_functions = 0;
+$(document).on("wantPicklistQuery", function(event) {
+    picklist_total_functions++;
 });
 
 window.get_cookie = function(name) {
@@ -154,7 +150,7 @@ window.display_error_message = function(errors) {
 
     // Loop through the errors object and concatenate error messages
     Object.keys(errors).forEach(function(key) {
-        error_message += errors[key][0] + " "; // Append the first error message for each key
+        error_message += errors[key] + " "; // Append the first error message for each key
     });
 
     // Create and append alert div with the concatenated error message

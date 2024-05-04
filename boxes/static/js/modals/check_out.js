@@ -8,13 +8,12 @@ $(document).ready(function() {
     });
 
     $("#checkOutModal .btn-primary").on("click", function() {
-        let csrf_token = window.get_cookie("csrftoken");
         let packages = {"ids": [row_id]};
 
         $.ajax({
             type: "POST",
             url: "/packages/checkout",
-            headers: {"X-CSRFToken": csrf_token},
+            headers: {"X-CSRFToken": window.csrf_token},
             data: packages,
             success: function(response) {
                 if (response.success) {

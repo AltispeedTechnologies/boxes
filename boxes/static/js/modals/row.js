@@ -22,7 +22,7 @@ function setup_actions() {
 
     $("#addPicklistModal .btn-primary").on("click", function() {
         event.preventDefault();
-        let picklist_id = $("#picklist-select").find(":selected").val();
+        let picklist_id = $("#picklist-select-row").find(":selected").val();
         let packages_payload = {
             "ids": [row_id],
             "picklist_id": picklist_id
@@ -30,7 +30,7 @@ function setup_actions() {
         
         $.ajax({
             type: "POST",
-            url: "/packages/picklists/add",
+            url: "/packages/picklists/modify",
             headers: {"X-CSRFToken": window.csrf_token},
             data: JSON.stringify(packages_payload),
             contentType: "application/json",
@@ -38,6 +38,7 @@ function setup_actions() {
                 if (response.success) {
                     window.location.reload();
                 } else {
+                    console.log(response.errors);
                     window.display_error_message(response.errors);
                 }
             },
@@ -173,8 +174,6 @@ function init_edit_modal(event) {
         }
     });
 
-    console.log(package_data);
-
     $("#tracking_code").val(package_data.tracking_code);
     $("#editModal").find("#price").val(package_data.price.replace("$", ""));
     $("#comments").val(package_data.comments);
@@ -221,6 +220,16 @@ function handle_updated_rows() {
 }
 
 $(document).ready(function() {
+    $(document).trigger("wantPicklistQuery");
+
+    $(document).on("picklistQueryDone", function(event, data) {
+        $("#picklist-select-row").select2({
+            data: data,
+            dropdownParent: "#addPicklistModal",
+            width: "100%"
+        });
+    });
+
     $.ajax({
         url: "/modals/actions",
         type: "GET",
@@ -230,6 +239,7 @@ $(document).ready(function() {
         success: function(response) {
             $("#modalContainer").html(response);
             setup_actions();
+            $(document).trigger("picklistQuery");
         },
         error: function() {
             console.error("Error loading modals");
