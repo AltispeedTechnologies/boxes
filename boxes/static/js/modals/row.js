@@ -9,7 +9,9 @@ function setup_actions() {
         '[data-bs-target="#print"], ' +
         '[data-bs-target="#addPicklistModal"], ' +
         '[data-bs-target="#checkBackInModal"], ' +
-        '[data-bs-target="#checkOutModal"]', 
+        '[data-bs-target="#checkOutModal"], ' +
+        '[data-bs-target="#moveModal"], ' +
+        '[data-bs-target="#removeModal"]', 
         function() {
             var tr = $(this).closest("tr");
             row_id = tr.data("row-id");
@@ -153,6 +155,62 @@ function setup_actions() {
             }
         });
     });
+
+    $("#moveModal .btn-primary").on("click", function() {
+        var picklist_id = $("#picklist-select").val();
+
+        var post_data = {
+            ids: [row_id],
+            picklist_id: Number(picklist_id)
+        };
+        console.log(post_data);
+
+        $.ajax({
+            type: "POST",
+            url: "/packages/picklists/modify",
+            headers: {"X-CSRFToken": window.csrf_token},
+            data: JSON.stringify(post_data),
+            contentType: "application/json",
+            success: function(response) {
+                if (response.success) {
+                    window.location.reload();
+                } else {
+                    console.error("Move to picklist failed:", response.errors.join("; "));
+                    window.display_error_message(response.errors);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("An error occurred:", error);
+            }
+        });
+    });
+
+    $("#removeModal .btn-primary").on("click", function() {
+        const id_array = [row_id];
+
+        // Prepare data for POST request
+        var post_data = {
+            ids: id_array
+        };
+
+        $.ajax({
+            type: "POST",
+            url: "/packages/picklists/remove",
+            headers: {"X-CSRFToken": window.csrf_token},
+            data: JSON.stringify(post_data),
+            contentType: "application/json",
+            success: function(response) {
+                if (response.success) {
+                    window.location.reload();
+                } else {
+                    window.display_error_message(response.errors);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("An error occurred:", error);
+            }
+        });
+    });
 }
 
 function init_edit_modal(event) {
@@ -223,11 +281,25 @@ $(document).ready(function() {
     $(document).trigger("wantPicklistQuery");
 
     $(document).on("picklistQueryDone", function(event, data) {
-        $("#picklist-select-row").select2({
-            data: data,
-            dropdownParent: "#addPicklistModal",
-            width: "100%"
-        });
+        if (typeof picklist_data !== "undefined") {
+            $("#picklist-select").select2({
+                data: picklist_data,
+                dropdownParent: "#moveModal",
+                width: "100%"
+            });
+        } else {
+            $("#picklist-select-row").select2({
+                data: data,
+                dropdownParent: "#addPicklistModal",
+                width: "100%"
+            });
+
+            $("#picklist-select").select2({
+                data: data,
+                dropdownParent: "#moveModal",
+                width: "100%"
+            });
+        }
     });
 
     $.ajax({
@@ -245,4 +317,5 @@ $(document).ready(function() {
             console.error("Error loading modals");
         }
     });
+
 });

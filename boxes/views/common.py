@@ -18,10 +18,11 @@ def _get_packages(**kwargs):
         )),
         check_out_time=Max(Case(
             When(packageledger__state=2, then="packageledger__timestamp")
-        ))
+        )),
+        picklist_id=F("packagepicklist__picklist_id")
     ).values(
         "id",
-        "packagepicklist__picklist_id",
+        "picklist_id",
         "account_id",
         "carrier_id",
         "package_type_id",

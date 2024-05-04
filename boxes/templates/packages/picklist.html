@@ -1,15 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% load static %}
-    <script src="{% static 'js/picklist.js' %}"></script>
-    <script>
-        {% if picklist_data %}
-        let picklist_data = {{ picklist_data|safe }};
-        {% endif %}
-    </script>
-
-    {% include "modals/picklist.html" %}
     <div class="d-flex justify-content-between align-items-center">
         <h2>{{ picklist_title }} Picklist</h2>
     </div>
@@ -37,4 +28,16 @@
     {% else %}
     <h5>No packages in picklist</h5>
     {% endif %}
+
+    {% load static %}
+    <script src="{% static 'js/picklist.js' %}"></script>
+    <script>
+        {% if picklist_data %}
+        let picklist_data = {{ picklist_data|safe }};
+        $("#picklist-select-view").select2({
+            data: picklist_data,
+            width: "25%"
+        });
+        {% endif %}
+    </script>
 {% endblock %}
