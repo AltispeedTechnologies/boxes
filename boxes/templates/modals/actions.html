@@ -55,15 +55,15 @@
                 </div>
                 <div class="row mr-2">
                     <div class="col">
-                        <strong><label for="carrier_id">Carrier</label></strong>
-                        {% include "dropdowns/carrier.html" %}
+                        <strong><label for="id_carrier_id">Carrier</label></strong>
+                        <select name="carrier_id" class="form-control select2 mr-2" id="id_carrier_id"></select>
                     </div>
                     <div class="col">
                         <strong><label for="id_account_id">Customer</label></strong>
                         <select name="account_id" class="form-control select2 mr-2" id="id_account_id"></select>
                     </div>
                     <div class="col">
-                        <strong><label for="package_type_id">Type</label></strong>
+                        <strong><label for="id_package_type_id">Type</label></strong>
                         {% include "dropdowns/type.html" %}
                     </div>
                     <div class="col-1">

@@ -54,6 +54,10 @@ window.csrf_token = window.get_cookie("csrftoken");
 window.initialize_async_select2 = function(field_name, search_url, dropdown_parent_selector) {
     let csrf_token = window.get_cookie("csrftoken");
 
+    hr_field_name = field_name.replace(/bulk_|_/g, function(match) {
+        return match === "_" ? " " : "";
+    });
+
     var select2_options = {
         ajax: {
             url: search_url,
@@ -75,7 +79,7 @@ window.initialize_async_select2 = function(field_name, search_url, dropdown_pare
             },
             cache: true
         },
-        placeholder: "Search for " + field_name.replace("_", " "),
+        placeholder: "Search for " + hr_field_name,
         minimumInputLength: 1,
         width: "100%",
         tags: true,

@@ -14,6 +14,8 @@ function update_package_rows(price, carrier) {
 }
 
 function setup_bulk_actions() {
+    window.initialize_async_select2("bulk_carrier", "/carriers/search", "#bulkEditModal");
+
     $("[data-bs-target=\"#bulkPrint\"]").on("click", function() {
         var row_ids = Array.from(window.selected_packages).join(",");
         window.open("/packages/label?ids=" + row_ids);
