@@ -28,7 +28,8 @@ function init() {
 }
 
 function load_testdata() {
-    $PYTHON_PATH manage.py loaddata package_seed_data.json
+    $PYTHON_PATH manage.py seeddata
+    $PYTHON_PATH manage.py age
 }
 
 function check() {

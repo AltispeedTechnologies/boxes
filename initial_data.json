@@ -26,46 +26,6 @@
     }
   },
   {
-    "model": "boxes.account",
-    "pk": 1,
-    "fields": {
-      "user": 1,
-      "balance": "1000.00",
-      "is_good_standing": true,
-      "name": "Company A"
-    }
-  },
-  {
-    "model": "boxes.account",
-    "pk": 2,
-    "fields": {
-      "user": 1,
-      "balance": "0.00",
-      "is_good_standing": true,
-      "name": "Company B"
-    }
-  },
-  {
-    "model": "boxes.account",
-    "pk": 3,
-    "fields": {
-      "user": 1,
-      "balance": "6.00",
-      "is_good_standing": true,
-      "name": "John Doe"
-    }
-  },
-  {
-    "model": "boxes.account",
-    "pk": 4,
-    "fields": {
-      "user": 1,
-      "balance": "12.00",
-      "is_good_standing": true,
-      "name": "Jane Doe"
-    }
-  },
-  {
     "model": "boxes.packagetype",
     "pk": 1,
     "fields": {
@@ -95,6 +55,14 @@
     "fields": {
       "shortcode": "F",
       "description": "Flat"
+    }
+  },
+  {
+    "model": "boxes.packagetype",
+    "pk": 5,
+    "fields": {
+      "shortcode": "P",
+      "description": "Pallet"
     }
   },
   {

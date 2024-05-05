@@ -31,9 +31,6 @@ class Command(BaseCommand):
         self.stdout.write(self.style.NOTICE("Picklist maintenance"))
         self.age_picklists()
 
-        self.stdout.write(self.style.NOTICE("Alias mapping"))
-        self.alias_mapping()
-
         self.stdout.write(self.style.SUCCESS("Aging completed successfully"))
 
     def create_missing_ledger_entries(self):
@@ -114,10 +111,3 @@ class Command(BaseCommand):
 
         # Then, delete the Picklist entries
         Picklist.objects.filter(id__in=picklists_older_than_week_with_packages).delete()
-
-    def alias_mapping(self):
-        accounts_needing_aliases = Account.objects.filter(accountalias__primary=True).distinct()
-        accounts_without_primary = Account.objects.exclude(id__in=accounts_needing_aliases)
-
-        for account in accounts_without_primary:
-            account.ensure_primary_alias()
