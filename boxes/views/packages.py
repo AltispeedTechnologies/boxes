@@ -208,7 +208,8 @@ def update_packages_fields(package_ids, package_data, user):
         "comments": str,
         "account_id": int,
         "carrier_id": int,
-        "package_type_id": int
+        "package_type_id": int,
+        "inside": bool
     }
 
     accounts, account_ledger = {}, []
@@ -221,7 +222,10 @@ def update_packages_fields(package_ids, package_data, user):
                 elif package_data[field] is None:
                     continue
 
-                field_data = package_data[field].strip()
+                if type_func == bool:
+                    field_data = package_data[field]
+                else:
+                    field_data = package_data[field].strip()
 
                 if field == "account_id":
                     entity = get_or_create_account(field_data, user)

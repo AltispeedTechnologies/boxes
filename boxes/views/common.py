@@ -27,6 +27,7 @@ def _get_packages(**kwargs):
         "carrier_id",
         "package_type_id",
         "current_state",
+        "inside",
         "price",
         "carrier__name",
         "account__name",

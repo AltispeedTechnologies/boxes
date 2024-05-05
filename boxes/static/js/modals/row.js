@@ -141,6 +141,10 @@ function setup_actions() {
                                 $(this).text(carrier.replace(" (Create new)", ""));
                             } else if (type === "package_type") {
                                 $(this).text(package_type.replace(" (Create new)", ""));
+                            } else if (type === "inside") {
+                                const icon = inside ? '<i class="fas fa-check-circle text-warning"></i>' : '<i class="fas fa-times-circle text-info"></i>';
+                                const data_text = inside ? "True" : "False";
+                                $(this).html(icon).attr("data-id", data_text);
                             } else {
                                 $(this).text(post_data[type]);
                             }
@@ -166,7 +170,6 @@ function setup_actions() {
             ids: [row_id],
             picklist_id: Number(picklist_id)
         };
-        console.log(post_data);
 
         $.ajax({
             type: "POST",
@@ -232,12 +235,15 @@ function init_edit_modal(event) {
         // Extra data
         if (type === "account" || type === "carrier" || type === "package_type") {
             package_data[type + "_id"] = $(this).data("id");
+        } else if (type === "inside") {
+            package_data[type] = $(this).attr("data-id");
         }
     });
 
     $("#tracking_code").val(package_data.tracking_code);
     $("#editModal").find("#price").val(package_data.price.replace("$", ""));
     $("#comments").val(package_data.comments);
+    $("#editModal").find("#id_inside").prop("checked", package_data.inside === "True");
 
     window.initialize_async_select2("account", "/accounts/search", "#editModal");
     window.initialize_async_select2("carrier", "/carriers/search", "#editModal");
