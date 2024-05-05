@@ -11,3 +11,6 @@ gunicorn==22.0.0
 
 # Requirement if using postgres
 psycopg==3.1.18
+
+# Requirement for seed data
+Faker=25.0.1
