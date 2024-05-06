@@ -65,7 +65,7 @@
                     }
 
                     // Insert the block with specific attributes
-                    var node = $('<span contenteditable="false" style="user-select: none;" class="custom-block bg-light mx-1 p-2">' + block_label + '</span>&nbsp;');
+                    var node = $('<span contenteditable="false" style="user-select: none;" class="custom-block bg-light mx-1 p-2">' + block_label + '</span>');
                     context.invoke("editor.insertNode", node[0]);
                     ui.hideDialog(dialog);
                 });

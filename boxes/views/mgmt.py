@@ -41,7 +41,9 @@ def add_email_template(request):
 @require_http_methods(["POST"])
 def update_email_template(request):
     template_id = request.POST.get("id")
+    print(request.POST.get("content"))
     content = _clean_html(request.POST.get("content"))
+    print(content)
     subject = request.POST.get("subject")
     try:
         template = EmailTemplate.objects.get(id=template_id)

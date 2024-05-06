@@ -452,6 +452,12 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+###################
+# BACKGROUND JOBS #
+###################
+CELERY_BROKER_URL = "amqp://boxes:changem3@localhost/boxes_host"
+CELERY_RESULT_BACKEND = "rpc://"
+
 ############
 # SESSIONS #
 ############

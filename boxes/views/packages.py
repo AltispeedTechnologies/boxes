@@ -3,12 +3,13 @@ import re
 from .common import _get_packages, _search_packages_helper
 from boxes.forms import PackageForm
 from boxes.models import *
+from boxes.tasks import send_email, update_packages_background
 from decimal import Decimal
 from django.shortcuts import render
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_slug
-from django.db.models import F, Sum
+from django.db.models import F
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -62,76 +63,34 @@ def package_detail(request, pk):
     return render(request, "packages/package.html", {"package": package_values,
                                                      "state_ledger": state_ledger})
 
-def update_packages_util(request, state, debit_credit_switch=False):
-    response_data = {"success": False, "errors": []}
-    try:
-        ids = request.POST.getlist("ids[]", [])
-        if not ids:
-            raise ValueError("No package IDs provided.")
-
-        Package.objects.filter(id__in=ids).update(current_state=state)
-        account_ledger, package_ledger, affected_accounts = [], [], set()
-        for pkg in Package.objects.filter(id__in=ids).values("id", "account_id", "price"):
-            debit, credit = (0, pkg["price"]) if debit_credit_switch else (pkg["price"], 0)
-            acct_entry = AccountLedger(user_id=request.user.id, package_id=pkg["id"],
-                                       account_id=pkg["account_id"], debit=debit, credit=credit, description="")
-            pkg_entry = PackageLedger(user_id=request.user.id, package_id=pkg["id"], state=state)
-            account_ledger.append(acct_entry)
-            package_ledger.append(pkg_entry)
-            affected_accounts.add(pkg["account_id"])
-
-        AccountLedger.objects.bulk_create(account_ledger)
-        PackageLedger.objects.bulk_create(package_ledger)
-
-        # Update balances for affected accounts
-        accounts = Account.objects.filter(id__in=affected_accounts).annotate(
-            total_credit=Sum("accountledger__credit", default=0),
-            total_debit=Sum("accountledger__debit", default=0)
-        )
-        for account in accounts:
-            new_balance = account.total_credit - account.total_debit
-            if new_balance != account.balance:
-                account.balance = new_balance
-                account.save(update_fields=["balance"])
-
-        response_data["success"] = True
-        return response_data
-    except ValidationError as e:
-        response_data["errors"] = [str(message) for message in e.messages]
-    except Exception as e:
-        response_data["errors"] = [str(e)]
-    return response_data
-
 @require_http_methods(["POST"])
 def check_in_packages(request):
     queue_id = request.POST.get("queue_id")
     PackageQueue.objects.filter(queue_id=queue_id).delete()
+    ids = request.POST.getlist("ids[]", [])
+    for account_id, package_id in Package.objects.filter(id__in=ids).values_list("account_id", "id"):
+        send_email.delay(account_id, package_id)
 
-    result = update_packages_util(request, state=1, debit_credit_switch=False)
-    if result["success"]:
-        return JsonResponse({"success": True})
-    else:
-        return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
+    result = update_packages_background.delay(ids, request.user.id, state=1, debit_credit_switch=False)
+    result.wait(timeout=10)
+
+    return JsonResponse({"success": True})
 
 @require_http_methods(["POST"])
 def check_out_packages(request):
-    result = update_packages_util(request, state=2, debit_credit_switch=True)
-    if result["success"]:
-        messages.success(request, "Successfully checked out")
-        return JsonResponse({"success": True})
-    else:
-        messages.error(request, "Checkout failed")
-        return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
+    ids = request.POST.getlist("ids[]", [])
+    result = update_packages_background.delay(ids, request.user.id, state=2, debit_credit_switch=True)
+    result.wait(timeout=10)
+
+    return JsonResponse({"success": True})
 
 @require_http_methods(["POST"])
 def check_out_packages_reverse(request):
-    result = update_packages_util(request, state=1, debit_credit_switch=False)
-    if result["success"]:
-        messages.success(request, "Successfully checked back in")
-        return JsonResponse({"success": True})
-    else:
-        messages.error(request, "Checking back in failed")
-        return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
+    ids = request.POST.getlist("ids[]", [])
+    result = update_packages_background.delay(ids, request.user.id, state=1, debit_credit_switch=False)
+    result.wait(timeout=10)
+
+    return JsonResponse({"success": True})
 
 def create_package(request):
     if request.method == "POST":

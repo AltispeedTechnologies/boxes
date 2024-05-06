@@ -22,7 +22,7 @@ COMMON_ATTRIBUTES = ["class", "title", "id", "style"]
 SPECIAL_ATTRIBUTES = {
     "a": ["href", "name", "target", "rel"],
     "img": ["src", "alt", "height", "width"],
-    "font": ["color"],
+    "font": ["color", "style"],
     "span": ["contenteditable", "style", "class"]
 }
 

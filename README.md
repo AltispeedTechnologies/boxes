@@ -2,11 +2,13 @@
 
 Starter deploy instructions:
 
-```bash
-# Migrate the database, run after every update
-python3 manage.py migrate
-
-# Import/update data, can be ran on an existing instance
-# Be careful when modifying initial_data! Existing entries are clobbered over
-python3 manage.py loaddata initial_data.json
+ - Run ./setup.sh dev
+ - Install RabbitMQ, here's a simple (nonfunctional) example:
 ```
+sudo apt -y install rabbitmq-server
+sudo systemctl enable --now rabbitmq-server
+sudo rabbitmqctl add_user myuser mypassword
+sudo rabbitmqctl add_vhost myvhost
+sudo rabbitmqctl set_permissions -p myvhost myuser ".*" ".*" ".*"
+```
+ - Copy systemd units to /etc/systemd/system - reload the daemon, enable and start these services

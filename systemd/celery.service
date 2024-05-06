@@ -1,0 +1,15 @@
+[Unit]
+Description=Celery Service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+EnvironmentFile=/etc/mikes-boxes.env
+WorkingDirectory=/var/www/mikes-boxes
+ExecStart=/var/www/mikes-boxes/env/bin/celery -A mikesboxes worker -l info
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
