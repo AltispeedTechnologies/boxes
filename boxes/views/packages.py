@@ -3,7 +3,6 @@ import re
 from .common import _get_packages, _search_packages_helper
 from boxes.forms import PackageForm
 from boxes.models import *
-from boxes.tasks import send_email
 from decimal import Decimal
 from django.shortcuts import render
 from django.contrib import messages

@@ -14,3 +14,7 @@ class NotificationRule(models.Model):
     email_settings = models.ForeignKey(EmailSettings, related_name="notification_rules", on_delete=models.CASCADE)
     days = models.IntegerField()
     template = models.ForeignKey(EmailTemplate, on_delete=models.CASCADE)
+
+class EmailQueue(models.Model):
+    package = models.ForeignKey("Package", on_delete=models.RESTRICT)
+    template = models.ForeignKey(EmailTemplate, on_delete=models.RESTRICT)

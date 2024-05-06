@@ -1,5 +1,6 @@
 import environ
 import os
+from celery.schedules import crontab
 
 env = environ.Env(
     # set casting, default value
@@ -457,6 +458,12 @@ MIDDLEWARE = [
 ###################
 CELERY_BROKER_URL = "amqp://boxes:changem3@localhost/boxes_host"
 CELERY_RESULT_BACKEND = "rpc://"
+CELERY_BEAT_SCHEDULE = {
+    "send_emails": {
+        "task": "boxes.tasks.send_emails",
+        "schedule": crontab(minute="*/10"),
+    },
+}
 
 ############
 # SESSIONS #
