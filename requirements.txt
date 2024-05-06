@@ -14,3 +14,6 @@ psycopg==3.1.18
 
 # Requirement for seed data
 Faker==25.0.1
+
+# Data sanitization
+html-sanitizer==2.4.2

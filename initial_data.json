@@ -190,5 +190,13 @@
       "description": "Check In Station 2",
       "check_in": true
     }
+  },
+  {
+    "model": "boxes.emailtemplate",
+    "pk": 1,
+    "fields": {
+      "name": "Check In",
+      "content": ""
+    }
   }
 ]
