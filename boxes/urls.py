@@ -18,6 +18,7 @@ urlpatterns = [
     path("mgmt/email", is_staff(email_settings), name="email_settings"),
     path("mgmt/email/update", is_staff(save_email_settings), name="save_email_settings"),
     path("mgmt/email/templates", is_staff(email_template), name="email_template"),
+    path("mgmt/email/templates/add", is_staff(add_email_template), name="add_email_template"),
     path("mgmt/email/templates/fetch", is_staff(email_template_content), name="email_template_content"),
     path("mgmt/email/templates/update", is_staff(update_email_template), name="update_email_template"),
 

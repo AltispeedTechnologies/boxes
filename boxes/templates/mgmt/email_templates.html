@@ -14,12 +14,15 @@
         <div class="col-md-3">
             <h4>Select a template:</h4>
         </div>
-        <div class="col-md-9">
+        <div class="col-md-9 d-flex align-items-center">
             <select id="template-selector" class="form-select">
                 {% for template in templates %}
                     <option value="{{ template.id }}">{{ template.name }}</option>
                 {% endfor %}
             </select>
+            <button id="add-btn" class="btn btn-success ms-2" data-bs-toggle="modal" data-bs-target="#addTemplateModal">
+                <i class="fas fa-plus"></i>
+            </button>
         </div>
     </div>
     <div class="row">
@@ -37,4 +40,6 @@
         </div>
     </div>
 </div>
+
+{% include "modals/new_email_template.html" %}
 {% endblock %}

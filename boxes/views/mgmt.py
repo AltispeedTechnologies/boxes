@@ -29,6 +29,13 @@ def email_template_content(request):
     return JsonResponse({"content": template.content})
 
 @require_http_methods(["POST"])
+def add_email_template(request):
+    template_name = request.POST.get("name")
+    if template_name:
+        new_template = EmailTemplate.objects.create(name=template_name, content="")
+        return JsonResponse({"id": new_template.id})
+
+@require_http_methods(["POST"])
 def update_email_template(request):
     template_id = request.POST.get("id")
     print(request.POST.get("content"))

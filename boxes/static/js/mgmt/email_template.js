@@ -31,8 +31,8 @@ $(document).ready(function() {
             url: "/mgmt/email/templates/fetch",
             type: "GET",
             data: {"id": id},
-            beforeSend: function(xhr) {
-                xhr.setRequestHeader("X-CSRFToken", window.csrf_token);
+            headers: {
+                "X-CSRFToken": window.csrf_token
             },
             success: function(data) {
                 $("#content").summernote("code", data.content);
@@ -52,13 +52,33 @@ $(document).ready(function() {
                 "id": template_id,
                 "content": content,
             },
-            beforeSend: function(xhr) {
-                xhr.setRequestHeader("X-CSRFToken", window.csrf_token);
+            headers: {
+                "X-CSRFToken": window.csrf_token
             },
             success: function(response) {
                 $("#savingicon").hide();
                 $("#successicon").show();
                 $("#successicon").fadeOut(2000);
+            }
+        });
+    });
+
+    $("#addTemplateForm").on("submit", function(event) {
+        event.preventDefault();
+        var template_name = $("#templateName").val();
+
+        $.ajax({
+            type: "POST",
+            url: "/mgmt/email/templates/add",
+            data: {name: template_name},
+            headers: {
+                "X-CSRFToken": window.csrf_token
+            },
+            success: function(response) {
+                var new_option = new Option(template_name, response.id, true, true);
+                $("#template-selector").append(new_option).trigger("change");
+                $("#templateName").val("");
+                $("#addTemplateModal").modal("hide");
             }
         });
     });
