@@ -52,8 +52,6 @@ window.get_cookie = function(name) {
 window.csrf_token = window.get_cookie("csrftoken");
 
 window.initialize_async_select2 = function(field_name, search_url, dropdown_parent_selector) {
-    let csrf_token = window.get_cookie("csrftoken");
-
     hr_field_name = field_name.replace(/bulk_|_/g, function(match) {
         return match === "_" ? " " : "";
     });
@@ -64,7 +62,7 @@ window.initialize_async_select2 = function(field_name, search_url, dropdown_pare
             dataType: "json",
             delay: 250,
             beforeSend: function(xhr) {
-                xhr.setRequestHeader("X-CSRFToken", csrf_token);
+                xhr.setRequestHeader("X-CSRFToken", window.csrf_token);
             },
             data: function(params) {
                 return {

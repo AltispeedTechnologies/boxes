@@ -2,7 +2,6 @@ let packages = new Set();
 let acct_is_locked = true;
 
 function handle_create_package() {
-    let csrf = window.get_cookie("csrftoken");
     let selected_queue = localStorage.getItem("selected_queue");
 
     let tracking_code = $("#id_tracking_code").val();
@@ -31,7 +30,7 @@ function handle_create_package() {
         type: "POST",
         url: "/packages/new",
         headers: {
-            "X-CSRFToken": csrf
+            "X-CSRFToken": window.csrf_token
         },
         data: form_data,
         success: function(response) {
@@ -103,7 +102,6 @@ function handle_errors(response) {
 }
 
 function handle_checkin() {
-    let csrf = window.get_cookie("csrftoken");
     let selected_queue = localStorage.getItem("selected_queue");
 
     let packages_array = [...packages];
@@ -112,7 +110,7 @@ function handle_checkin() {
         type: "POST",
         url: "/packages/checkin",
         headers: {
-            "X-CSRFToken": csrf
+            "X-CSRFToken": window.csrf_token
         },
         data: packages_payload,
         success: function(response) {
@@ -135,13 +133,11 @@ function handle_checkin() {
 }
 
 function load_queue(selected_queue) {
-    let csrf = window.get_cookie("csrftoken");
-
     $.ajax({
         type: "GET",
         url: "/queues/" + selected_queue + "/packages",
         headers: {
-            "X-CSRFToken": csrf
+            "X-CSRFToken": window.csrf_token
         },
         success: function(response) {
             document.querySelectorAll("tbody tr:not(.visually-hidden)").forEach(row => row.remove());
