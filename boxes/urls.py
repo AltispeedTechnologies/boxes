@@ -14,6 +14,13 @@ urlpatterns = [
     path("login/", sign_in, name="login"),
     path("logout/", sign_out, name="logout"),
 
+    # Management dropdown
+    path("mgmt/email", is_staff(email_settings), name="email_settings"),
+    path("mgmt/email/update", is_staff(save_email_settings), name="save_email_settings"),
+    path("mgmt/email/templates", is_staff(email_template), name="email_template"),
+    path("mgmt/email/templates/fetch", is_staff(email_template_content), name="email_template_content"),
+    path("mgmt/email/templates/update", is_staff(update_email_template), name="update_email_template"),
+
     # Accounts
     path("accounts/<int:pk>/edit", is_staff(account_edit), name="account_edit"),
     path("accounts/<int:pk>/ledger", is_staff(account_ledger), name="account_ledger"),

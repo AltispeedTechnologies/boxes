@@ -4,8 +4,44 @@ from django.db.models import Case, Exists, When, Max, F, OuterRef
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from django.utils import timezone
+from html_sanitizer import Sanitizer
 
 PACKAGES_PER_PAGE = 10
+
+ALLOWED_TAGS = [
+    "a", "abbr", "b", "blockquote", "code", "del", "div", "em",
+    "h1", "h2", "h3", "h4", "h5", "h6", "hr", "i", "img", "li",
+    "ol", "p", "pre", "span", "strong", "sub", "sup", "table",
+    "tbody", "td", "tfoot", "th", "thead", "tr", "ul", "br", "u", "font"
+]
+
+# Base attributes that apply to all tags
+COMMON_ATTRIBUTES = ["class", "title", "id", "style"]
+
+# Special cases for specific tags
+SPECIAL_ATTRIBUTES = {
+    "a": ["href", "name", "target", "rel"],
+    "img": ["src", "alt", "height", "width"],
+    "font": ["color"],
+    "span": ["contenteditable", "style", "class"]
+}
+
+# Apply common attributes to all tags and update with special cases
+ALLOWED_ATTRIBUTES = {tag: COMMON_ATTRIBUTES for tag in ALLOWED_TAGS}
+ALLOWED_ATTRIBUTES.update(SPECIAL_ATTRIBUTES)
+
+def _clean_html(html):
+    sanitizer = Sanitizer({
+        "tags": ALLOWED_TAGS,
+        "attributes": ALLOWED_ATTRIBUTES,
+        "empty": {"hr", "br"},
+        "separate": {"a", "div", "p", "span"},
+        "style_filter": [
+            "font-family", "background-color", "color", "text-decoration", 
+            "font-weight", "font-style", "text-align", "height", "width"
+        ]
+    })
+    return sanitizer.sanitize(html)
 
 def _get_packages(**kwargs):
     # Organized by size of expected data, manually

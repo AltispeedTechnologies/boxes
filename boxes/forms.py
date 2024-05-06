@@ -1,4 +1,4 @@
-from boxes.models import CustomUser, Package, Carrier, Account, PackageType
+from boxes.models import *
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError

@@ -1,6 +1,4 @@
 $(document).ready(function() {
-    var csrf = window.get_cookie("csrftoken");
-
     $("#accountnotes").on("input", window.debounce(function() {
         $("#savingnotes").removeClass("d-none");
         let account_id = $(this).attr("data-id");
@@ -12,7 +10,7 @@ $(document).ready(function() {
             type: "POST",
             url: "/accounts/" + account_id + "/update",
             headers: {
-                "X-CSRFToken": csrf
+                "X-CSRFToken": window.csrf_token
             },
             data: payload,
             success: function(response) {

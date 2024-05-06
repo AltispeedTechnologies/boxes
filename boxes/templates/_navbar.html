@@ -16,6 +16,15 @@
                 <li class="nav-item">
                     <a class="nav-link fw-bold" href="{% url 'picklists' %}">Picklists</a>
                 </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle fw-bold" href="#" id="mgmt_dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Management
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="mgmt_dropdown">
+                        <li><a class="dropdown-item" href="{% url 'email_settings' %}">Email</a></li>
+                        <li><a class="dropdown-item" href="{% url 'email_template' %}">Email Templates</a></li>
+                    </ul>
+                </li>
             </ul>
 
             <ul class="navbar-nav ml-auto">
