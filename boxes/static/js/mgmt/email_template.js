@@ -36,6 +36,7 @@ $(document).ready(function() {
             },
             success: function(data) {
                 $("#content").summernote("code", data.content);
+                $("#email_subject").val(data.subject);
             }
         });
     });
@@ -44,6 +45,7 @@ $(document).ready(function() {
         $("#savingicon").show();
         var template_id = $("#template-selector").val();
         var content = $("#content").summernote("code");
+        var subject = $("#email_subject").val();
 
         $.ajax({
             url: "/mgmt/email/templates/update",
@@ -51,6 +53,7 @@ $(document).ready(function() {
             data: {
                 "id": template_id,
                 "content": content,
+                "subject": subject
             },
             headers: {
                 "X-CSRFToken": window.csrf_token
@@ -78,6 +81,7 @@ $(document).ready(function() {
                 var new_option = new Option(template_name, response.id, true, true);
                 $("#template-selector").append(new_option).trigger("change");
                 $("#templateName").val("");
+                $("#email_subject").val("");
                 $("#addTemplateModal").modal("hide");
             }
         });

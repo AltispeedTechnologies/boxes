@@ -19,30 +19,33 @@ def email_settings(request):
 def email_template(request):
     templates = EmailTemplate.objects.all().order_by("id")
     initial_content = templates.first().content
+    subject = templates.first().subject
     return render(request, "mgmt/email_templates.html", {"templates": templates,
+                                                         "subject": subject,
                                                          "initial_content": initial_content})
 
 @require_http_methods(["GET"])
 def email_template_content(request):
     template_id = request.GET.get("id")
     template = EmailTemplate.objects.get(id=template_id)
-    return JsonResponse({"content": template.content})
+    return JsonResponse({"content": template.content,
+                         "subject": template.subject})
 
 @require_http_methods(["POST"])
 def add_email_template(request):
     template_name = request.POST.get("name")
     if template_name:
-        new_template = EmailTemplate.objects.create(name=template_name, content="")
+        new_template = EmailTemplate.objects.create(name=template_name, subject="", content="")
         return JsonResponse({"id": new_template.id})
 
 @require_http_methods(["POST"])
 def update_email_template(request):
     template_id = request.POST.get("id")
-    print(request.POST.get("content"))
     content = _clean_html(request.POST.get("content"))
-    print(content)
+    subject = request.POST.get("subject")
     try:
         template = EmailTemplate.objects.get(id=template_id)
+        template.subject = subject
         template.content = content
         template.save()
         return JsonResponse({"status": "success", "message": "Template updated successfully."})

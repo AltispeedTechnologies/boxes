@@ -25,6 +25,19 @@
             </button>
         </div>
     </div>
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <label for="emailSubject" class="form-label">Email Subject:</label>
+        </div>
+        <div class="col-md-9">
+            <input type="text"
+                   class="form-control"
+                   id="email_subject"
+                   name="email_subject"
+                   placeholder="Enter email subject here"
+                   value="{{ subject }}">
+        </div>
+    </div>
     <div class="row">
         <div class="col-12">
             <textarea id="content" class="form-control" style="height: 300px; display: none;">{{ initial_content }}</textarea>
