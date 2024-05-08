@@ -14,6 +14,7 @@ function setup_virtualenv() {
     if [ ! -d "$VENV_DIR" ]; then
         echo "Setting up the virtual environment..."
         virtualenv $VENV_DIR
+        env/bin/pip install -r requirements.txt
     fi
 }
 
@@ -26,6 +27,10 @@ else
 fi
 
 # Define functions for various setup tasks
+function update_pip() {
+    env/bin/pip install -r requirements.txt
+}
+
 function migrate() {
     $PYTHON_PATH manage.py migrate
 }
@@ -35,7 +40,8 @@ function init() {
 }
 
 function load_testdata() {
-    $PYTHON_PATH manage.py loaddata package_seed_data.json
+    $PYTHON_PATH manage.py seeddata
+    $PYTHON_PATH manage.py age
 }
 
 function check() {
@@ -49,17 +55,20 @@ function collectstatic() {
 # Use case statement to process commands
 case "$1" in
     prod)
+        update_pip
         migrate
         init
         collectstatic
         ;;
     dev)
+        update_pip
         migrate
         init
         load_testdata
         collectstatic
         ;;
     update)
+        update_pip
         migrate
         collectstatic
         ;;

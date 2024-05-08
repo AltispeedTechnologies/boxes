@@ -18,17 +18,11 @@
         </div>
         <hr />
         <div class="my-2">
-            <button class="btn btn-primary">Show All Packages</button>
+            <button class="btn btn-primary" id="showallbtn" data-search="{{ search_url }}">Show All Packages</button>
         </div>
     </form>
     <div class="position-absolute end-0 w-25">
-        {% if picklists %}
-        <h4 class="float-end">Select Picklist</h4>
-        <br />
-        <select class="w-100" id="picklist-select"></select>
-        <button class="float-end mt-2 btn btn-primary" id="picklistview">View</button>
-        <button class="mt-2 btn btn-primary" disabled id="picklistbtn">Add selected items to picklist</button>
-        {% elif page_obj %}
+        {% if page_obj %}
         {% include "packages/_bulk_actions.html" %}
         {% endif %}
     </div>
@@ -38,10 +32,6 @@
         let account_id = "{{ account.id }}";
         let account_name = "{{ account.name }}";
         let filter = "{{ filter }}";
-
-        {% if picklist_data %}
-        let picklist_data = {{ picklist_data|safe }};
-        {% endif %}
 </script>
 <script src="{% static 'js/searchbox.js' %}"></script>
 {% endblock content %}

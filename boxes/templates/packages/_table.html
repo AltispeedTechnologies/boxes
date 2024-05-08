@@ -8,11 +8,12 @@
                     <tr>
                         <th></th>
                         <th>Check In Time</br>Check Out Time</th>
-                        <th>Account</th>
+                        <th>Customer</th>
                         <th>Tracking Code</th>
                         <th>Price</th>
                         <th>Carrier</th>
                         <th>Type</th>
+                        <th>Inside</th>
                         <th>Comments</th>
                         <th>Actions</th>
                     </tr>
@@ -57,41 +58,54 @@
                         <td data-type="price">${{ package.price }}</td>
                         <td data-type="carrier" data-id="{{ package.carrier_id }}">{{ package.carrier__name }}</td>
                         <td data-type="package_type" data-id="{{ package.package_type_id }}" class="mutableData">{{ package.package_type__description }}</td>
+                        <td data-type="inside" data-id="{{ package.inside }}" class="text-center fs-4">
+                            {% if package.inside %}
+                            <i class="fas fa-check-circle text-warning"></i>
+                            {% else %}
+                            <i class="fas fa-times-circle text-info"></i>
+                            {% endif %}
+                        </td>
                         <td data-type="comments" class="mutableData">{{ package.comments|default:"" }}</td>
                         <td>
-                            {% if package.current_state == 1 %}
-                            <button type="button" class="btn btn-success"
-                                    data-bs-toggle="modal" data-bs-target="#checkOutModal"
-                                    data-row-id="{{ package.id }}">
-                                <i class="fas fa-check-circle"></i>
-                            </button>
-                            {% elif package.current_state == 2 %}
-                            <button type="button" class="btn bg-secondary"
-                                    data-bs-toggle="modal" data-bs-target="#checkBackInModal"
-                                    data-row-id="{{ package.id }}">
-                                <i class="fas fa-arrow-right"></i>
-                            </button>
-                            {% endif %}
-                            <button class="btn btn-warning" data-row-id="{{ package.id }}" data-bs-target="#print">
+                            {% load cache %}
+                            {% cache 1200 button_group package.in_picklist package.current_state picklist_title package.picklist_id %}
+                            <button class="btn btn-warning" data-bs-target="#print">
                                 <i class="fas fa-print"></i>
                             </button>
-                            <button class="btn btn-info" onclick="window.location.href='/packages/{{ package.id }}';">
-                                <i class="fas fa-info-circle"></i>
-                            </button>
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
-                                    data-bs-target="#editModal" data-row-id="{{ package.id }}">
+                                    data-bs-target="#editModal">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            {% if picklists and picklist_title %}
+                            {% if package.current_state == 1 %}
+                                <button type="button" class="btn btn-success"
+                                        data-bs-toggle="modal" data-bs-target="#checkOutModal">
+                                    <i class="fas fa-check-circle"></i>
+                                </button>
+                            {% elif package.current_state == 2 %}
+                                <button type="button" class="btn bg-secondary"
+                                        data-bs-toggle="modal" data-bs-target="#checkBackInModal">
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                            {% endif %}
+                            {% if package.picklist_id %}
                                 <button type="button" class="btn btn-success" data-bs-toggle="modal" 
-                                        data-bs-target="#moveModal" data-row-id="{{ package.id }}">
+                                        data-picklist-id="{{ package.picklist_id }}"
+                                        data-bs-target="#moveModal">
                                     <i class="fas fa-arrows-alt"></i>
                                 </button>
+                            {% else %}
+                                <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                                        data-bs-target="#addPicklistModal">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            {% endif %}
+                            {% if picklist_title %}
                                 <button type="button" class="btn btn-danger" data-bs-toggle="modal"
-                                        data-bs-target="#removeModal" data-row-id="{{ package.id }}">
+                                        data-bs-target="#removeModal">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             {% endif %}
+                            {% endcache %}
                         </td>
                     </tr>
                     {% endfor %}
@@ -103,16 +117,12 @@
     {% endif %}
 
     {% load static %}
-    {% if picklists %}
-        <script src="{% static 'js/picklist.js' %}"></script>
-        {% include "modals/picklist.html" %}
-    {% endif %}
     <script src="{% static 'js/table_select.js' %}"></script>
-    {% include "modals/edit.html" %}
-    {% include "modals/check_out.html" %}
-    {% include "modals/check_back_in.html" %}
+    <script src="{% static 'js/modals/row.js' %}"></script>
 
     <script>
         window.selected_packages = new Set({{ selected|safe }});
     </script>
+
+    <div id="modalContainer"></div>
 {% endblock %}

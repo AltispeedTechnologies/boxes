@@ -27,20 +27,27 @@
                 <tr>
                     <th>Customer</th>
                     <th>Tracking Code</th>
-                    <th>Price (USD):</th>
+                    <th>Price</th>
                     <th>Carrier</th>
-                    <th>Type Description</th>
+                    <th>Type</th>
                     <th>Comments</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <tr class="visually-hidden">
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td data-type="account"></td>
+                    <td data-type="tracking_code"></td>
+                    <td data-type="price"></td>
+                    <td data-type="carrier"></td>
+                    <td data-type="package_type"></td>
+                    <td data-type="comments"></td>
+                    <td>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
+                                data-bs-target="#editModal">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -48,4 +55,6 @@
 
 {% load static %}
 <script src="{% static 'js/create.js' %}"></script>
+<script src="{% static 'js/modals/row.js' %}"></script>
+<div id="modalContainer"></div>
 {% endblock %}

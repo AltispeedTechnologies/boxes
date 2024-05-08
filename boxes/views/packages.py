@@ -8,7 +8,7 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_slug
-from django.db.models import Sum
+from django.db.models import F, Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -113,24 +113,26 @@ def check_in_packages(request):
     else:
         return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
 
+    ids = request.POST.getlist("ids[]", [])
+    for account_id, package_id in Package.objects.filter(id__in=ids).values_list("account_id", "id"):
+        send_email.delay(account_id, package_id)
+
+    return JsonResponse({"success": True})
+
 @require_http_methods(["POST"])
 def check_out_packages(request):
     result = update_packages_util(request, state=2, debit_credit_switch=True)
     if result["success"]:
-        messages.success(request, "Successfully checked out")
         return JsonResponse({"success": True})
     else:
-        messages.error(request, "Checkout failed")
         return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
 
 @require_http_methods(["POST"])
 def check_out_packages_reverse(request):
     result = update_packages_util(request, state=1, debit_credit_switch=False)
     if result["success"]:
-        messages.success(request, "Successfully checked back in")
         return JsonResponse({"success": True})
     else:
-        messages.error(request, "Checking back in failed")
         return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
 
 def create_package(request):
@@ -169,14 +171,31 @@ def queue_packages(request, pk):
     ).values(
         "package__id", 
         "package__account__name",
-        "package__tracking_code", 
-        "package__price", 
+        "package__account__id",
+        "package__tracking_code",
+        "package__price",
         "package__carrier__name",
+        "package__carrier__id",
         "package__package_type__description",
+        "package__package_type__id",
         "package__comments"
     )
 
-    packages_list = list(packages)
+    # Prepare the packages list with appropriate key names
+    packages_list = [
+        {
+            "id": package["package__id"],
+            "account": package["package__account__name"],
+            "account_id": package["package__account__id"],
+            "tracking_code": package["package__tracking_code"],
+            "price": package["package__price"],
+            "carrier": package["package__carrier__name"],
+            "carrier_id": package["package__carrier__id"],
+            "package_type": package["package__package_type__description"],
+            "package_type_id": package["package__package_type__id"],
+            "comments": package["package__comments"],
+        } for package in packages
+    ]
 
     return JsonResponse({"success": True, "packages": packages_list})
 
@@ -191,7 +210,8 @@ def update_packages_fields(package_ids, package_data, user):
         "comments": str,
         "account_id": int,
         "carrier_id": int,
-        "package_type_id": int
+        "package_type_id": int,
+        "inside": bool
     }
 
     accounts, account_ledger = {}, []
@@ -204,7 +224,10 @@ def update_packages_fields(package_ids, package_data, user):
                 elif package_data[field] is None:
                     continue
 
-                field_data = package_data[field].strip()
+                if type_func == bool:
+                    field_data = package_data[field]
+                else:
+                    field_data = package_data[field].strip()
 
                 if field == "account_id":
                     entity = get_or_create_account(field_data, user)
@@ -296,7 +319,8 @@ def type_search(request):
 
 @require_http_methods(["GET"])
 def search_packages(request):
-    if request.GET.get("filter").strip() != "tracking_code":
+    req_filter = request.GET.get("filter").strip()
+    if req_filter not in ["tracking_code", ""]:
         return
 
     try:

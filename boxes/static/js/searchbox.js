@@ -12,8 +12,6 @@ function change_selected_filter(filter) {
 }
 
 $(document).ready(function() {
-    let csrf_token = window.get_cookie("csrftoken");
-
     change_selected_filter(filter);
 
     $("#customer_select").select2({
@@ -22,7 +20,7 @@ $(document).ready(function() {
             dataType: "json",
             delay: 250,
             beforeSend: function(xhr) {
-                xhr.setRequestHeader("X-CSRFToken", csrf_token);
+                xhr.setRequestHeader("X-CSRFToken", window.csrf_token);
             },
             data: function (params) {
                 return {
@@ -67,5 +65,11 @@ $(document).ready(function() {
             var full_url = search_url + "?q=" + encodeURIComponent(query) + "&filter=" + encodeURIComponent(filter);
             window.location.href = full_url;
         }
+    });
+
+    $("#showallbtn").click(function(event) {
+        event.preventDefault();
+
+        window.location.href = $(this).data("search") + "?q=&filter=";
     });
 });

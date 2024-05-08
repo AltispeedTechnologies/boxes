@@ -1,42 +1,69 @@
 from boxes.models import *
 from django.core.paginator import Paginator
-from django.db.models import Case, When, Value, IntegerField, OuterRef, Subquery
+from django.db.models import Case, Exists, When, Max, F, OuterRef
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from django.utils import timezone
+from html_sanitizer import Sanitizer
 
 PACKAGES_PER_PAGE = 10
 
+ALLOWED_TAGS = [
+    "a", "abbr", "b", "blockquote", "code", "del", "div", "em",
+    "h1", "h2", "h3", "h4", "h5", "h6", "hr", "i", "img", "li",
+    "ol", "p", "pre", "span", "strong", "sub", "sup", "table",
+    "tbody", "td", "tfoot", "th", "thead", "tr", "ul", "br", "u", "font"
+]
+
+# Base attributes that apply to all tags
+COMMON_ATTRIBUTES = ["class", "title", "id", "style"]
+
+# Special cases for specific tags
+SPECIAL_ATTRIBUTES = {
+    "a": ["href", "name", "target", "rel"],
+    "img": ["src", "alt", "height", "width"],
+    "font": ["color", "style"],
+    "span": ["contenteditable", "style", "class"]
+}
+
+# Apply common attributes to all tags and update with special cases
+ALLOWED_ATTRIBUTES = {tag: COMMON_ATTRIBUTES for tag in ALLOWED_TAGS}
+ALLOWED_ATTRIBUTES.update(SPECIAL_ATTRIBUTES)
+
+def _clean_html(html):
+    sanitizer = Sanitizer({
+        "tags": ALLOWED_TAGS,
+        "attributes": ALLOWED_ATTRIBUTES,
+        "empty": {"hr", "br"},
+        "separate": {"a", "div", "p", "span"},
+        "style_filter": [
+            "font-family", "background-color", "color", "text-decoration", 
+            "font-weight", "font-style", "text-align", "height", "width"
+        ]
+    })
+    return sanitizer.sanitize(html)
+
 def _get_packages(**kwargs):
-    check_in_subquery = PackageLedger.objects.filter(
-        package_id=OuterRef("pk"),
-        state=1
-    ).order_by("-timestamp").values("timestamp")[:1]
-
-    check_out_subquery = PackageLedger.objects.filter(
-        package_id=OuterRef("pk"),
-        state=2
-    ).order_by("-timestamp").values("timestamp")[:1]
-
     # Organized by size of expected data, manually
     # Revisit this section after we have data to test with scale
     packages = Package.objects.select_related(
         "account", "carrier", "packagetype", "packagepicklist"
     ).annotate(
-        check_in_time=Subquery(check_in_subquery),
-        check_out_time=Subquery(check_out_subquery),
-        custom_order=Case(
-            When(current_state=1, then=Value(0)),
-            default=Value(1),
-            output_field=IntegerField()
-        )
+        check_in_time=Max(Case(
+            When(packageledger__state=1, then="packageledger__timestamp")
+        )),
+        check_out_time=Max(Case(
+            When(packageledger__state=2, then="packageledger__timestamp")
+        )),
+        picklist_id=F("packagepicklist__picklist_id")
     ).values(
         "id",
-        "packagepicklist__picklist_id",
+        "picklist_id",
         "account_id",
         "carrier_id",
         "package_type_id",
         "current_state",
+        "inside",
         "price",
         "carrier__name",
         "account__name",
@@ -46,7 +73,7 @@ def _get_packages(**kwargs):
         "check_in_time",
         "check_out_time"
     ).filter(**kwargs
-    ).order_by("custom_order", "current_state")
+    ).order_by("current_state", "-check_in_time")
 
     paginator = Paginator(packages, PACKAGES_PER_PAGE)
 
@@ -54,7 +81,9 @@ def _get_packages(**kwargs):
 
 def _search_packages_helper(request, **kwargs):
     query = request.GET.get("q", "").strip()
-    packages = _get_packages(tracking_code__icontains=query, **kwargs)
+    packages = _get_packages(tracking_code__icontains=query,
+                             current_state__in=[1,2],
+                             **kwargs)
     
     return packages
 
@@ -80,10 +109,18 @@ def _get_matching_users(account_id):
         # Split the account.name into name parts
         name_parts = account.name.split(" ")
         
-        # Determine how to assign the name parts
-        first_name = name_parts[0] if len(name_parts) > 0 else ""
-        middle_name = name_parts[1] if len(name_parts) == 3 else ""
-        last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+        # If the account name is empty, do nothing
+        if len(name_parts) == 0:
+            return None, account
+
+        first_name, middle_name, last_name = name_parts[0], "", ""
+
+        if len(name_parts) >= 3:
+            middle_name = name_parts[1]
+            last_name = " ".join(name_parts[2:])
+        elif len(name_parts) == 2:
+            middle_name = ""
+            last_name = name_parts[1]
         
         # Create a CustomUser with a useless password and login disabled
         new_custom_user = CustomUser.objects.create(

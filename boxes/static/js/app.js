@@ -11,6 +11,27 @@ $(document).ready(function() {
     var tooltip_list = tooltip_trigger_list.map(function (tooltip_trigger_el) {
         return new bootstrap.Tooltip(tooltip_trigger_el)
     })
+
+    let picklist_count = 0;
+    $(document).on("picklistQuery", function(event) {
+        if (++picklist_count === picklist_total_functions) {
+            $.ajax({
+                type: "GET",
+                url: "/picklists/query",
+                headers: {
+                    "X-CSRFToken": window.csrf_token
+                },
+                success: function(response) {
+                    $(document).trigger("picklistQueryDone", [response.results]);
+                }
+            });
+        }
+    });
+});
+
+let picklist_total_functions = 0;
+$(document).on("wantPicklistQuery", function(event) {
+    picklist_total_functions++;
 });
 
 window.get_cookie = function(name) {
@@ -28,8 +49,12 @@ window.get_cookie = function(name) {
     return cookie_value;
 }
 
+window.csrf_token = window.get_cookie("csrftoken");
+
 window.initialize_async_select2 = function(field_name, search_url, dropdown_parent_selector) {
-    let csrf_token = window.get_cookie("csrftoken");
+    hr_field_name = field_name.replace(/bulk_|_/g, function(match) {
+        return match === "_" ? " " : "";
+    });
 
     var select2_options = {
         ajax: {
@@ -37,7 +62,7 @@ window.initialize_async_select2 = function(field_name, search_url, dropdown_pare
             dataType: "json",
             delay: 250,
             beforeSend: function(xhr) {
-                xhr.setRequestHeader("X-CSRFToken", csrf_token);
+                xhr.setRequestHeader("X-CSRFToken", window.csrf_token);
             },
             data: function(params) {
                 return {
@@ -52,7 +77,7 @@ window.initialize_async_select2 = function(field_name, search_url, dropdown_pare
             },
             cache: true
         },
-        placeholder: "Search for " + field_name.replace("_", " "),
+        placeholder: "Search for " + hr_field_name,
         minimumInputLength: 1,
         width: "100%",
         tags: true,
@@ -93,10 +118,6 @@ window.initialize_async_select2 = function(field_name, search_url, dropdown_pare
     window.select2properheight("#id_" + field_name + "_id");
 }
 
-$("[data-bs-target=\"#print\"]").on("click", function() {
-    row_id = $(this).data("row-id");
-    window.open("/packages/label?ids=" + row_id);
-});
 
 window.select2properheight = function(select2_name) {
     var $select2container = $(select2_name).next(".select2-container");
@@ -131,7 +152,7 @@ window.display_error_message = function(errors) {
 
     // Loop through the errors object and concatenate error messages
     Object.keys(errors).forEach(function(key) {
-        error_message += errors[key][0] + " "; // Append the first error message for each key
+        error_message += errors[key] + " "; // Append the first error message for each key
     });
 
     // Create and append alert div with the concatenated error message

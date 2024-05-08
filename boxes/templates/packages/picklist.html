@@ -8,9 +8,36 @@
     {% include "_messages.html" %}
 
     <div class="container">
-        {% include "packages/_bulk_actions.html" %}
+        <div class="row">
+            <div class="col">
+                <br />
+                <select id="picklist-select-view"></select>
+                <br />
+                <button class="mt-2 btn btn-primary" id="picklistview">View</button>
+            </div>
+            <div class="col">
+                {% if page_obj %}
+                {% include "packages/_bulk_actions.html" %}
+                {% endif %}
+            </div> 
+        </div>
     </div>
     <br />
-
+    {% if page_obj %}
     {% include "packages/_table.html" %}
+    {% else %}
+    <h5>No packages in picklist</h5>
+    {% endif %}
+
+    {% load static %}
+    <script src="{% static 'js/picklist.js' %}"></script>
+    <script>
+        {% if picklist_data %}
+        let picklist_data = {{ picklist_data|safe }};
+        $("#picklist-select-view").select2({
+            data: picklist_data,
+            width: "25%"
+        });
+        {% endif %}
+    </script>
 {% endblock %}
