@@ -48,3 +48,16 @@ class AccountAlias(models.Model):
     account = models.ForeignKey(Account, on_delete=models.RESTRICT)
     alias = models.CharField(max_length=64)
     primary = models.BooleanField()
+
+class AccountChargeSettings(models.Model):
+    FREQUENCY_CHOICES = (
+        ("D", "Daily"),
+        ("W", "Weekly"),
+        ("M", "Monthly"),
+    )
+
+    days = models.IntegerField(null=True)
+    price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
+    package_type = models.ForeignKey("PackageType", on_delete=models.RESTRICT, null=True)
+    frequency = models.CharField(max_length=1, choices=FREQUENCY_CHOICES, null=True)
+    endpoint = models.IntegerField(null=True)

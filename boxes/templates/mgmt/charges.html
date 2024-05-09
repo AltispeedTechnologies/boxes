@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load static %}
+<script src="{% static 'js/mgmt/charges.js' %}"></script>
+
+{% include "_messages.html" %}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="card-title">Charges Configuration</h2>
+                        <div class="d-flex align-items-center">
+                            <i id="savingicon" class="fas fa-spinner fa-spin text-warning me-1" style="display: none;"></i>
+                            <i id="successicon" class="fas fa-check-circle text-success me-1" style="display: none;"></i>
+                            <button id="savebtn" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                        </div>
+                    </div>
+
+                    <form>
+                        <div class="mb-4">
+                            <div class="input-group d-flex align-items-center">
+                                <div class="col-md-7">
+                                    <p class="fw-bold mb-0">Packages become the property of the facility at:</p>
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="number" id="endpoint" class="form-control" value="{{ endpoint }}">
+                                </div>
+                                <div class="col-md-1 input-group-append">
+                                    <span class="input-group-text">days</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h3 class="mb-2">Automated Charges</h3>
+                            <p>Configure automated charges (equalling the price) when a checked-in package reaches a certain age:</p>
+                            <div id="charges-templates">
+                                {% for rule in charge_rules %}
+                                    <div class="charge-template mb-3">
+                                        <div class="input-group">
+                                            <input type="number" id="days" class="form-control" placeholder="Enter the number of days" value="{{ rule.days }}">
+                                            <button class="btn btn-danger remove-charge-template" type="button"><i class="fas fa-minus"></i></button>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                <div class="charge-template mb-3 d-none">
+                                    <div class="input-group">
+                                        <input type="number" id="days" class="form-control" placeholder="Enter the number of days">
+                                        <button class="btn btn-danger remove-charge-template" type="button"><i class="fas fa-minus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-success" id="add-charge-template"><i class="fas fa-plus"></i> Add Charge Rule</button>
+                        </div>
+
+                        <div class="mb-4">
+                            <h3 class="mb-2">Specific Charges</h3>
+                            <p>Configure charges for specific package types:</p>
+                            <div id="custom-charges-templates" class="d-flex flex-wrap">
+                                {% for rule in custom_charge_rules %}
+                                    <div class="custom-charge-template row mb-3">
+                                        <div class="col-md-3">
+                                            <select id="package_type" class="form-select">
+                                                {% for type in package_types %}
+                                                    <option value="{{ type.id }}" {% if rule.package_type_id == type.id %}selected{% endif %}>
+                                                        {{ type.description }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input type="number" id="days" class="form-control" value="{{ rule.days }}" placeholder="days">
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input type="number" id="price" class="form-control" value="{{ rule.price }}" placeholder="price">
+                                        </div>
+                                        <div class="col-md-3">
+                                            <select id="frequency" name="frequency" class="form-select">
+                                                <option value="D" {% if rule.frequency == 'D' %}selected{% endif %}>day</option>
+                                                <option value="W" {% if rule.frequency == 'W' %}selected{% endif %}>week</option>
+                                                <option value="M" {% if rule.frequency == 'M' %}selected{% endif %}>month</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button class="btn btn-danger remove-custom-charge-template" type="button">
+                                                <i class="fas fa-minus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                <div class="custom-charge-template row mb-3 d-none template">
+                                    <div class="col-md-3">
+                                        <select id="package_type" class="form-select">
+                                            {% for type in package_types %}
+                                                <option value="{{ type.id }}">{{ type.description }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" id="days" class="form-control" placeholder="days">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <input type="number" id="price" class="form-control" placeholder="price">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select id="frequency" class="form-select">
+                                            <option value="D">day</option>
+                                            <option value="W">week</option>
+                                            <option value="M">month</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button class="btn btn-danger remove-custom-charge-template" type="button">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <p>(If <i>package type</i> reaches <i>X days</i>, charge <i>price</i> every <i>frequency</i>)</p>
+                            <button type="button" class="btn btn-success" id="add-custom-charge-template"><i class="fas fa-plus"></i> Add Custom Rule</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

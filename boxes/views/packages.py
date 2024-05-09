@@ -3,6 +3,7 @@ import re
 from .common import _get_packages, _search_packages_helper
 from boxes.forms import PackageForm
 from boxes.models import *
+from boxes.tasks import total_accounts
 from decimal import Decimal
 from django.shortcuts import render
 from django.contrib import messages
@@ -84,15 +85,8 @@ def update_packages_util(request, state, debit_credit_switch=False):
         PackageLedger.objects.bulk_create(package_ledger)
 
         # Update balances for affected accounts
-        accounts = Account.objects.filter(id__in=affected_accounts).annotate(
-            total_credit=Sum("accountledger__credit", default=0),
-            total_debit=Sum("accountledger__debit", default=0)
-        )
-        for account in accounts:
-            new_balance = account.total_credit - account.total_debit
-            if new_balance != account.balance:
-                account.balance = new_balance
-                account.save(update_fields=["balance"])
+        for account_id in affected_accounts:
+            total_accounts.delay(account_id=account_id)
 
         response_data["success"] = True
         return response_data
@@ -108,16 +102,16 @@ def check_in_packages(request):
     PackageQueue.objects.filter(queue_id=queue_id).delete()
 
     result = update_packages_util(request, state=1, debit_credit_switch=False)
+    ids = request.POST.getlist("ids[]", [])
+    check_in_template = EmailSettings.objects.values_list("check_in_template", flat=True).first()
+    for package_id in ids:
+        EmailQueue.objects.create(package_id=package_id, template_id=check_in_template)
+
     if result["success"]:
         return JsonResponse({"success": True})
     else:
         return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
 
-    ids = request.POST.getlist("ids[]", [])
-    for account_id, package_id in Package.objects.filter(id__in=ids).values_list("account_id", "id"):
-        send_email.delay(account_id, package_id)
-
-    return JsonResponse({"success": True})
 
 @require_http_methods(["POST"])
 def check_out_packages(request):

@@ -34,7 +34,6 @@ function init() {
 
 function load_testdata() {
     $PYTHON_PATH manage.py seeddata
-    $PYTHON_PATH manage.py age
 }
 
 function check() {

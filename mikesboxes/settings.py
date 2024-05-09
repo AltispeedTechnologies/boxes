@@ -463,6 +463,18 @@ CELERY_BEAT_SCHEDULE = {
         "task": "boxes.tasks.send_emails",
         "schedule": crontab(minute="*/10"),
     },
+    "age_picklists": {
+        "task": "boxes.tasks.age_picklists",
+        "schedule": crontab(minute=0),
+    },
+    "age_charges": {
+        "task": "boxes.tasks.age_charges",
+        "schedule": crontab(minute=1),
+    },
+    "total_accounts": {
+        "task": "boxes.tasks.total_accounts",
+        "schedule": crontab(minute=2),
+    },
 }
 
 ############
