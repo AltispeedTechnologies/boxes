@@ -148,16 +148,16 @@ def get_frequency_delta(frequency):
 def age_charges():
     charge_rules = AccountChargeSettings.objects.filter(
         days__isnull=False,
-        package_type_id__isnull=True, 
-        price__isnull=True, 
+        package_type_id__isnull=True,
+        price__isnull=True,
         frequency__isnull=True,
         endpoint__isnull=True,
     ).order_by("days")
 
     custom_charge_rules = AccountChargeSettings.objects.filter(
         days__isnull=False,
-        package_type_id__isnull=False, 
-        price__isnull=False, 
+        package_type_id__isnull=False,
+        price__isnull=False,
         frequency__isnull=False,
         endpoint__isnull=True,
     ).order_by("days")
@@ -171,11 +171,10 @@ def age_charges():
     for setting in charge_rules:
         start_time = timezone.now() - timedelta(days=setting.days)
         if not previous_days:
-            assess_charges.delay(start_time, exclude_package_types=custom_package_types)
+            assess_regular_charges.delay(start_time.timestamp())
         else:
             end_time = timezone.now() - timedelta(days=previous_days)
-            assess_charges.delay(start_time, end_time, exclude_package_types=custom_package_types)
-
+            assess_regular_charges.delay(start_time.timestamp(), end_time.timestamp(), custom_package_types)
         previous_days = setting.days
 
     custom_rules_by_type = defaultdict(list)
@@ -184,69 +183,95 @@ def age_charges():
 
     for package_type_id, rules in custom_rules_by_type.items():
         for rule in rules:
-            frequency = get_frequency_delta(rule.frequency)
+            frequency_seconds = get_frequency_delta(rule.frequency).total_seconds()
             initial_days = rule.days
-            end_point_days = endpoint_setting if endpoint_setting else initial_days + 180
-
-            start_time = timezone.now() - timedelta(days=initial_days)
-            end_time = start_time + frequency
             price = rule.price if rule.price else None
+            endpoint_days = endpoint_setting if endpoint_setting else initial_days + 180
 
-            while (timezone.now() - end_time).days < end_point_days:
-                assess_charges.delay(start_time, end_time, only_package_types=[package_type_id], price=price, offset=initial_days)
-                end_time = start_time
-                start_time -= frequency
+            check_in_date = timezone.now() - timedelta(days=initial_days)
+            endpoint_date = timezone.now() - timedelta(days=endpoint_days)
+
+            assess_custom_charges.delay(endpoint_date.timestamp(), check_in_date.timestamp(), package_type_id, frequency_seconds, initial_days, price)
 
 @shared_task
-def assess_charges(start_time, end_time=None, exclude_package_types=None, only_package_types=None, price=None, offset=None):
-    start_time_adjusted = start_time + timedelta(days=offset) if offset else start_time
-    end_time_adjusted = end_time + timedelta(days=offset) if offset and end_time else end_time
+def assess_regular_charges(start_time, end_time=None, exclude_package_types=None):
+    start_time = timezone.datetime.fromtimestamp(start_time)
+    end_time = timezone.datetime.fromtimestamp(end_time) if end_time else None
 
-    # Define the base query for existing charges
     charges_query = AccountLedger.objects.filter(
-        timestamp__gte=start_time_adjusted,
-        package_id__isnull=False).select_related("package")
-    
+        timestamp__gte=start_time,
+        package_id__isnull=False
+    ).select_related("package")
+
     if end_time:
-        charges_query = charges_query.filter(timestamp__lt=end_time_adjusted)
+        charges_query = charges_query.filter(timestamp__lt=end_time)
 
     if exclude_package_types:
         charges_query = charges_query.exclude(package__package_type__in=exclude_package_types)
-    elif only_package_types:
-        charges_query = charges_query.filter(package__package_type__in=only_package_types)
-    
+
     existing_charges = charges_query.values_list("package_id", flat=True)
-    
-    # Define the base query for checked-in packages
-    checked_in_query = PackageLedger.objects.filter(timestamp__gte=start_time, state=1).select_related("package")
-    
+
+    checked_in_query = PackageLedger.objects.filter(
+        timestamp__gte=start_time, state=1
+    ).select_related("package")
+
     if end_time:
         checked_in_query = checked_in_query.filter(timestamp__lt=end_time)
 
     if exclude_package_types:
         checked_in_query = checked_in_query.exclude(package__package_type__in=exclude_package_types)
-    elif only_package_types:
-        checked_in_query = checked_in_query.filter(package__package_type__in=only_package_types)
-    
+
     checked_in_packages = checked_in_query.values_list("package_id", flat=True)
 
-    # Find packages that are checked in but without an existing charge
     matching_ids = Q(id__in=checked_in_packages) & ~Q(id__in=existing_charges) & Q(current_state=1)
+    matching_packages = Package.objects.filter(matching_ids)
 
-    # Prepare account ledger entries with a default debit value
-    if price:
-        packages_needing_charge = Package.objects.filter(matching_ids).values_list("id", "account_id")
-        new_charges = (AccountLedger(user_id=1, package_id=pkg_id, account_id=acct_id, credit=0, debit=price) 
-                       for pkg_id, acct_id in packages_needing_charge)
-        package_ids = [data[0] for data in packages_needing_charge]
-        packages_needing_charge.filter(id__in=package_ids).update(price=F("price") + price)
-    else:
-        packages_needing_charge = Package.objects.filter(matching_ids).values_list("id", "account_id", "price")
-        new_charges = (AccountLedger(user_id=1, package_id=pkg_id, account_id=acct_id, credit=0, debit=price) 
-                       for pkg_id, acct_id, price in packages_needing_charge)
-    
-    # Bulk create to optimize database operations
+    packages_needing_charge = Package.objects.filter(matching_ids).values_list("id", "account_id", "price")
+    new_charges = (AccountLedger(
+        user_id=1, package_id=pkg_id, account_id=acct_id, credit=0, debit=price
+    ) for pkg_id, acct_id, price in packages_needing_charge)
+
     AccountLedger.objects.bulk_create(new_charges)
+
+@shared_task
+def assess_custom_charges(endpoint_date, check_in_date, package_type_id, frequency_seconds, initial_days, price):
+    endpoint_date = timezone.make_aware(timezone.datetime.fromtimestamp(endpoint_date))
+    check_in_date = timezone.make_aware(timezone.datetime.fromtimestamp(check_in_date))
+    frequency = timedelta(seconds=frequency_seconds)
+
+    # Retrieve the checked-in packages once
+    checked_in_query = PackageLedger.objects.filter(
+        timestamp__lte=timezone.now(), state=1, package__package_type=package_type_id
+    ).select_related("package")
+
+    checked_in_packages = checked_in_query.values_list("package_id", "package__account_id", "timestamp")
+
+    new_charges = []
+    account_ids = set()
+    price_increments = defaultdict(int)
+    for package_id, account_id, check_in_timestamp in checked_in_packages:
+        # Calculate the start time as check-in time + initial_days offset
+        current_time = check_in_timestamp + timedelta(days=initial_days)
+
+        while current_time <= timezone.now():
+            charge_exists = AccountLedger.objects.filter(
+                package_id=package_id, timestamp=current_time
+            ).exists()
+            if not charge_exists:
+                new_charges.append(AccountLedger(
+                    user_id=1, package_id=package_id, account_id=account_id,
+                    credit=0, debit=price, timestamp=current_time
+                ))
+                account_ids.add(account_id)
+                price_increments[package_id] += price
+            current_time += frequency
+
+    if new_charges:
+        AccountLedger.objects.bulk_create(new_charges)
+        for account_id in account_ids:
+            total_accounts.delay(account_id=account_id)
+        for package_id, increment in price_increments.items():
+            Package.objects.filter(id=package_id).update(price=F("price") + increment)
 
 @shared_task
 def populate_seed_data():

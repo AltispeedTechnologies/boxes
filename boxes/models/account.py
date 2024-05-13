@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 class Account(models.Model):
     user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
@@ -36,7 +37,7 @@ class AccountLedger(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     credit = models.DecimalField(max_digits=8, decimal_places=2)
     debit = models.DecimalField(max_digits=8, decimal_places=2)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(default=timezone.now)
     description = models.CharField(max_length=256, null=True)
     package = models.ForeignKey("Package", on_delete=models.RESTRICT, null=True)
 
