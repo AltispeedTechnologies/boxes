@@ -131,23 +131,32 @@ function setup_actions() {
                 if (response.success) {
                     $tr.find("td").each(function() {
                         var type = $(this).data("type");
+                        var new_text;
 
                         if (type) {
                             if (type === "price") {
-                                $(this).text("$" + post_data[type]);
+                                new_text = "$" + post_data[type];
                             } else if (type === "account") {
-                                $(this).text(account.replace(" (Create new)", ""));
+                                new_text = account.replace(" (Create new)", "");
                             } else if (type === "carrier") {
-                                $(this).text(carrier.replace(" (Create new)", ""));
+                                new_text = carrier.replace(" (Create new)", "");
                             } else if (type === "package_type") {
-                                $(this).text(package_type.replace(" (Create new)", ""));
+                                new_text = package_type.replace(" (Create new)", "");
                             } else if (type === "inside") {
-                                const icon = inside ? '<i class="fas fa-check-circle text-warning"></i>' : '<i class="fas fa-times-circle text-info"></i>';
-                                const data_text = inside ? "True" : "False";
-                                $(this).html(icon).attr("data-id", data_text);
+                                if (inside) {
+                                    const icon = '<i class="fas fa-check-circle text-warning"></i>';
+                                    $(this).html(icon).attr("data-id", "True");
+                                } else {
+                                    const icon = '<i class="fas fa-times-circle text-info"></i>';
+                                    $(this).html(icon).attr("data-id", "False");
+                                }
+                                return;
                             } else {
-                                $(this).text(post_data[type]);
+                                new_text = post_data[type];
                             }
+
+                            var $target = $(this).find("a").length ? $(this).find("a") : $(this);
+                            $target.text(new_text);
                         }
                     });
 
