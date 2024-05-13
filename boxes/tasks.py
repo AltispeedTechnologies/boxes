@@ -166,17 +166,17 @@ def age_charges():
         endpoint__isnull=False
     ).values_list("endpoint", flat=True).first()
 
-    #custom_package_types = [rule.package_type_id for rule in custom_charge_rules]
-    #previous_days = None
-    #for setting in charge_rules:
-    #    start_time = timezone.now() - timedelta(days=setting.days)
-    #    if not previous_days:
-    #        assess_charges.delay(start_time, exclude_package_types=custom_package_types)
-    #    else:
-    #        end_time = timezone.now() - timedelta(days=previous_days)
-    #        assess_charges.delay(start_time, end_time, exclude_package_types=custom_package_types)
+    custom_package_types = [rule.package_type_id for rule in custom_charge_rules]
+    previous_days = None
+    for setting in charge_rules:
+        start_time = timezone.now() - timedelta(days=setting.days)
+        if not previous_days:
+            assess_charges.delay(start_time, exclude_package_types=custom_package_types)
+        else:
+            end_time = timezone.now() - timedelta(days=previous_days)
+            assess_charges.delay(start_time, end_time, exclude_package_types=custom_package_types)
 
-    #    previous_days = setting.days
+        previous_days = setting.days
 
     custom_rules_by_type = defaultdict(list)
     for rule in custom_charge_rules:
