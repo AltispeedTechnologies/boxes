@@ -462,7 +462,10 @@ MIDDLEWARE = [
 ###################
 # BACKGROUND JOBS #
 ###################
-CELERY_BROKER_URL = "amqp://boxes:changem3@localhost/boxes_host"
+BROKER_USER = env("CELERY_BROKER_USER")
+BROKER_PASSWORD = env("CELERY_BROKER_PASSWORD")
+BROKER_URL = env("CELERY_BROKER_URL")
+CELERY_BROKER_URL = f'amqp://{BROKER_USER}:{BROKER_PASSWORD}@localhost/{BROKER_VHOST}'
 CELERY_RESULT_BACKEND = "rpc://"
 CELERY_BEAT_SCHEDULE = {
     "send_emails": {
