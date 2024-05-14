@@ -1,6 +1,6 @@
 asgiref==3.8.1
 chardet==5.2.0
-Django==5.0.4
+Django==5.0.6
 django-environ==0.11.2
 pillow==10.3.0
 pytz==2024.1
@@ -10,10 +10,10 @@ typing_extensions==4.11.0
 gunicorn==22.0.0
 
 # Requirement if using postgres
-psycopg==3.1.18
+psycopg==3.1.19
 
 # Requirement for seed data
-Faker==25.0.1
+Faker==25.2.0
 
 # Data sanitization
 html-sanitizer==2.4.2
