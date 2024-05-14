@@ -1,8 +1,8 @@
 from boxes.models import *
+from boxes.tasks import create_user_from_account
 from django.core.paginator import Paginator
 from django.db.models import Case, Exists, When, Max, F, OuterRef
 from django.shortcuts import get_object_or_404
-from django.utils.crypto import get_random_string
 from django.utils import timezone
 from html_sanitizer import Sanitizer
 
@@ -37,7 +37,7 @@ def _clean_html(html):
         "empty": {"hr", "br"},
         "separate": {"a", "div", "p", "span"},
         "style_filter": [
-            "font-family", "background-color", "color", "text-decoration", 
+            "font-family", "background-color", "color", "text-decoration",
             "font-weight", "font-style", "text-align", "height", "width"
         ]
     })
@@ -84,16 +84,16 @@ def _search_packages_helper(request, **kwargs):
     packages = _get_packages(tracking_code__icontains=query,
                              current_state__in=[1,2],
                              **kwargs)
-    
+
     return packages
 
 def _get_matching_users(account_id):
     # Ensure Account exists
     account = get_object_or_404(Account, pk=account_id)
-    
+
     # Check if there is a UserAccount entry for this account id
     user_accounts = UserAccount.objects.filter(account=account)
-    
+
     if user_accounts.exists():
         # Check if the relationship is one-to-one
         if user_accounts.count() == 1:
@@ -105,34 +105,5 @@ def _get_matching_users(account_id):
             # Return all CustomUser objects that match the account
             return custom_users, account
     else:
-        # If no UserAccount entry exists, create a CustomUser
-        # Split the account.name into name parts
-        name_parts = account.name.split(" ")
-        
-        # If the account name is empty, do nothing
-        if len(name_parts) == 0:
-            return None, account
-
-        first_name, middle_name, last_name = name_parts[0], "", ""
-
-        if len(name_parts) >= 3:
-            middle_name = name_parts[1]
-            last_name = " ".join(name_parts[2:])
-        elif len(name_parts) == 2:
-            middle_name = ""
-            last_name = name_parts[1]
-        
-        # Create a CustomUser with a useless password and login disabled
-        new_custom_user = CustomUser.objects.create(
-            username=account.name[:150],
-            first_name=first_name,
-            middle_name=middle_name,
-            last_name=last_name,
-            is_active=False,
-            password=get_random_string(128),
-            date_joined=timezone.now()
-        )
-        # Create a UserAccount with the new CustomUser
-        UserAccount.objects.create(user=new_custom_user, account=account)
-        # Return the new CustomUser object
-        return new_custom_user, account
+        creation_result = create_user_from_account.delay(account_id)
+        return CustomUser.objects.get(pk=creation_result.get()), account
