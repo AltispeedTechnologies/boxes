@@ -8,6 +8,12 @@ env = environ.Env(
     ALLOWED_HOSTS=(list,['127.0.0.1',]),
     TIME_ZONE=(str,"UTC"),
     SERVER_EMAIL=(str,"root@localhost"),
+    DB_ENGINE=(str,"django.db.backends.sqlite3"),
+    DB_NAME=(str,"db.sqlite3"),
+    DB_USER=(str,""),
+    DB_PASSWORD=(str,""),
+    DB_HOST=(str,""),
+    DB_PORT=(int,""),
     EMAIL_HOST=(str,"localhost"),
     EMAIL_PORT=(int,25),
     EMAIL_HOST_USER=(str,""),
@@ -39,7 +45,7 @@ env = environ.Env(
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Take environment variables from .env file
-environ.Env.read_env("/etc/mikes-boxes.env")
+environ.Env.read_env(env.str('ENV_PATH', '/etc/mikes-boxes.env'))
 
 # This is defined here as a do-nothing function because we can't import
 # django.utils.translation -- that module depends on the settings.
