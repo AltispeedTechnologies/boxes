@@ -474,7 +474,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     "age_picklists": {
         "task": "boxes.tasks.age_picklists",
-        "schedule": crontab(minute=0),
+        "schedule": crontab(hour=3, minute=0),
     },
     "age_charges": {
         "task": "boxes.tasks.age_charges",
