@@ -43,6 +43,12 @@ $(document).ready(function() {
             aliases[account_id][input.attr("data-id")] = input.val();
         });
 
+        // Do nothing if there are no aliases
+        if ($.isEmptyObject(aliases[account_id])) {
+            $("#savingiconaliases").hide();
+            return;
+        }
+
         $.ajax({
             type: "POST",
             url: "/accounts/aliases/update",

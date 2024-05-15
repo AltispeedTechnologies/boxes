@@ -17,12 +17,6 @@ class Account(models.Model):
 
         return balance
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        
-        # Ensure there is a primary alias for this account or update it
-        self.ensure_primary_alias()
-
     def ensure_primary_alias(self):
         primary_alias = AccountAlias.objects.filter(account=self, primary=True).first()
         if primary_alias:

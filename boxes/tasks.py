@@ -272,6 +272,7 @@ def assess_regular_charges(start_time, end_time=None, exclude_package_types=None
     ) for pkg_id, acct_id, price in packages_needing_charge)
 
     AccountLedger.objects.bulk_create(new_charges)
+    total_accounts.delay()
 
 @shared_task
 def assess_custom_charges(endpoint_date, check_in_date, package_type_id, frequency_seconds, initial_days, price):
