@@ -172,6 +172,7 @@ def queue_packages(request, pk):
         "package__carrier__id",
         "package__package_type__description",
         "package__package_type__id",
+        "package__inside",
         "package__comments"
     )
 
@@ -187,6 +188,7 @@ def queue_packages(request, pk):
             "carrier_id": package["package__carrier__id"],
             "package_type": package["package__package_type__description"],
             "package_type_id": package["package__package_type__id"],
+            "inside": package["package__inside"],
             "comments": package["package__comments"],
         } for package in packages
     ]

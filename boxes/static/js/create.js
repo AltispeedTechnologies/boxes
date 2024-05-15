@@ -94,7 +94,16 @@ function display_packages(response) {
         .attr("data-id", response.carrier_id);
     new_row.find("td:nth-child(5)").text(response.package_type)
         .attr("data-id", response.package_type_id);
-    new_row.find("td:nth-child(6)").text(response.comments);
+
+    if (response.inside) {
+        const icon = '<i class="fas fa-check-circle text-warning"></i>';
+        new_row.find("td:nth-child(6)").html(icon).attr("data-id", "True");
+    } else {
+        const icon = '<i class="fas fa-times-circle text-info"></i>';
+        new_row.find("td:nth-child(6)").html(icon).attr("data-id", "False");
+    }
+
+    new_row.find("td:nth-child(7)").text(response.comments);
 
     $("tbody").append(new_row);
 }
