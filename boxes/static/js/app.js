@@ -79,32 +79,7 @@ window.initialize_async_select2 = function(field_name, search_url, dropdown_pare
         },
         placeholder: "Search for " + hr_field_name,
         minimumInputLength: 1,
-        width: "100%",
-        tags: true,
-        createTag: function (params) {
-            var term = $.trim(params.term);
-            if (term === "") {
-                return null;
-            }
-
-            var exists = false;
-            $("#id_" + field_name + "_id").find("option").each(function() {
-                if ($.trim($(this).text()).replace(/\s\(Create new\)$/, '').toUpperCase() === term.toUpperCase()) {
-                    exists = true;
-                    return false;
-                }
-            });
-
-            if (!exists) {
-                return {
-                    id: term,
-                    text: term + " (Create new)",
-                    newTag: true
-                }
-            }
-
-            return null;
-        }
+        width: "100%"
     };
 
     // Add the dropdownParent option only if dropdown_parent_selector is provided

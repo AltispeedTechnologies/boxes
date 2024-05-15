@@ -17,23 +17,11 @@ from django.utils.html import strip_tags
 from django.views.decorators.http import require_http_methods
 
 
-def get_or_create_carrier(carrier_id):
-    if not carrier_id.isdigit():
-        carrier, _ = Carrier.objects.get_or_create(name=strip_tags(carrier_id), phone_number="", website="")
-        return carrier
-    return Carrier.objects.get(id=carrier_id)
-
 def get_or_create_account(account_id, user):
     if not account_id.isdigit():
         account, _ = Account.objects.get_or_create(user=user, balance=Decimal(0.00), is_good_standing=True, name=strip_tags(account_id))
         return account
     return Account.objects.get(id=account_id)
-
-def get_or_create_package_type(package_type_id):
-    if not package_type_id.isdigit():
-        package_type, _ = PackageType.objects.get_or_create(description=strip_tags(package_type_id), shortcode="")
-        return package_type
-    return PackageType.objects.get(id=package_type_id)
 
 def all_packages(request):
     return render(request, "packages/index.html", {"search_url": reverse("search_packages")})
@@ -138,9 +126,9 @@ def create_package(request):
             queue_id = form.cleaned_data["queue_id"]
             
             # Use helper functions
-            package.carrier = get_or_create_carrier(form.cleaned_data["carrier_id"])
+            package.carrier = Carrier.objects.get(id=form.cleaned_data["carrier_id"])
             package.account = get_or_create_account(form.cleaned_data["account_id"], request.user)
-            package.package_type = get_or_create_package_type(form.cleaned_data["package_type_id"])
+            package.package_type = PackageType.objects.get(id=form.cleaned_data["package_type_id"])
 
             try:
                 package.save()
@@ -249,10 +237,10 @@ def update_packages_fields(package_ids, package_data, user):
                     entity = get_or_create_account(field_data, user)
                     setattr(package, "account", entity)
                 elif field == "carrier_id":
-                    entity = get_or_create_carrier(field_data)
+                    entity = Carrier.objects.get(id=field_data)
                     setattr(package, "carrier", entity)
                 elif field == "package_type_id":
-                    entity = get_or_create_package_type(field_data)
+                    entity = PackageType.objects.get(id=package_type_id)
                     setattr(package, "package_type", entity)
                 elif field == "comments" and package_data[field] is None:
                     setattr(package, field, "")

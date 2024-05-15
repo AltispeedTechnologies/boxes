@@ -15,9 +15,9 @@ function handle_create_package() {
     let package_type_id = $("#id_package_type_id").val();
     let inside = $("#id_inside").prop("checked");
     let comments = $("#id_comments").val();
-    var carrier = $("#id_carrier_id").find(":selected").text().replace(" (Create new)", "");
-    var account = $("#id_account_id").find(":selected").text().replace(" (Create new)", "");
-    var package_type = $("#id_package_type_id").find(":selected").text().replace(" (Create new)", "");
+    var carrier = $("#id_carrier_id").find(":selected").text();
+    var account = $("#id_account_id").find(":selected").text();
+    var package_type = $("#id_package_type_id").find(":selected").text();
 
     let form_data = {
         tracking_code: tracking_code,

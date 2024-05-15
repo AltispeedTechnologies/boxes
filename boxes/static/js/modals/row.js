@@ -136,12 +136,6 @@ function setup_actions() {
                         if (type) {
                             if (type === "price") {
                                 new_text = "$" + post_data[type];
-                            } else if (type === "account") {
-                                new_text = account.replace(" (Create new)", "");
-                            } else if (type === "carrier") {
-                                new_text = carrier.replace(" (Create new)", "");
-                            } else if (type === "package_type") {
-                                new_text = package_type.replace(" (Create new)", "");
                             } else if (type === "inside") {
                                 if (inside) {
                                     const icon = '<i class="fas fa-check-circle text-warning"></i>';

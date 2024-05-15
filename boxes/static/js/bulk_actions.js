@@ -6,7 +6,7 @@ function update_package_rows(price, carrier) {
             if (type === "price") {
                 $(this).text("$" + price);
             } else if (type === "carrier" && carrier != "") {
-                $(this).text(carrier.replace(" (Create new)", ""));
+                $(this).text(carrier);
             }
         });
     });
