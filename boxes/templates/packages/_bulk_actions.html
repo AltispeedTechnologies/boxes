@@ -34,14 +34,16 @@
                     disabled>
                 <i class="fas fa-check-circle"></i>
             </button>
-            <button class="btn btn-lg bg-light"
-                    id="bulkcheckbackinbtn"
-                    data-bs-target="#bulkCheckBackInModal"
-                    data-bs-toggle="modal" 
-                    data-bs-tooltip="yes" title="Check Back In"
-                    disabled>
-                <i class="fas fa-arrow-right"></i>
-            </button>
+            {% if account %}
+                <button class="btn btn-lg bg-light"
+                        id="bulkcheckbackinbtn"
+                        data-bs-target="#bulkCheckBackInModal"
+                        data-bs-toggle="modal" 
+                        data-bs-tooltip="yes" title="Check Back In"
+                        disabled>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            {% endif %}
             {% if picklist_title %}
                 <button class="btn btn-lg btn-success"
                         id="bulkpicklistmovebtn"
