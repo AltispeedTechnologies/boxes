@@ -1,5 +1,9 @@
 let packages = new Set();
-let acct_is_locked = true;
+var locks = {
+    acct_is_locked: true,
+    type_is_locked: true,
+    carrier_is_locked: true
+};
 
 function handle_create_package() {
     let selected_queue = localStorage.getItem("selected_queue");
@@ -60,10 +64,17 @@ function handle_create_package() {
 function reset_form_fields() {
     $("#id_tracking_code").val("");
     $("#id_price").val("6.00");
-    $("#id_package_type_id").val(null).trigger("change");
     $("#id_inside").prop("checked", false);
-    if (!acct_is_locked) {
+    if (!locks["acct_is_locked"]) {
         $("#id_account_id").val(null).trigger("change");
+    }
+
+    if (!locks["carrier_is_locked"]) {
+        $("#id_carrier_id").val(null).trigger("change");
+    }
+
+    if (!locks["type_is_locked"]) {
+        $("#id_package_type_id").val(null).trigger("change");
     }
 }
 
@@ -175,8 +186,9 @@ $(document).ready(function() {
     window.initialize_async_select2("carrier", "/carriers/search");
     window.initialize_async_select2("package_type", "/types/search");
 
-    $("#toggle_lock_btn").click(function() {
-        acct_is_locked = !acct_is_locked;
+    $("#toggle_acct_lock_btn, #toggle_type_lock_btn, #toggle_carrier_lock_btn").click(function() {
+        var lock_state_key = $(this).data("lock-state");
+        locks[lock_state_key] = !locks[lock_state_key];
         $(this).find("i").toggleClass("fa-lock fa-unlock");
     });
 
