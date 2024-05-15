@@ -195,6 +195,26 @@ def queue_packages(request, pk):
 
     return JsonResponse({"success": True, "packages": packages_list})
 
+@require_http_methods(["POST"])
+def update_queue_name(request, pk):
+    try:
+        data = json.loads(request.body)
+        queue_id = data["id"]
+        description = data["description"]
+
+        queue = get_object_or_404(Queue, pk=queue_id)
+
+        queue.description = description
+        queue.save()
+
+        return JsonResponse({"success": True})
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "message": "Invalid JSON"}, status=400)
+    except KeyError:
+        return JsonResponse({"success": False, "message": "Missing id or description in payload"}, status=400)
+    except Exception as e:
+        return JsonResponse({"success": False, "message": f"Error updating queue: {str(e)}"}, status=500)
+
 def update_packages_fields(package_ids, package_data, user):
     packages = Package.objects.filter(pk__in=package_ids)
     updates = []

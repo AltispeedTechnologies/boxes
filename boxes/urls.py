@@ -65,6 +65,7 @@ urlpatterns = [
 
     # Basic queue data
     path("queues/<int:pk>/packages", is_staff(queue_packages), name="queue_packages"),
+    path("queues/<int:pk>/update", is_staff(update_queue_name), name="update_queue_name"),
 
     # Users
     path("users/update", is_staff(update_user), name="update_user"),

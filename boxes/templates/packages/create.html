@@ -7,12 +7,15 @@
         </div>
         <div class="col-auto ms-auto d-flex align-items-center">
             <h5 class="mb-0 me-2">Queue:</h5>
-            <div class="w-100">
-                <select id="queue_select" name="queue" class="form-control">
+            <div class="d-flex align-items-center">
+                <select id="queue_select" name="queue" class="form-control me-2">
                     {% for queue in queues %}
                         <option value="{{ queue.id }}">{{ queue.description }}</option>
                     {% endfor %}
                 </select>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editQueueNameModal">
+                    <i class="fas fa-edit"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -57,5 +60,6 @@
 {% load static %}
 <script src="{% static 'js/create.js' %}"></script>
 <script src="{% static 'js/modals/row.js' %}"></script>
+{% include "modals/edit_queue_name.html" %}
 <div id="modalContainer"></div>
 {% endblock %}
