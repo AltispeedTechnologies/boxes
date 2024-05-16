@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponseForbidden
 from django.urls import include, path
@@ -8,6 +9,7 @@ def is_staff(view_func):
 
 urlpatterns = [
     path("", index, name="home"),
+    path("admin/", admin.site.urls),
 
     # User authentication
     path("register/", register, name="register"),

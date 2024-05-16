@@ -45,7 +45,7 @@ env = environ.Env(
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Take environment variables from .env file
-environ.Env.read_env(env.str('ENV_PATH', '/etc/mikes-boxes.env'))
+environ.Env.read_env(env.str('ENV_PATH', '/etc/boxes.env'))
 
 # This is defined here as a do-nothing function because we can't import
 # django.utils.translation -- that module depends on the settings.
@@ -431,7 +431,7 @@ USE_X_FORWARDED_PORT = False
 # 'django.core.wsgi.get_wsgi_application' is used, thus preserving the same
 # behavior as previous versions of Django. Otherwise this should point to an
 # actual WSGI application object.
-WSGI_APPLICATION = "mikesboxes.wsgi.application"
+WSGI_APPLICATION = "boxes.wsgi.application"
 
 # If your Django app is behind a proxy that sets a header to specify secure
 # connections, AND that proxy ensures that user-submitted headers with the
@@ -541,7 +541,7 @@ AUTH_USER_MODEL = "boxes.CustomUser"
 
 AUTHENTICATION_BACKENDS = ["django.contrib.auth.backends.ModelBackend"]
 
-ROOT_URLCONF = "mikesboxes.urls"
+ROOT_URLCONF = "boxes.urls"
 
 LOGIN_URL = "/login/"
 
