@@ -2,7 +2,7 @@
 
 Boxes is simple parcel tracking software. It is designed for warehouses that accept packages from a carrier (e.g. USPS), store them, then release them to customers.
 
-# System Requirements
+## System Requirements
 
  - Ubuntu 24.04 LTS
  - PostgreSQL 16
