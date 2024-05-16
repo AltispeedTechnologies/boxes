@@ -218,4 +218,8 @@ $(document).ready(function() {
         localStorage.setItem("selected_queue", selected_queue);
         load_queue(selected_queue);
     });
+
+    $("#id_price").on("input", function() {
+        window.format_price_input($(this));
+    });
 });
