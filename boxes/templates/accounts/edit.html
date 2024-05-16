@@ -88,6 +88,16 @@
                 <input type="text" class="form-control" id="company" name="company" value="{{ custom_user.company|default:"" }}">
                 <div class="invalid-feedback"></div>
             </div>
+            <div class="col-md-3 mb-3">
+                <label for="company" class="form-label">Phone Number</label>
+                <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ custom_user.phone_number|default:"" }}">
+                <div class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <label for="company" class="form-label">Email Address</label>
+                <input type="text" class="form-control" id="email" name="email" value="{{ custom_user.email|default:"" }}">
+                <div class="invalid-feedback"></div>
+            </div>
         </div>
         <div class="mb-3">
             <label for="comments" class="form-label">Comments</label>

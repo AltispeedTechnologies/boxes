@@ -3,6 +3,7 @@ from django.db import models
 
 class CustomUser(AbstractUser):
     company = models.CharField(max_length=128, null=True)
+    phone_number = models.CharField(max_length=20, null=True)
     prefix = models.CharField(max_length=16, null=True)
     middle_name = models.CharField(max_length=64, null=True)
     suffix = models.CharField(max_length=16, null=True)

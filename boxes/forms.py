@@ -47,7 +47,7 @@ class RegisterForm(UserCreationForm):
 class CustomUserForm(UserChangeForm):
     class Meta:
         model = CustomUser
-        fields = ["prefix", "first_name", "middle_name", "last_name", "suffix", "company", "comments"]
+        fields = ["prefix", "first_name", "middle_name", "last_name", "suffix", "company", "phone_number", "email", "comments"]
 
     def __init__(self, *args, **kwargs):
         super(CustomUserForm, self).__init__(*args, **kwargs)
