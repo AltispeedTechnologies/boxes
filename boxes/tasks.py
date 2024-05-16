@@ -342,7 +342,7 @@ def populate_seed_data():
     for fake_tracking_code in fake_tracking_codes:
         new_package = Package(account_id=current_account,
                               carrier_id=random.randint(1, 4),
-                              package_type_id=random.randint(1, 5),
+                              package_type_id=random.randint(1, 3),
                               inside=random.choice([True, False]),
                               tracking_code=fake_tracking_code,
                               current_state=1,

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load static %}
+<script src="{% static 'js/mgmt/types.js' %}"></script>
+
+{% include "_messages.html" %}
+
+<div class="container mt-5 w-75">
+    <div class="d-flex justify-content-between mb-3">
+        <h4>Edit Package Types</h4>
+        <div>
+            <button type="button" class="btn btn-success me-2" id="addpkgtype">
+                <i class="fas fa-plus"></i> Add
+            </button>
+            <i id="savingicon" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+            <i id="successicon" class="fas fa-check-circle text-success" style="display: none;"></i>
+            <button class="btn btn-primary" id="savepkgtypes">
+                <i class="fas fa-save"></i> Save
+            </button>
+        </div>
+    </div>
+    <div class="table-responsive mt-3">
+        <table class="table table-bordered">
+            <thead class="thead-dark align-top">
+                <tr>
+                    <th class="text-nowrap" style="width: 1%;">Shortcode</th>
+                    <th>Description</th>
+                    <th>Default Price</th>
+                    <th class="text-nowrap" style="width: 1%;"></th>
+                </tr>
+            </thead>
+            <tbody id="packagetypes">
+                {% for type in package_types %}
+                    <tr data-id="{{ type.id }}" data-count="{{ type.package_count }}">
+                        <td class="text-nowrap" data-type="shortcode" style="width: 1%;">
+                            <span class="text">
+                                {{ type.shortcode }}
+                            </span>
+                            <input class="form-control shortcode d-none" maxlength="1"></input>
+                        </td>
+                        <td data-type="description">
+                            <span class="text">
+                                {{ type.description }}
+                            </span>
+                            <input class="form-control description d-none" maxlength="64"></input>
+                        </td>
+                        <td data-type="default_price">
+                            <span class="text">
+                                {{ type.default_price }}
+                            </span>
+                            <input class="form-control default_price d-none" placeholder="0.00" maxlength="8" inputmode="decimal"></input>
+                        </td>
+                        <td class="text-nowrap" style="width: 1%;">
+                            <button class="btn btn-primary editrow">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-success confirmrow d-none">
+                                <i class="fas fa-check-square"></i>
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                <tr class="visually-hidden">
+                    <td class="text-nowrap" data-type="shortcode" style="width: 1%;">
+                        <span class="text d-none"></span>
+                        <input class="form-control shortcode is-invalid" maxlength="1"></input>
+                    </td>
+                    <td data-type="description">
+                        <span class="text d-none"></span>
+                        <input class="form-control description is-invalid" maxlength="64"></input>
+                    </td>
+                    <td data-type="default_price">
+                        <span class="text d-none"></span>
+                        <input class="form-control default_price is-invalid" placeholder="0.00" maxlength="8" inputmode="decimal"></input>
+                    </td>
+                    <td class="text-nowrap" style="width: 1%;">
+                        <button class="btn btn-primary editrow d-none">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-success confirmrow" disabled>
+                            <i class="fas fa-check-square"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% include "modals/delete_package_type.html" %}
+
+{% endblock %}

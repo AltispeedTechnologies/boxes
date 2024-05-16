@@ -150,3 +150,18 @@ window.debounce = function(func, wait) {
         timeout = setTimeout(() => func.apply(context, args), wait);
     };
 }
+
+window.format_price_input = function(input_element) {
+    var value = input_element.val().replace(/[^0-9\.]/g, "");
+    var split = value.split(".");
+    if (split.length > 2) {
+        value = split[0] + "." + split[1].slice(0, 2);
+    } else if (split.length === 2) {
+        split[1] = split[1].slice(0, 2);
+        value = split.join(".");
+    }
+    if (split[0].length > 6) {
+        value = value.slice(0, 6) + (split.length === 2 ? "." + split[1] : "");
+    }
+    input_element.val(value);
+}

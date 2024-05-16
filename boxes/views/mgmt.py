@@ -1,5 +1,6 @@
 import decimal
 import json
+from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
@@ -129,3 +130,39 @@ def save_charge_settings(request):
         )
 
     return JsonResponse({"success": True})
+
+@require_http_methods(["GET"])
+def package_type_settings(request):
+    package_types = PackageType.objects.annotate(
+        package_count=Count("package")
+    ).order_by("id")
+    return render(request, "mgmt/types.html", {"package_types": package_types})
+
+@require_http_methods(["POST"])
+def update_package_types(request):
+    try:
+        data = json.loads(request.body)
+        updated_types = {}
+
+        for type_id, attributes in data.items():
+            if str(type_id).startswith("NEW_"):
+                new_type = PackageType(shortcode=attributes["shortcode"],
+                                       description=attributes["description"],
+                                       default_price=attributes["default_price"])
+                new_type.save()
+                updated_types[type_id] = new_type.id
+            else:
+                try:
+                    package_type = PackageType.objects.get(id=int(type_id))
+                    package_type.shortcode = attributes["shortcode"]
+                    package_type.description = attributes["description"]
+                    package_type.default_price = attributes["default_price"]
+                    package_type.save()
+                except PackageType.DoesNotExist:
+                    updated_types[type_id] = "Not found"
+
+        return JsonResponse({"success": True, "updated_types": updated_types})
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "errors": "Invalid JSON"})
+    except Exception as e:
+        return JsonResponse({"success": False, "errors": str(e)})

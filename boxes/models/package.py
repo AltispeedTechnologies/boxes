@@ -10,6 +10,7 @@ PACKAGE_STATES = {
 class PackageType(models.Model):
     shortcode = models.CharField(max_length=1)
     description = models.CharField(max_length=64)
+    default_price = models.DecimalField(max_digits=8, decimal_places=2)
 
 
 class Package(models.Model):

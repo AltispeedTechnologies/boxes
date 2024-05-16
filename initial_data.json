@@ -29,40 +29,27 @@
     "model": "boxes.packagetype",
     "pk": 1,
     "fields": {
-      "shortcode": "L",
-      "description": "Large"
+      "shortcode": "R",
+      "description": "Regular",
+      "default_price": 6.00
     }
   },
   {
     "model": "boxes.packagetype",
     "pk": 2,
     "fields": {
-      "shortcode": "H",
-      "description": "Large/Heavy"
+      "shortcode": "L",
+      "description": "Large",
+      "default_price": 10.00
     }
   },
   {
     "model": "boxes.packagetype",
     "pk": 3,
     "fields": {
-      "shortcode": "R",
-      "description": "Regular"
-    }
-  },
-  {
-    "model": "boxes.packagetype",
-    "pk": 4,
-    "fields": {
-      "shortcode": "F",
-      "description": "Flat"
-    }
-  },
-  {
-    "model": "boxes.packagetype",
-    "pk": 5,
-    "fields": {
       "shortcode": "P",
-      "description": "Pallet"
+      "description": "Pallet",
+      "default_price": 25.00
     }
   },
   {
