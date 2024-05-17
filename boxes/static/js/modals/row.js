@@ -290,7 +290,7 @@ function handle_updated_rows() {
 }
 
 $(document).ready(function() {
-    $(document).trigger("wantPicklistQuery");
+    window.picklist_total_functions++;
 
     $(document).on("picklistQueryDone", function(event, data) {
         $("#picklist-select").select2({

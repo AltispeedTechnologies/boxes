@@ -186,7 +186,7 @@ function setup_bulk_actions() {
 }
 
 $(document).ready(function() {
-    $(document).trigger("wantPicklistQuery");
+    window.picklist_total_functions++;
 
     $(document).on("picklistQueryDone", function(event, data) {
         $("#picklist-select-bulk").select2({
