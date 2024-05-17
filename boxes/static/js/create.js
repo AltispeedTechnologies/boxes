@@ -188,6 +188,7 @@ $(document).ready(function() {
         $("#queue_select").val(selected_queue);
         load_queue(selected_queue);
     } else {
+        localStorage.setItem("selected_queue", $("#queue_select").val());
         load_queue($("#queue_select").val());
     }
 
