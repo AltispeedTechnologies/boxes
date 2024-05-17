@@ -35,10 +35,9 @@ cache:
 setup_rabbitmq:
   stage: setup
   script:
-    - systemctl start rabbitmq-server.service
-    - rabbitmqctl add_user $CELERY_BROKER_USER $CELERY_BROKER_PASSWORD
-    - rabbitmqctl add_vhost $CELERY_BROKER_VHOST
-    - rabbitmqctl set_permissions -p $CELERY_BROKER_VHOST $CELERY_BROKER_USER ".*" ".*" ".*"
+    - apt-get update && apt-get install -y curl
+    - curl -u $CELERY_BROKER_USER:$CELERY_BROKER_PASS -X PUT -d "password=$CELERY_BROKER_PASSWORD&tags=administrator" "http://rabbitmq:15672/api/users/$CELERY_BROKER_USER"
+    - curl -u $CELERY_BROKER_USER:$CELERY_BROKER_PASS -X PUT -d "configure=.*&write=.*&read=.*" "http://rabbitmq:15672/api/permissions/$CELERY_BROKER_VHOST/$CELERY_BROKER_USER"
 
 build:
   stage: build
