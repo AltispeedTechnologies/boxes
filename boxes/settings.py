@@ -14,6 +14,7 @@ env = environ.Env(
     DB_PASSWORD=(str,""),
     DB_HOST=(str,""),
     DB_PORT=(int,""),
+    CELERY_BROKER_HOST=(str,"localhost"),
     EMAIL_HOST=(str,"localhost"),
     EMAIL_PORT=(int,25),
     EMAIL_HOST_USER=(str,""),
@@ -465,7 +466,8 @@ MIDDLEWARE = [
 BROKER_USER = env("CELERY_BROKER_USER")
 BROKER_PASSWORD = env("CELERY_BROKER_PASSWORD")
 BROKER_VHOST = env("CELERY_BROKER_VHOST")
-CELERY_BROKER_URL = f'amqp://{BROKER_USER}:{BROKER_PASSWORD}@localhost/{BROKER_VHOST}'
+BROKER_HOST = env("CELERY_BROKER_HOST")
+CELERY_BROKER_URL = f'amqp://{BROKER_USER}:{BROKER_PASSWORD}@{BROKER_HOST}/{BROKER_VHOST}'
 CELERY_RESULT_BACKEND = "rpc://"
 CELERY_BEAT_SCHEDULE = {
     "send_emails": {
