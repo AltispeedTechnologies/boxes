@@ -1,0 +1,42 @@
+image: ubuntu:24.04
+
+services:
+  - postgres:16
+
+variables:
+  POSTGRES_DB: test_db
+  POSTGRES_USER: user
+  POSTGRES_PASSWORD: password
+  DB_HOST: postgres
+  DB_NAME: test_db
+  DB_USER: user
+  DB_PASSWORD: password
+  DB_PORT: 5432
+  DB_ENGINE: "django.db.backends.postgresql"
+  CELERY_BROKER_USER: "boxes"
+  CELERY_BROKER_PASSWORD: "changem3"
+  CELERY_BROKER_VHOST: "boxes_host"
+
+stages:
+  - setup
+  - build
+
+before_script:
+  - apt-get update && apt-get -y install python3-virtualenv rabbitmq-server
+
+cache:
+  paths:
+    - .env
+
+setup_rabbitmq:
+  stage: setup
+  script:
+    - systemctl start rabbitmq-server.service
+    - rabbitmqctl add_user $CELERY_BROKER_USER $CELERY_BROKER_PASSWORD
+    - rabbitmqctl add_vhost $CELERY_BROKER_VHOST
+    - rabbitmqctl set_permissions -p $CELERY_BROKER_VHOST $CELERY_BROKER_USER ".*" ".*" ".*"
+
+build:
+  stage: build
+  script:
+    - ./setup.sh dev
