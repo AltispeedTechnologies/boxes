@@ -4,7 +4,7 @@ from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
-from boxes.models import AccountChargeSettings, EmailTemplate, EmailSettings, NotificationRule, PackageType
+from boxes.models import AccountChargeSettings, Carrier, EmailTemplate, EmailSettings, NotificationRule, PackageType
 from .common import _clean_html
 
 @require_http_methods(["GET"])
@@ -133,9 +133,7 @@ def save_charge_settings(request):
 
 @require_http_methods(["GET"])
 def package_type_settings(request):
-    package_types = PackageType.objects.annotate(
-        package_count=Count("package")
-    ).order_by("id")
+    package_types = PackageType.objects.all().order_by("id")
     return render(request, "mgmt/types.html", {"package_types": package_types})
 
 @require_http_methods(["POST"])
@@ -162,6 +160,42 @@ def update_package_types(request):
                     updated_types[type_id] = "Not found"
 
         return JsonResponse({"success": True, "updated_types": updated_types})
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "errors": "Invalid JSON"})
+    except Exception as e:
+        return JsonResponse({"success": False, "errors": str(e)})
+
+@require_http_methods(["GET"])
+def carrier_settings(request):
+    carriers = Carrier.objects.all().order_by("id")
+    return render(request, "mgmt/carriers.html", {"carriers": carriers})
+
+@require_http_methods(["POST"])
+def update_carriers(request):
+    try:
+        data = json.loads(request.body)
+        print(data)
+        updated_carriers = {}
+
+        for carrier_id, attributes in data.items():
+            if str(carrier_id).startswith("NEW_"):
+                new_carrier = Carrier(name=attributes["name"],
+                                      phone_number=attributes["phone_number"],
+                                      website=attributes["website"])
+                new_carrier.save()
+                updated_carriers[carrier_id] = new_carrier.id
+            else:
+                try:
+                    carrier = Carrier.objects.get(id=int(carrier_id))
+                    if carrier.name != attributes["name"]:
+                        carrier.name = attributes["name"]
+                    carrier.phone_number = attributes["phone_number"]
+                    carrier.website = attributes["website"]
+                    carrier.save()
+                except PackageType.DoesNotExist:
+                    updated_carriers[carrier_id] = "Not found"
+
+        return JsonResponse({"success": True, "updated_carriers": updated_carriers})
     except json.JSONDecodeError:
         return JsonResponse({"success": False, "errors": "Invalid JSON"})
     except Exception as e:

@@ -25,6 +25,8 @@ urlpatterns = [
     path("mgmt/email/templates/add", is_staff(add_email_template), name="add_email_template"),
     path("mgmt/email/templates/fetch", is_staff(email_template_content), name="email_template_content"),
     path("mgmt/email/templates/update", is_staff(update_email_template), name="update_email_template"),
+    path("mgmt/packages/carriers", is_staff(carrier_settings), name="carrier_settings"),
+    path("mgmt/packages/carriers/update", is_staff(update_carriers), name="update_carriers"),
     path("mgmt/packages/types", is_staff(package_type_settings), name="package_type_settings"),
     path("mgmt/packages/types/update", is_staff(update_package_types), name="update_package_types"),
 

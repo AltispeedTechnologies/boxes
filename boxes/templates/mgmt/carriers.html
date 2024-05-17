@@ -2,20 +2,20 @@
 
 {% block content %}
 {% load static %}
-<script src="{% static 'js/mgmt/types.js' %}"></script>
+<script src="{% static 'js/mgmt/carriers.js' %}"></script>
 
 {% include "_messages.html" %}
 
 <div class="container mt-5 w-75">
     <div class="d-flex justify-content-between mb-3">
-        <h4>Edit Package Types</h4>
+        <h4>Edit Carriers</h4>
         <div>
-            <button type="button" class="btn btn-success me-2" id="addpkgtype">
+            <button type="button" class="btn btn-success me-2" id="addcarrier">
                 <i class="fas fa-plus"></i> Add
             </button>
             <i id="savingicon" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
             <i id="successicon" class="fas fa-check-circle text-success" style="display: none;"></i>
-            <button class="btn btn-primary" id="savepkgtypes">
+            <button class="btn btn-primary" id="savecarriers">
                 <i class="fas fa-save"></i> Save
             </button>
         </div>
@@ -24,32 +24,33 @@
         <table class="table table-bordered">
             <thead class="thead-dark align-top">
                 <tr>
-                    <th class="text-nowrap" style="width: 1%;">Shortcode</th>
-                    <th>Description</th>
-                    <th>Default Price</th>
+                    <th>Name</th>
+                    <th>Phone Number</th>
+                    <th>Website</th>
                     <th class="text-nowrap" style="width: 1%;"></th>
                 </tr>
             </thead>
-            <tbody id="packagetypes">
-                {% for type in package_types %}
-                    <tr data-id="{{ type.id }}" data-count="{{ type.package_count }}">
-                        <td class="text-nowrap" data-type="shortcode" style="width: 1%;">
+            <tbody id="carriers">
+                {% for carrier in carriers %}
+                    <tr data-id="{{ carrier.id }}">
+                        <td data-type="name">
                             <span class="text">
-                                {{ type.shortcode }}
+                                {{ carrier.name }}
                             </span>
-                            <input class="form-control shortcode d-none" maxlength="1"></input>
+                            <input class="form-control name d-none" maxlength="32"></input>
                         </td>
-                        <td data-type="description">
+                        <td data-type="phone_number">
                             <span class="text">
-                                {{ type.description }}
+                                {{ carrier.phone_number }}
                             </span>
-                            <input class="form-control description d-none" maxlength="64"></input>
+                            <input class="form-control phone_number d-none" maxlength="15"></input>
                         </td>
-                        <td data-type="default_price">
+                        <td data-type="website">
                             <span class="text">
-                                {{ type.default_price }}
+                                {{ carrier.website }}
                             </span>
-                            <input class="form-control default_price d-none" placeholder="0.00" maxlength="8" inputmode="decimal"></input>
+                            <input class="form-control website d-none" maxlength="32"></input>
+                        </td>
                         </td>
                         <td class="text-nowrap" style="width: 1%;">
                             <button class="btn btn-primary editrow">
@@ -62,17 +63,17 @@
                     </tr>
                 {% endfor %}
                 <tr class="visually-hidden">
-                    <td class="text-nowrap" data-type="shortcode" style="width: 1%;">
+                    <td class="text-nowrap" data-type="name">
                         <span class="text d-none"></span>
-                        <input class="form-control shortcode is-invalid" maxlength="1"></input>
+                        <input class="form-control name is-invalid" maxlength="32"></input>
                     </td>
-                    <td data-type="description">
+                    <td data-type="phone_number">
                         <span class="text d-none"></span>
-                        <input class="form-control description is-invalid" maxlength="64"></input>
+                        <input class="form-control phone_number" maxlength="15"></input>
                     </td>
-                    <td data-type="default_price">
+                    <td data-type="website">
                         <span class="text d-none"></span>
-                        <input class="form-control default_price is-invalid" placeholder="0.00" maxlength="8" inputmode="decimal"></input>
+                        <input class="form-control website" maxlength="32"></input>
                     </td>
                     <td class="text-nowrap" style="width: 1%;">
                         <button class="btn btn-primary editrow d-none">
