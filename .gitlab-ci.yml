@@ -1,9 +1,9 @@
 image: ubuntu:24.04
 
 services:
-  - postgres:16
+  - name: postgres:16
     alias: postgres
-  - rabbitmq:3.12
+  - name: rabbitmq:3.12
     alias: rabbitmq
 
 variables:
