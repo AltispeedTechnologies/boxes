@@ -35,9 +35,10 @@ cache:
   paths:
     - .env
 
-setup_rabbitmq:
+build:
   stage: build
   script:
+    # Setup RabbitMQ
     - apt-get update && apt-get install -y curl wait-for-it
     - wait-for-it rabbitmq:15672 -- echo "RabbitMQ is up"
     - >
@@ -48,9 +49,6 @@ setup_rabbitmq:
       curl -u guest:guest -X PUT -H "Content-Type: application/json" 
       -d '{"configure":".*","write":".*","read":".*"}' 
       "http://rabbitmq:15672/api/permissions/boxes_host/boxes"
-
-build:
-  stage: build
-  script:
+    # Set up the instance
     - ./setup.sh dev
     - env/bin/celery -A boxes worker --concurrency=1 -E
