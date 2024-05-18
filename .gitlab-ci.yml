@@ -3,26 +3,27 @@ image: ubuntu:24.04
 services:
   - name: postgres:16
     alias: postgres
-  - name: rabbitmq:3.12
+  - name: rabbitmq:3.12-management
     alias: rabbitmq
 
 variables:
-  POSTGRES_DB: "test_db"
-  POSTGRES_USER: "user"
-  POSTGRES_PASSWORD: "password"
-  DB_HOST: "postgres"
-  DB_NAME: "test_db"
-  DB_USER: "user"
-  DB_PASSWORD: "password"
+  POSTGRES_DB: test_db
+  POSTGRES_USER: user
+  POSTGRES_PASSWORD: password
+  DB_HOST: postgres
+  DB_NAME: test_db
+  DB_USER: user
+  DB_PASSWORD: password
   DB_PORT: 5432
-  DB_ENGINE: "django.db.backends.postgresql"
-  CELERY_BROKER_USER: "boxes"
-  CELERY_BROKER_PASSWORD: "password"
-  CELERY_BROKER_VHOST: "boxes_host"
-  CELERY_BROKER_HOST: "rabbitmq"
-  RABBITMQ_DEFAULT_USER: "boxes"
-  RABBITMQ_DEFAULT_PASSWORD: "password"
-  RABBITMQ_DEFAULT_VHOST: "boxes_host"
+  DB_ENGINE: django.db.backends.postgresql
+  CELERY_BROKER_USER: boxes
+  CELERY_BROKER_PASSWORD: password
+  CELERY_BROKER_VHOST: boxes_host
+  CELERY_BROKER_HOST: rabbitmq
+  RABBITMQ_DEFAULT_USER: boxes
+  RABBITMQ_DEFAULT_PASSWORD: password
+  RABBITMQ_DEFAULT_VHOST: boxes_host
+  RABBITMQ_DEFAULT_PORT: 5672
 
 stages:
   - build
@@ -38,4 +39,4 @@ build:
   stage: build
   script:
     - ./setup.sh dev
-    - env/bin/celery -A boxes worker --concurrency=1 -E --stoptimeout=10
+    - env/bin/celery -A boxes worker --concurrency=1 -E
