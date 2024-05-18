@@ -28,7 +28,7 @@ stages:
   - build
 
 before_script:
-  - apt-get update && apt-get -y install python3-virtualenv python3-psycopg2
+  - apt-get update && apt-get -y install python3-virtualenv python3-psycopg
 
 cache:
   paths:
@@ -38,4 +38,4 @@ build:
   stage: build
   script:
     - ./setup.sh dev
-    - env/bin/celery -A boxesworker --loglevel=info --concurrency=1 -E --stoptimeout=10
+    - env/bin/celery -A boxes worker --concurrency=1 -E --stoptimeout=10
