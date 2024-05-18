@@ -3,7 +3,7 @@ image: ubuntu:24.04
 services:
   - name: postgres:16
     alias: postgres
-  - name: rabbitmq:3.12-management
+  - name: rabbitmq:3.12
     alias: rabbitmq
 
 variables:
@@ -19,7 +19,7 @@ variables:
   CELERY_BROKER_USER: boxes
   CELERY_BROKER_PASSWORD: password
   CELERY_BROKER_VHOST: boxes_host
-  CELERY_BROKER_HOST: rabbitmq
+  CELERY_BROKER_HOST: rabbitmq:5672
   RABBITMQ_DEFAULT_USER: boxes
   RABBITMQ_DEFAULT_PASSWORD: password
   RABBITMQ_DEFAULT_VHOST: boxes_host
