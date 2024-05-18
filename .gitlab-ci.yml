@@ -28,7 +28,7 @@ stages:
   - build
 
 before_script:
-  - apt-get update && apt-get -y install python3-virtualenv
+  - apt-get update && apt-get -y install python3-virtualenv python3-psycopg2
 
 cache:
   paths:
