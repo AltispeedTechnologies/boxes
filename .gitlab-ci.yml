@@ -35,6 +35,20 @@ cache:
   paths:
     - .env
 
+setup_rabbitmq:
+  stage: build
+  script:
+    - apt-get update && apt-get install -y curl wait-for-it
+    - wait-for-it rabbitmq:15672 -- echo "RabbitMQ is up"
+    - >
+      curl -u guest:guest -X PUT -H "Content-Type: application/json" 
+      -d '{"password":"password","tags":"administrator"}' 
+      "http://rabbitmq:15672/api/users/boxes"
+    - >
+      curl -u guest:guest -X PUT -H "Content-Type: application/json" 
+      -d '{"configure":".*","write":".*","read":".*"}' 
+      "http://rabbitmq:15672/api/permissions/boxes_host/boxes"
+
 build:
   stage: build
   script:
