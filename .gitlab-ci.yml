@@ -16,14 +16,10 @@ variables:
   DB_PASSWORD: password
   DB_PORT: 5432
   DB_ENGINE: django.db.backends.postgresql
-  CELERY_BROKER_USER: boxes
-  CELERY_BROKER_PASSWORD: password
-  CELERY_BROKER_VHOST: boxes_host
-  CELERY_BROKER_HOST: rabbitmq:5672
-  RABBITMQ_DEFAULT_USER: boxes
-  RABBITMQ_DEFAULT_PASSWORD: password
-  RABBITMQ_DEFAULT_VHOST: boxes_host
-  RABBITMQ_DEFAULT_PORT: 5672
+  CELERY_BROKER_USER: guest
+  CELERY_BROKER_PASSWORD: guest
+  CELERY_BROKER_VHOST: ""
+  CELERY_BROKER_HOST: rabbitmq
 
 stages:
   - build
