@@ -23,6 +23,7 @@ variables:
 
 stages:
   - build
+  - deploy
 
 before_script:
   - apt-get update && apt-get -y install python3-virtualenv python3-psycopg
@@ -37,3 +38,16 @@ build:
     - ./setup.sh dev
     - env/bin/celery -A boxes worker -l info &
     - ci/monitor-celery.sh
+
+deploy_staging:
+  stage: deploy
+  script:
+    - apt-get update && apt-get install -y openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$DEPLOY_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - ssh-keyscan $STAGING_SERVER >> ~/.ssh/known_hosts
+    - ssh user@$DEPLOY_SERVER "cd /var/www/mikes-boxes && git pull && ./setup.sh update"
+  only:
+    - main
