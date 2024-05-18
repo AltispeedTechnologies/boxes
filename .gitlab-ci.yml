@@ -17,12 +17,14 @@ variables:
   DB_PORT: 5432
   DB_ENGINE: "django.db.backends.postgresql"
   CELERY_BROKER_USER: "boxes"
-  CELERY_BROKER_PASSWORD: "changem3"
+  CELERY_BROKER_PASSWORD: "password"
   CELERY_BROKER_VHOST: "boxes_host"
   CELERY_BROKER_HOST: "rabbitmq"
+  RABBITMQ_DEFAULT_USER: "boxes"
+  RABBITMQ_DEFAULT_PASSWORD: "password"
+  RABBITMQ_DEFAULT_VHOST: "boxes_host"
 
 stages:
-  - setup
   - build
 
 before_script:
@@ -32,14 +34,8 @@ cache:
   paths:
     - .env
 
-setup_rabbitmq:
-  stage: setup
-  script:
-    - apt-get update && apt-get install -y curl
-    - curl -u $CELERY_BROKER_USER:$CELERY_BROKER_PASS -X PUT -d "password=$CELERY_BROKER_PASSWORD&tags=administrator" "http://rabbitmq:15672/api/users/$CELERY_BROKER_USER"
-    - curl -u $CELERY_BROKER_USER:$CELERY_BROKER_PASS -X PUT -d "configure=.*&write=.*&read=.*" "http://rabbitmq:15672/api/permissions/$CELERY_BROKER_VHOST/$CELERY_BROKER_USER"
-
 build:
   stage: build
   script:
     - ./setup.sh dev
+    - env/bin/celery -A boxesworker --loglevel=info --concurrency=1 -E --stoptimeout=10
