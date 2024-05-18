@@ -18,7 +18,7 @@ variables:
   DB_ENGINE: django.db.backends.postgresql
   CELERY_BROKER_USER: guest
   CELERY_BROKER_PASSWORD: guest
-  CELERY_BROKER_VHOST: ""
+  CELERY_BROKER_VHOST: "/"
   CELERY_BROKER_HOST: rabbitmq
 
 stages:
