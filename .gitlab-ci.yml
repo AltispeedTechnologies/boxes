@@ -35,4 +35,5 @@ build:
   stage: build
   script:
     - ./setup.sh dev
-    - env/bin/celery -A boxes worker --concurrency=1 -l info
+    - env/bin/celery -A boxes worker -l info &
+    - ci/monitor-celery.sh
