@@ -61,12 +61,16 @@ def update_packages_util(request, state, debit_credit_switch=False):
         Package.objects.filter(id__in=ids).update(current_state=state)
         account_ledger, package_ledger, affected_accounts = [], [], set()
         for pkg in Package.objects.filter(id__in=ids).values("id", "account_id", "price"):
+            pkg_entry = PackageLedger(user_id=request.user.id, package_id=pkg["id"], state=state)
+            package_ledger.append(pkg_entry)
+
+            if pkg["price"] == 0:
+                continue
+
             debit, credit = (0, pkg["price"]) if debit_credit_switch else (pkg["price"], 0)
             acct_entry = AccountLedger(user_id=request.user.id, package_id=pkg["id"],
                                        account_id=pkg["account_id"], debit=debit, credit=credit, description="")
-            pkg_entry = PackageLedger(user_id=request.user.id, package_id=pkg["id"], state=state)
             account_ledger.append(acct_entry)
-            package_ledger.append(pkg_entry)
             affected_accounts.add(pkg["account_id"])
 
         AccountLedger.objects.bulk_create(account_ledger)
