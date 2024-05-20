@@ -10,7 +10,9 @@ from .common import _get_packages, _get_matching_users
 def account_search(request):
     search_query = request.GET.get("term", "")
     aliases = AccountAlias.objects.filter(alias__icontains=search_query)[:10]
-    results = [{"id": alias.account.id, "text": alias.alias} for alias in aliases]
+    results = [{"id": alias.account.id,
+                "text": alias.alias,
+                "billable": alias.account.billable} for alias in aliases]
     return JsonResponse({"results": results})
 
 @require_http_methods(["GET"])

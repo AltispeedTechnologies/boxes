@@ -1,4 +1,6 @@
 let packages = new Set();
+let billable = true;
+let default_price = null;
 var locks = {
     acct_is_locked: true,
     type_is_locked: true,
@@ -63,10 +65,10 @@ function handle_create_package() {
 
 function reset_form_fields() {
     $("#id_tracking_code").val("");
-    $("#price").val("6.00").trigger("change");
     $("#id_inside").prop("checked", false);
     if (!locks["acct_is_locked"]) {
         $("#id_account_id").val(null).trigger("change");
+        billable = true;
     }
 
     if (!locks["carrier_is_locked"]) {
@@ -75,6 +77,11 @@ function reset_form_fields() {
 
     if (!locks["type_is_locked"]) {
         $("#id_package_type_id").val(null).trigger("change");
+        default_price = null;
+    }
+
+    if (!locks["acct_is_locked"] && !locks["type_is_locked"]) {
+        $("#price").val(null).trigger("change");
     }
 }
 
@@ -224,6 +231,18 @@ $(document).ready(function() {
     window.select2properheight("#price");
 
     $("#id_package_type_id").on("select2:select", function(event) {
-        $("#price").val(event.params.data.default_price).trigger("change");
+        default_price = event.params.data.default_price;
+        if (billable) {
+            $("#price").val(default_price).trigger("change");
+        }
+    });
+
+    $("#id_account_id").on("select2:select", function(event) {
+        billable = event.params.data.billable;
+        if (billable && default_price) {
+            $("#price").val(default_price).trigger("change");
+        } else if (!billable) {
+            $("#price").val("0.00").trigger("change");
+        }
     });
 });
