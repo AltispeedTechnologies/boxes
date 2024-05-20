@@ -82,7 +82,7 @@ def _get_packages(**kwargs):
 def _search_packages_helper(request, **kwargs):
     query = request.GET.get("q", "").strip()
     packages = _get_packages(tracking_code__icontains=query,
-                             current_state__in=[1,2],
+                             current_state=1,
                              **kwargs)
 
     return packages
