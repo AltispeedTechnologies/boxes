@@ -141,8 +141,10 @@ def create_package(request):
     else:
         form = PackageForm()
         queues = Queue.objects.filter(check_in=True)
+        prices = PackageType.objects.all().values_list("default_price", flat=True)
         return render(request, "packages/create.html", {"form": form,
-                                                        "queues": queues})
+                                                        "queues": queues,
+                                                        "prices": prices})
 
 @require_http_methods(["GET"])
 def queue_packages(request, pk):
@@ -318,7 +320,9 @@ def update_packages(request):
 def type_search(request):
     search_query = request.GET.get("term", "")
     pkgtypes = PackageType.objects.filter(description__icontains=search_query)[:10]
-    results = [{"id": pkgtype.id, "text": pkgtype.description} for pkgtype in pkgtypes]
+    results = [{"id": pkgtype.id,
+                "text": pkgtype.description,
+                "default_price": pkgtype.default_price} for pkgtype in pkgtypes]
     return JsonResponse({"results": results})
 
 @require_http_methods(["GET"])

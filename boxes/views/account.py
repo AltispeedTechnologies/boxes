@@ -59,13 +59,12 @@ def account_packages(request, pk):
 
 @require_http_methods(["POST"])
 def update_account(request, pk):
-    print(request.body)
     request_data = json.loads(request.body)
     account = get_object_or_404(Account, pk=pk)
 
     fields_to_update = {
         "balance": float,
-        "is_good_standing": bool,
+        "billable": bool,
         "name": str,
         "comments": str
     }
@@ -74,8 +73,10 @@ def update_account(request, pk):
         updates = {}
         for field, type_func in fields_to_update.items():
             value = request_data.get(field)
-            if value != None:
+            if value != None and type_func != bool:
                 updates[field] = type_func(value.strip())
+            elif value != None:
+                updates[field] = type_func(value)
 
         for field, value in updates.items():
             setattr(account, field, value)

@@ -1,15 +1,22 @@
 {% block content %}
 <div class="container my-4 rounded bg-light">
     <div class="row my-2">
-        <div class="col">
+        <div class="col-md-10">
             <strong><label for="{{ form.tracking_code.id_for_label }}">Tracking code:</label></strong>
             {{ form.tracking_code }}
             <div class="invalid-feedback"></div>
         </div>
-        <div class="col">
+        <div class="col-md-2">
             <strong><label for="{{ form.price.id_for_label }}">Price (USD):</label></strong>
-            <input class="form-control" name="price" id="id_price" maxlength="8" type="number" inputmode="decimal" value="6.00"></input>
-            <div class="invalid-feedback"></div>
+            <div class="d-flex align-items-center position-relative">
+                <select id="price" class="w-100">
+                    {% for price in prices %}
+                        <option value="{{ price }}">${{ price }}</option>
+                    {% endfor %}
+                    <option val="0.00">No charge</option>
+                </select>
+                <div class="invalid-feedback"></div>
+            </div>
         </div>
     </div>
     <div class="row my-2">

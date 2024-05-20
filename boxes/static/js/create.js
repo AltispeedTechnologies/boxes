@@ -9,7 +9,7 @@ function handle_create_package() {
     let selected_queue = localStorage.getItem("selected_queue");
 
     let tracking_code = $("#id_tracking_code").val();
-    let price = $("#id_price").val();
+    let price = $("#price").val();
     let carrier_id = $("#id_carrier_id").val();
     let account_id = $("#id_account_id").val();
     let package_type_id = $("#id_package_type_id").val();
@@ -63,7 +63,7 @@ function handle_create_package() {
 
 function reset_form_fields() {
     $("#id_tracking_code").val("");
-    $("#id_price").val("6.00");
+    $("#price").val("6.00").trigger("change");
     $("#id_inside").prop("checked", false);
     if (!locks["acct_is_locked"]) {
         $("#id_account_id").val(null).trigger("change");
@@ -220,7 +220,10 @@ $(document).ready(function() {
         load_queue(selected_queue);
     });
 
-    $("#id_price").on("input", function() {
-        window.format_price_input($(this));
+    $("#price").select2();
+    window.select2properheight("#price");
+
+    $("#id_package_type_id").on("select2:select", function(event) {
+        $("#price").val(event.params.data.default_price).trigger("change");
     });
 });

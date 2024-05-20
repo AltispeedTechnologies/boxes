@@ -1,6 +1,8 @@
 alias_internal_id = 1;
 
 $(document).ready(function() {
+    initial_billable_val = $("#billable").prop("checked");
+
     $("#aliasesinput").on("mouseenter mouseleave", ".col-md-3", function(event) {
         $(this).find(".fa-trash").toggle(event.type === "mouseenter");
     });
@@ -87,6 +89,8 @@ $(document).ready(function() {
             form_data[item.name] = item.value;
         });
 
+        let billable = $("#billable").prop("checked");
+
         var payload = {};
         payload[user_id] = form_data;
 
@@ -101,11 +105,39 @@ $(document).ready(function() {
 
                 if (response.success) {
                     window.display_error_message();
-                    $("#savingicondetails").hide();
-                    $("#successicondetails").show();
-                    setTimeout(function() {
-                        $("#successicondetails").fadeOut();
-                    }, 3000);
+
+                    if (billable != initial_billable_val) {
+                        let account_id = $("#accountnotes").attr("data-id");
+                        let acct_payload = {billable: billable};
+                        initial_billable_val = billable;
+
+                        $.ajax({
+                            type: "POST",
+                            url: "/accounts/" + account_id + "/update",
+                            contentType: "application/json",
+                            headers: {"X-CSRFToken": window.csrf_token},
+                            data: JSON.stringify(acct_payload),
+                            success: function(response) {
+                                if (response.success) {
+                                    window.display_error_message();
+                                    $("#savingicondetails").hide();
+                                    $("#successicondetails").show();
+                                    setTimeout(function() {
+                                        $("#successicondetails").fadeOut();
+                                    }, 3000);
+                                } else if (response.errors) {
+                                    window.display_error_message(response.errors);
+                                }
+                            },
+                        });
+                    } else {
+                        window.display_error_message();
+                        $("#savingicondetails").hide();
+                        $("#successicondetails").show();
+                        setTimeout(function() {
+                            $("#successicondetails").fadeOut();
+                        }, 3000);
+                    }
                 } else if (response.errors) {
                     window.display_error_message(response.errors);
                 } else if (response.form_errors) {

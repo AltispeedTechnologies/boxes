@@ -5,7 +5,7 @@ class Account(models.Model):
     user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
     name = models.CharField(max_length=64)
     balance = models.DecimalField(max_digits=8, decimal_places=2)
-    is_good_standing = models.BooleanField()
+    billable = models.BooleanField()
     comments = models.CharField(max_length=256, null=True)
 
     def hr_balance(self):
