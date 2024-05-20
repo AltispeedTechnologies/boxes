@@ -38,6 +38,9 @@
                 <button id="toggle_acct_lock_btn" class="btn btn-primary" data-lock-state="acct_is_locked">
                     <i id="lock_icon" class="fas fa-lock"></i>
                 </button>
+                <button id="add_new_acct_btn" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createNewCustomerModal">
+                    <i id="lock_icon" class="fas fa-plus"></i>
+                </button>
             </div>
         </div>
         <div class="col">
@@ -74,5 +77,7 @@
         </div>
     </div>
 </div>
+
+{% include "modals/new_acct.html" %}
 
 {% endblock content %}

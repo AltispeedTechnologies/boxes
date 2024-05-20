@@ -74,5 +74,6 @@ urlpatterns = [
     path("queues/<int:pk>/update", is_staff(update_queue_name), name="update_queue_name"),
 
     # Users
+    path("users/new", is_staff(create_user), name="create_user"),
     path("users/update", is_staff(update_user), name="update_user"),
 ]

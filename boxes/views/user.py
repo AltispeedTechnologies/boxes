@@ -1,6 +1,9 @@
 import json
+import random
+import string
 from boxes.forms import CustomUserForm
 from boxes.models import Account, CustomUser, UserAccount
+from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
@@ -32,5 +35,38 @@ def update_user(request):
         
         return JsonResponse({"success": True})
     except Exception as e:
-        # Handle exceptions (e.g., parsing errors, database errors)
+        return JsonResponse({"success": False, "errors": [str(e)]})
+
+# Generate a unique username
+def generate_username():
+    while True:
+        username = "".join(random.choices(string.ascii_letters + string.digits + "@._+-", k=8))
+        if not CustomUser.objects.filter(username=username).exists():
+            return username
+
+@require_http_methods(["POST"])
+def create_user(request):
+    try:
+        data = json.loads(request.body)
+        data["username"] = generate_username()
+        
+        with transaction.atomic():
+            form = CustomUserForm(data)
+
+            if form.is_valid():
+                user = form.save()
+                new_account_name = " ".join(
+                    data.get(field, "") for field in ["prefix", "first_name", "middle_name", "last_name", "suffix"] if data.get(field)
+                ).strip()
+
+                account = Account(user=user, name=new_account_name, balance=0.00, billable=True)
+                account.save()
+                account.ensure_primary_alias()
+
+                UserAccount.objects.create(user=user, account=account)
+
+                return JsonResponse({"success": True, "account_id": account.id, "account_name": new_account_name})
+            else:
+                return JsonResponse({"success": False, "form_errors": form.errors})
+    except Exception as e:
         return JsonResponse({"success": False, "errors": [str(e)]})

@@ -13,7 +13,7 @@ class RegisterForm(UserCreationForm):
 class CustomUserForm(UserChangeForm):
     class Meta:
         model = CustomUser
-        fields = ["prefix", "first_name", "middle_name", "last_name", "suffix", "company", "phone_number", "email", "comments"]
+        fields = ["prefix", "first_name", "middle_name", "last_name", "suffix", "company", "phone_number", "email", "comments", "username"]
 
     def __init__(self, *args, **kwargs):
         super(CustomUserForm, self).__init__(*args, **kwargs)
@@ -21,6 +21,7 @@ class CustomUserForm(UserChangeForm):
             model_field = self.Meta.model._meta.get_field(field_name)
             if model_field.null or model_field.blank:
                 field.required = False
+        self.fields["first_name"].required = True
 
 
 class PackageForm(forms.ModelForm):
