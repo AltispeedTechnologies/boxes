@@ -16,7 +16,7 @@ psycopg==3.1.19
 Faker==25.2.0
 
 # Data sanitization
-html-sanitizer==2.4.2
+html-sanitizer==2.4.4
 
 # Background queue
 celery==5.4.0
