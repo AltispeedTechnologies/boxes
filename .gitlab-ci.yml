@@ -30,7 +30,7 @@ before_script:
 
 cache:
   paths:
-    - .env
+    - env
 
 build:
   stage: build
