@@ -21,7 +21,7 @@ function setup_bulk_actions() {
         window.open("/packages/label?ids=" + row_ids);
     });
 
-    $("#checkoutbtn").click(function(event) {
+    $("#bulkcheckoutbtn").click(function(event) {
         event.preventDefault();
 
         let packages_array = Array.from(window.selected_packages);
@@ -230,4 +230,5 @@ $(document).on("selectedPackagesUpdated", function(event) {
     $("#bulkpicklistremovebtn").prop("disabled", no_selected_packages);
     $("#bulkcheckoutbtn").prop("disabled", no_selected_packages);
     $("#bulkcheckbackinbtn").prop("disabled", no_selected_packages);
+    $("#bulkactionsdropdown").toggle(!no_selected_packages);
 });
