@@ -20,13 +20,12 @@
         <!-- Font Awesome, for better icons -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-        <!-- Custom CSS and JS -->
+        <!-- Application-wide JS -->
         <script src="{% static 'js/app.js' %}" defer></script>
 
         <title>Boxes</title>
     </head>
-    <body>
-        <!-- This is hacky, move this to the above-referenced app.js -->
+    <body class="bg-light bg-gradient">
         {% include "_navbar.html" %}
 
         <main>
