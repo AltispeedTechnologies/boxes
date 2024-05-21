@@ -11,6 +11,7 @@
         <div class="row">
             <div class="col">
                 <br />
+                <h6>Select different picklist:</h6>
                 <select id="picklist-select-view"></select>
                 <br />
                 <button class="mt-2 btn btn-primary" id="picklistview">View</button>
@@ -26,7 +27,7 @@
     {% if page_obj %}
     {% include "packages/_table.html" %}
     {% else %}
-    <h5>No packages in picklist</h5>
+    <h5 class="text-warning">No packages in picklist</h5>
     {% endif %}
 
     {% load static %}
