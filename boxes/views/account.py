@@ -26,13 +26,14 @@ def account_edit(request, pk):
 
 @require_http_methods(["GET"])
 def account_ledger(request, pk):
-    account = Account.objects.filter(id=pk).first()
+    account = Account.objects.filter(id=pk).select_related("accountbalance").first()
     ledger = AccountLedger.objects.select_related("user", "package").values(
         "credit",
         "debit",
         "timestamp",
         "description",
         "package_id",
+        "is_late",
         "user__first_name",
         "user__last_name",
         "package__tracking_code"
@@ -49,7 +50,7 @@ def account_ledger(request, pk):
 
 @require_http_methods(["GET"])
 def account_packages(request, pk):
-    account = Account.objects.filter(id=pk).first()
+    account = Account.objects.filter(id=pk).select_related("accountbalance").first()
     packages = _get_packages(account__id=account.id)
 
     page_number = request.GET.get("page")

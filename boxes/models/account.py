@@ -26,6 +26,30 @@ class Account(models.Model):
             primary_alias = AccountAlias(account=self, alias=self.name, primary=True)
             primary_alias.save()
 
+# Exists to denormalize AccountLedger entries
+class AccountBalance(models.Model):
+    account = models.OneToOneField(Account, on_delete=models.RESTRICT)
+    regular_balance = models.DecimalField(max_digits=8, decimal_places=2)
+    late_balance = models.DecimalField(max_digits=8, decimal_places=2)
+
+    def hr_regular_balance(self):
+        if self.regular_balance >= 0:
+            regular_balance = f"${self.regular_balance:.2f}"
+        else:
+            positive_regular_balance = self.regular_balance * -1
+            regular_balance = f"$({positive_regular_balance:.2f})"
+
+        return regular_balance
+
+    def hr_late_balance(self):
+        if self.late_balance >= 0:
+            late_balance = f"${self.late_balance:.2f}"
+        else:
+            positive_late_balance = self.late_balance * -1
+            late_balance = f"$({positive_late_balance:.2f})"
+
+        return late_balance
+
 class AccountLedger(models.Model):
     user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
@@ -34,6 +58,7 @@ class AccountLedger(models.Model):
     timestamp = models.DateTimeField(default=timezone.now)
     description = models.CharField(max_length=256, null=True)
     package = models.ForeignKey("Package", on_delete=models.RESTRICT, null=True)
+    is_late = models.BooleanField()
 
 class UserAccount(models.Model):
     user = models.ForeignKey("CustomUser", on_delete=models.RESTRICT)

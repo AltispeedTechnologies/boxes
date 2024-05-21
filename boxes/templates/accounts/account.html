@@ -20,6 +20,7 @@
                 <th scope="col">Charge</th>
                 <th scope="col">Description</th>
                 <th scope="col">Timestamp</th>
+                <th scope="col">Late Fee?</th>
             </tr>
         </thead>
         <tbody>
@@ -35,6 +36,7 @@
                     <td>${{ entry.debit }}</td>
                     <td>{{ entry.description|default_if_none:"" }}</td>
                     <td class="timestamp" data-timestamp="{{ entry.timestamp.isoformat }}"></td>
+                    <td>{% if entry.is_late %}Yes{% else %}No{% endif %}</td>
                 </tr>
             {% endfor %}
         </tbody>

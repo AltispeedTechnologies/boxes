@@ -93,24 +93,25 @@ function display_packages(response) {
         .removeClass("visually-hidden")
         .attr("data-row-id", response.id);
 
-    new_row.find("td:nth-child(1)").text(response.account)
+    new_row.find("td:nth-child(1) input").attr("id", "package-" + response.id);
+    new_row.find("td:nth-child(2)").text(response.account)
         .attr("data-id", response.account_id);
-    new_row.find("td:nth-child(2)").text(response.tracking_code);
-    new_row.find("td:nth-child(3)").text(`$${response.price}`);
-    new_row.find("td:nth-child(4)").text(response.carrier)
+    new_row.find("td:nth-child(3)").text(response.tracking_code);
+    new_row.find("td:nth-child(4)").text(`$${response.price}`);
+    new_row.find("td:nth-child(5)").text(response.carrier)
         .attr("data-id", response.carrier_id);
-    new_row.find("td:nth-child(5)").text(response.package_type)
+    new_row.find("td:nth-child(6)").text(response.package_type)
         .attr("data-id", response.package_type_id);
 
     if (response.inside) {
         const icon = '<i class="fas fa-check-circle text-warning"></i>';
-        new_row.find("td:nth-child(6)").html(icon).attr("data-id", "True");
+        new_row.find("td:nth-child(7)").html(icon).attr("data-id", "True");
     } else {
         const icon = '<i class="fas fa-times-circle text-info"></i>';
-        new_row.find("td:nth-child(6)").html(icon).attr("data-id", "False");
+        new_row.find("td:nth-child(7)").html(icon).attr("data-id", "False");
     }
 
-    new_row.find("td:nth-child(7)").text(response.comments);
+    new_row.find("td:nth-child(8)").text(response.comments);
 
     $("tbody").append(new_row);
 }

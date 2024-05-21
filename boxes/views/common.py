@@ -89,7 +89,7 @@ def _search_packages_helper(request, **kwargs):
 
 def _get_matching_users(account_id):
     # Ensure Account exists
-    account = get_object_or_404(Account, pk=account_id)
+    account = get_object_or_404(Account.objects.select_related("accountbalance"), pk=account_id)
 
     # Check if there is a UserAccount entry for this account id
     user_accounts = UserAccount.objects.filter(account=account)

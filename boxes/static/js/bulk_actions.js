@@ -103,22 +103,24 @@ function setup_bulk_actions() {
 
     $("#bulkEditModal .btn-primary").on("click", function() {
         let price = $("#bulkEditModal").find("#price").val();
-        let carrier_id = $("#bulkEditModal").find("#id_carrier_id").val();
-        let carrier = $("#bulkEditModal").find("#id_carrier_id option:selected").text();
+        let carrier_id = $("#bulkEditModal").find("#id_bulk_carrier_id").val();
+        let carrier = $("#bulkEditModal").find("#id_bulk_carrier_id option:selected").text();
+        if (typeof window.no_ledger === "undefined") { window.no_ledger = false; }
 
-        var post_data = {
+        var payload = {
             ids: Array.from(window.selected_packages),
             values: {
                 price: price,
                 carrier_id: carrier_id,
             },
+            no_ledger: window.no_ledger
         };
 
         $.ajax({
             type: "POST",
             url: "/packages/update",
             headers: {"X-CSRFToken": window.csrf_token},
-            data: JSON.stringify(post_data),
+            data: JSON.stringify(payload),
             contentType: "application/json",
             success: function(response) {
                 if (response.success) {

@@ -26,6 +26,7 @@
                     disabled>
                 <i class="fas fa-edit"></i>
             </button>
+            {% if not queues %}
             <button class="btn btn-lg btn-success"
                     id="bulkcheckoutbtn"
                     data-bs-target="#bulkCheckOutModal"
@@ -34,6 +35,7 @@
                     disabled>
                 <i class="fas fa-check-circle"></i>
             </button>
+            {% endif %}
             {% if account %}
                 <button class="btn btn-lg bg-light"
                         id="bulkcheckbackinbtn"
@@ -61,7 +63,7 @@
                         disabled>
                     <i class="fas fa-trash-alt"></i>
                 </button>
-            {% else %}
+            {% elif not queues %}
                 <button class="btn btn-lg btn-info"
                         id="bulkpicklistbtn"
                         data-bs-target="#bulkAddPicklistModal"

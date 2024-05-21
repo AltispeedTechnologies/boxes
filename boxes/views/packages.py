@@ -19,7 +19,7 @@ from django.views.decorators.http import require_http_methods
 
 def get_or_create_account(account_id, user):
     if not account_id.isdigit():
-        account, _ = Account.objects.get_or_create(user=user, balance=Decimal(0.00), is_good_standing=True, name=strip_tags(account_id))
+        account, _ = Account.objects.get_or_create(user=user, balance=Decimal(0.00), billable=True, name=strip_tags(account_id))
         return account
     return Account.objects.get(id=account_id)
 
@@ -68,7 +68,7 @@ def update_packages_util(request, state, debit_credit_switch=False):
                 continue
 
             debit, credit = (0, pkg["price"]) if debit_credit_switch else (pkg["price"], 0)
-            acct_entry = AccountLedger(user_id=request.user.id, package_id=pkg["id"],
+            acct_entry = AccountLedger(user_id=request.user.id, package_id=pkg["id"], is_late=False,
                                        account_id=pkg["account_id"], debit=debit, credit=credit, description="")
             account_ledger.append(acct_entry)
             affected_accounts.add(pkg["account_id"])
@@ -209,7 +209,7 @@ def update_queue_name(request, pk):
     except Exception as e:
         return JsonResponse({"success": False, "message": f"Error updating queue: {str(e)}"}, status=500)
 
-def update_packages_fields(package_ids, package_data, user):
+def update_packages_fields(package_ids, package_data, user, no_ledger=False):
     packages = Package.objects.filter(pk__in=package_ids)
     updates = []
     errors = []
@@ -246,7 +246,7 @@ def update_packages_fields(package_ids, package_data, user):
                     entity = Carrier.objects.get(id=field_data)
                     setattr(package, "carrier", entity)
                 elif field == "package_type_id":
-                    entity = PackageType.objects.get(id=package_type_id)
+                    entity = PackageType.objects.get(id=field_data)
                     setattr(package, "package_type", entity)
                 elif field == "comments" and package_data[field] is None:
                     setattr(package, field, "")
@@ -277,11 +277,12 @@ def update_packages_fields(package_ids, package_data, user):
                             account = Account(id=package.account_id, balance=new_balance)
                             accounts[account_id] = account
 
-                    # Create the new ledger entry for the price change
-                    acct_entry = AccountLedger(user_id=user.id, package_id=package.id,
-                                               account_id=package.account_id, debit=debit, 
-                                               credit=credit, description="")
-                    account_ledger.append(acct_entry)
+                    if not no_ledger:
+                        # Create the new ledger entry for the price change
+                        acct_entry = AccountLedger(user_id=user.id, package_id=package.id,
+                                                   account_id=package.account_id, debit=debit, 
+                                                   credit=credit, description="Price changed", is_late=False)
+                        account_ledger.append(acct_entry)
 
                     setattr(package, field, type_func(field_data))
                 else:
@@ -315,9 +316,9 @@ def update_packages(request):
     request_data = json.loads(request.body)
     package_ids = request_data.get("ids")
     package_data = request_data.get("values")
-    print(request_data)
+    no_ledger = request_data.get("no_ledger")
 
-    result = update_packages_fields(package_ids, package_data, request.user)
+    result = update_packages_fields(package_ids, package_data, request.user, no_ledger)
     return JsonResponse(result)
 
 @require_http_methods(["GET"])

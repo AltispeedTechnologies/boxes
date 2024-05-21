@@ -34,6 +34,10 @@ function update_package_selection(is_checked, package_id) {
 }
 
 $(document).ready(function() {
+    if (typeof window.selected_packages === "undefined" || window.selected_packages === null) {
+        window.selected_packages = new Set();
+    }
+
     if (window.selected_packages.size > 0) { update_pagination_links(); }
 
     $(document).on("click", ".package-checkbox", function(e) {
