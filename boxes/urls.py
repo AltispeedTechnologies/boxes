@@ -8,7 +8,6 @@ def is_staff(view_func):
     return login_required(user_passes_test(is_staff, login_url=HttpResponseForbidden)(view_func))
 
 urlpatterns = [
-    path("", index, name="home"),
     path("admin/", admin.site.urls),
 
     # User authentication

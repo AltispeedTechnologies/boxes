@@ -50,9 +50,9 @@ def sign_in(request):
             if check_password(password, user.password):
                 if user.is_active:
                     login(request, user)
+                    next_url = request.POST.get("next", "/packages/")
                     messages.success(request, f"Hi {username.title()}, welcome back!")
-                    success = reverse_lazy("home")
-                    return redirect(success)
+                    return redirect(next_url)
                 else:
                     messages.error(request, "Your account is not active.")
             else:
