@@ -1,0 +1,54 @@
+{% block content %}
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th scope="col">Timestamp</th>
+                {% if enable_tracking_codes %}
+                <th scope="col">Tracking Codes</th>
+                {% endif %}
+                <th scope="col">Subject</th>
+                <th scope="col">Email Address</th>
+                <th scope="col" class="text-center">Status</th>
+                <th scope="col" class="text-center">Details</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for email in page_obj %}
+            <tr data-id="{{ email.sent_id }}">
+                <td class="timestamp" data-timestamp="{{ email.timestamp_val.isoformat }}"></td>
+                {% if enable_tracking_codes %}
+                <td>
+                    {% for tracking_code in email.tracking_codes %}
+                        <a href="/packages/{{ tracking_code.0 }}">{{ tracking_code.1 }}</a>
+                    {% endfor %}
+                </td>
+                {% endif %}
+                <td>{{ email.subject_val }}</td>
+                <td><a href="mailto:{{ email.email_val }}">{{ email.email_val }}</a></td>
+                <td class="text-center align-middle">
+                    {% if email.status %}
+                        <button class="btn btn-success" style="pointer-events: none;">
+                            <i class="fas fa-check status-icon"></i>
+                        </button>
+                    {% else %}
+                        <button class="btn btn-danger" style="pointer-events: none;">
+                            <i class="fas fa-times status-icon"></i>
+                        </button>
+                    {% endif %}
+                </td>
+                <td class="text-center align-middle">
+                    <button class="btn btn-primary emaildetails"
+                            data-bs-target="#showEmailModal"
+                            data-bs-toggle="modal" 
+                            data-bs-tooltip="yes" title="View Sent Email">
+                        <i class="fas fa-envelope-open"></i>
+                    </button>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "modals/email_contents.html" %}
+{% endblock %}

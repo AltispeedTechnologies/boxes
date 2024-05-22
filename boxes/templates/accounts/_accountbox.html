@@ -3,7 +3,7 @@
 {% load static %}
 <script src="{% static 'js/account.js' %}"></script>
 
-<div class="container">
+<div class="container bg-body shadow-sm p-3">
     <div class="row">
         <div class="col">
             <h2 id="accountdesc">{{ account.name }}</h2>
@@ -24,24 +24,19 @@
             </div>
         </div>
     </div>
-    <div class="row bg-light">
+    <div class="row bg-light w-75 mx-auto text-center align-items-center">
         <nav class="nav nav-pills flex-column flex-sm-row">
-          <a class="flex-sm-fill text-sm-center nav-link {% if view_type == "packages" %}active{% endif %}"
-             href="/accounts/{{ account.id }}/packages"
-             aria-current="page">Packages</a>
-          <a class="flex-sm-fill text-sm-center nav-link {% if view_type == "ledger" %}active{% endif %}"
-             href="/accounts/{{ account.id }}/ledger">Charges</a>
-          <a class="flex-sm-fill text-sm-center nav-link {% if view_type == "emails" %}active{% endif %}"
-             href="/accounts/{{ account.id }}/emails">Emails</a>
-          <a class="flex-sm-fill text-sm-center nav-link {% if view_type == "edit" %}active{% endif %}"
-             href="/accounts/{{ account.id }}/edit">Edit</a>
+            <a class="flex-sm-fill text-sm-center nav-link {% if view_type == "packages" %}active{% endif %}"
+               href="/accounts/{{ account.id }}/packages"
+               aria-current="page">Packages</a>
+            <a class="flex-sm-fill text-sm-center nav-link {% if view_type == "ledger" %}active{% endif %}"
+               href="/accounts/{{ account.id }}/ledger">Charges</a>
+            <a class="flex-sm-fill text-sm-center nav-link {% if view_type == "emails" %}active{% endif %}"
+               href="/accounts/{{ account.id }}/emails">Emails</a>
+            <a class="flex-sm-fill text-sm-center nav-link {% if view_type == "edit" %}active{% endif %}"
+               href="/accounts/{{ account.id }}/edit">Edit</a>
         </nav>
     </div>
-    <hr />
-    {% if view_type == "packages" %}
-    {% include "packages/_bulk_actions.html" %}
-    <br style="clear: both;" />
-    {% endif %}
 </div>
 {% endif %}
 {% endblock content %}

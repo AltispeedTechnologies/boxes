@@ -327,5 +327,4 @@ $(document).ready(function() {
             console.error("Error loading modals");
         }
     });
-
 });

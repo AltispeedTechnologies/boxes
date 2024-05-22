@@ -3,45 +3,81 @@
 {% block content %}
 {% include "_messages.html" %}
 
-{% if package %}
-<div class="container mt-5">
-    <div class="card border-primary mb-3">
-        <div class="card-header bg-primary text-white">Package Details</div>
-        <div class="card-body text-primary">
-            <h5 class="card-title">{{ package.carrier__name }} - {{ package.tracking_code }}</h5>
-            <p class="card-text"><strong>Price:</strong> {{ package.price }}</p>
-            <p class="card-text"><strong>Account Name:</strong> {{ package.account__name }}</p>
-            <p class="card-text"><strong>Package Type:</strong> {{ package.package_type__description }}</p>
-            <p class="card-text"><strong>Comments:</strong> {{ package.comments }}</p>
-        </div>
+<div class="container bg-body p-4 shadow rounded">
+    <div class="row bg-primary bg-gradient rounded">
+        <h2 class="text-center text-white py-2">Package Details</h2>
     </div>
-</div>
-{% endif %}
+    <div class="row my-4">
+        {% if package %}
+        <div class="col-md-6">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Attributes</h4>
+            </div>
+            <div class="table-responsive mt-3">
+                <table class="table table-hover">
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold">Carrier</td>
+                            <td>{{ package.carrier__name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Tracking Code</td>
+                            <td>{{ package.tracking_code }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Price</td>
+                            <td>${{ package.price }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Account</td>
+                            <td>{{ package.account__name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Package Type</td>
+                            <td>{{ package.package_type__description }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Comments</td>
+                            <td>{{ package.comments }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
 
-{% if state_ledger %}
-<h3>State Audit Log</h3>
-<div class="table-responsive">
-  <table class="table">
-    <thead>
-      <tr>
-        <th scope="col">User</th>
-        <th scope="col">State</th>
-        <th scope="col">Timestamp</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for ledger in state_ledger %}
-      <tr>
-        <td>{{ ledger.user__first_name }} {{ ledger.user__last_name }}</td>
-        <td>{{ ledger.state }}</td>
-        <td class="timestamp" data-timestamp="{{ ledger.timestamp.isoformat }}">
-            {{ ledger.timestamp }}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+        {% if state_ledger %}
+        <div class="col-md-6">
+            <h4>Audit Log</h4>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">User</th>
+                            <th scope="col">State</th>
+                            <th scope="col">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ledger in state_ledger %}
+                        <tr>
+                            <td>{{ ledger.user__first_name }} {{ ledger.user__last_name }}</td>
+                            <td>{{ ledger.state }}</td>
+                            <td class="timestamp" data-timestamp="{{ ledger.timestamp.isoformat }}"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% if page_obj %}
+    <div class="row">
+        <h4 class="text-center">Emails Sent (last 180 days)</h4>
+        {% include "_email_table.html" %}
+    </div>
+    {% endif %}
 </div>
-{% endif %}
 
 {% endblock %}

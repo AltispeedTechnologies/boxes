@@ -44,12 +44,24 @@ def package_detail(request, pk):
         "timestamp",
     ).filter(package_id=pk)
 
+    page_obj = SentEmail.objects.filter(
+        sentemailpackage__package__id=pk
+    ).annotate(
+        sent_id=F("pk"),
+        timestamp_val=F("timestamp"),
+        subject_val=F("subject"),
+        email_val=F("email"),
+        status=F("success")
+    ).order_by("-timestamp_val")
+
     state_names = dict(PACKAGE_STATES)
     for entry in state_ledger:
         entry["state"] = state_names.get(entry["state"], "Unknown")
 
     return render(request, "packages/package.html", {"package": package_values,
-                                                     "state_ledger": state_ledger})
+                                                     "state_ledger": state_ledger,
+                                                     "enable_tracking_codes": False,
+                                                     "page_obj": page_obj})
 
 def update_packages_util(request, state, debit_credit_switch=False):
     response_data = {"success": False, "errors": []}

@@ -95,6 +95,7 @@ def account_emails(request, pk):
 
     return render(request, "accounts/emails.html", {"account": account,
                                                     "page_obj": page_obj,
+                                                    "enable_tracking_codes": True,
                                                     "view_type": "emails"})
 
 @require_http_methods(["POST"])
