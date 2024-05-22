@@ -13,6 +13,7 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from faker import Faker
+from html import unescape
 from mailjet_rest import Client
 
 @shared_task
@@ -62,14 +63,22 @@ def send_emails():
 
             for user in users:
                 hr_name = user.first_name + " " + user.last_name
-                email_content = template.content
+                # FIXME
+                recipient_email = email_settings.sender_email
+                email_html = template.content
 
                 pattern = r'<span [^>]*class="custom-block[^"]*"[^>]*>([^<]+)</span>'
-                email_content = re.sub(pattern, lambda m: f'{{{m.group(1).lower().replace(" ", "_")}}}', email_content)
-                email_content = email_content.format(first_name=user.first_name,
-                                                     last_name=user.last_name,
-                                                     tracking_code=tracking_code,
-                                                     carrier=carrier_name)
+                email_html = re.sub(pattern, lambda m: f'{{{m.group(1).lower().replace(" ", "_")}}}', email_html)
+                email_html = email_html.format(first_name=user.first_name,
+                                               last_name=user.last_name,
+                                               tracking_code=tracking_code,
+                                               carrier=carrier_name)
+
+                # Remove all HTML tags
+                email_text = re.sub(r"<[^>]+>", "", email_html)
+                # Replace <br> and <br/> with newlines
+                email_text = re.sub(r"<br\s*/?>", "\n", email_text, flags=re.IGNORECASE)
+                email_text = unescape(email_text)
 
                 email_payload = {
                     "Messages": [
@@ -80,18 +89,47 @@ def send_emails():
                             },
                             "To": [
                                 {
-                                    "Email": email_settings.sender_email,
+                                    "Email": recipient_email,
                                     "Name": hr_name
                                 }
                             ],
                             "Subject": template.subject,
-                            "TextPart": email_content,
-                            "HTMLPart": email_content
+                            "TextPart": email_text,
+                            "HTMLPart": email_html
                         }
                     ]
                 }
 
+                # Send the email
                 result = mailjet.send.create(data=email_payload)
+
+                # Interpret the immediate result and store it for later analyzation
+                json_result = result.json()
+                json_message = json_result["Messages"][0]
+                success = False
+                # See https://dev.mailjet.com/email/guides/send-api-v31/
+                if json_message["Status"] == "success":
+                    success = True
+
+                # We are only sending one email per request, so it will always be the first item
+                # If there is no message_uuid from the response, we can assume it was also unsuccessful
+                message_uuid = None
+                if success:
+                    message_uuid = json_message["To"][0]["MessageUUID"]
+
+                # Create main SentEmail object
+                sent_email = SentEmail.objects.create(account_id=account_id,
+                                                      subject=template.subject,
+                                                      email=recipient_email,
+                                                      success=success,
+                                                      message_uuid=message_uuid)
+                # Store the contents of the sent email
+                SentEmailContents.objects.create(sent_email=sent_email, html=email_html)
+                # Ensure each package can have a record of a sent email
+                for package_id in package_ids:
+                    SentEmailPackage.objects.create(sent_email=sent_email, package_id=package_id)
+                # Store the raw JSON result, in case something goes haywire
+                SentEmailResult.objects.create(sent_email=sent_email, response=json_result)
 
 @shared_task
 def age_picklists():

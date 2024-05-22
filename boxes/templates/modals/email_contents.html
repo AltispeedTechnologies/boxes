@@ -1,0 +1,26 @@
+{% block content %}
+{% load static %}
+<script src="{% static 'js/modals/email_contents.js' %}"></script>
+
+<div class="modal fade" id="showEmailModal" tabindex="-1" aria-labelledby="showEmailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="showEmailModalLabel">Email Contents</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container">
+                <div class="text-center align-middle" id="loadingstatus" style="display: none;">
+                    <h6>Loading...</h6>
+                    <i class="fas fa-spinner fa-spin fa-3x"></i>
+                </div>
+                <div class="scrollable-div" id="emailcontents" style="max-height: 300px; overflow-y: auto;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

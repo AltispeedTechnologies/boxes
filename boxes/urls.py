@@ -31,6 +31,7 @@ urlpatterns = [
 
     # Accounts
     path("accounts/<int:pk>/edit", is_staff(account_edit), name="account_edit"),
+    path("accounts/<int:pk>/emails", is_staff(account_emails), name="account_emails"),
     path("accounts/<int:pk>/ledger", is_staff(account_ledger), name="account_ledger"),
     path("accounts/<int:pk>/packages", is_staff(account_packages), name="account_packages"),
     path("accounts/<int:pk>/update", is_staff(update_account), name="update_account"),
@@ -39,6 +40,7 @@ urlpatterns = [
 
     # Backend endpoints
     path("carriers/search", is_staff(carrier_search), name="carrier_search"),
+    path("emails/<int:pk>/contents", is_staff(get_email_contents), name="get_email_contents"),
     path("picklists/query", is_staff(picklist_query), name="picklist_query"),
     path("types/search", is_staff(type_search), name="type_search"),
     path("packages/checkout", is_staff(check_out_packages), name="check_out_packages"),

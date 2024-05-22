@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 class EmailTemplate(models.Model):
     name = models.CharField(max_length=100)
@@ -18,3 +19,23 @@ class NotificationRule(models.Model):
 class EmailQueue(models.Model):
     package = models.ForeignKey("Package", on_delete=models.RESTRICT)
     template = models.ForeignKey(EmailTemplate, on_delete=models.RESTRICT)
+
+class SentEmail(models.Model):
+    account = models.ForeignKey("Account", on_delete=models.RESTRICT)
+    subject = models.CharField()
+    email = models.CharField()
+    timestamp = models.DateTimeField(default=timezone.now)
+    success = models.BooleanField()
+    message_uuid = models.CharField(null=True)
+
+class SentEmailContents(models.Model):
+    sent_email = models.ForeignKey(SentEmail, on_delete=models.RESTRICT)
+    html = models.TextField()
+
+class SentEmailPackage(models.Model):
+    sent_email = models.ForeignKey(SentEmail, on_delete=models.RESTRICT)
+    package = models.ForeignKey("Package", on_delete=models.RESTRICT)
+
+class SentEmailResult(models.Model):
+    sent_email = models.ForeignKey(SentEmail, on_delete=models.RESTRICT)
+    response = models.JSONField()

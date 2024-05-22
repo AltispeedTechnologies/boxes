@@ -90,10 +90,11 @@ def save_email_settings(request):
     check_in_template_id = data.get("check_in_template")
     
     # Create or update the main email settings
-    email_settings, created = EmailSettings.objects.update_or_create(
+    EmailSettings.objects.all().delete()
+    email_settings = EmailSettings.objects.create(
         sender_name=sender_name,
         sender_email=sender_email,
-        defaults={"check_in_template_id": check_in_template_id}
+        check_in_template_id=check_in_template_id
     )
     
     # Handle notification rules
