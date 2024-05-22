@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-    {% include "accounts/_accountbox.html" %}
-    {% include "_messages.html" %}
-    <div class="container bg-body shadow-sm">
+    <div class="bg-body shadow rounded p-3">
+        {% include "accounts/_accountbox.html" %}
+        {% include "_messages.html" %}
         {% include "packages/_bulk_actions.html" %}
         {% include "packages/_table.html" %}
     </div>

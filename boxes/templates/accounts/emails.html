@@ -1,16 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
 
-{% include "_messages.html" %}
+<div class="bg-body shadow rounded p-3">
+    {% include "accounts/_accountbox.html" %}
 
-{% include "accounts/_accountbox.html" %}
+    {% include "_messages.html" %}
 
-{% if page_obj %}
-<h4>Emails Sent (last 180 days)</h4>
+    {% if page_obj %}
+        <h4>Emails Sent (last 180 days)</h4>
 
-{% include "accounts/_paginate.html" %}
-{% include "_email_table.html" %}
-
-{% endif %}
+        {% include "accounts/_paginate.html" %}
+        {% include "_email_table.html" %}
+    {% endif %}
+</div>
 
 {% endblock %}

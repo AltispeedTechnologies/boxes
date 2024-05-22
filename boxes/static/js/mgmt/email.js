@@ -13,8 +13,8 @@ $(document).ready(function() {
         $(this).closest(".day-template").remove();
     });
 
-    $("form").submit(function(event) {
-        event.preventDefault();
+    $("#saveconfig").click(function() {
+        $("#savingicon").show();
 
         var form_data = {
             sender_name: $("#sender-name").val(),
@@ -40,10 +40,9 @@ $(document).ready(function() {
             },
             data: JSON.stringify(form_data),
             success: function(response) {
-                alert("Settings saved successfully!");
-            },
-            error: function() {
-                alert("Error saving settings.");
+                $("#savingicon").hide();
+                $("#successicon").show();
+                $("#successicon").fadeOut(2000);
             }
         });
     });

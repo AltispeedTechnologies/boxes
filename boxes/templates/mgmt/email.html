@@ -6,73 +6,75 @@
 
 {% include "_messages.html" %}
 
-<div class="container my-5">
+<div class="container bg-body shadow rounded p-3 col-md-8">
+    <div class="row bg-primary bg-gradient rounded mb-3">
+        <h2 class="text-center text-white py-2">Configure Emails</h2>
+    </div>
+    <div class="d-flex justify-content-end mb-3">
+        <div class="me-2 align-self-center">
+            <i id="savingicon" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+            <i id="successicon" class="fas fa-check-circle text-success" style="display: none;"></i>
+        </div>
+        <button class="btn btn-primary" id="saveconfig">
+            <i class="fas fa-save"></i> Save
+        </button>
+    </div>
     <div class="row">
-        <div class="col-lg-8 offset-lg-2">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h2 class="card-title">Email Configuration</h2>
-                    <form>
-                        <div class="mb-3">
-                            <label for="sender-name" class="form-label">Sender's Name</label>
-                            <input type="text" class="form-control" id="sender-name" placeholder="Enter the sender's name" value="{{ email_settings.sender_name|default:'' }}">
-                        </div>
-                        <div class="mb-3">
-                            <label for="sender-email" class="form-label">Sender's Email</label>
-                            <input type="email" class="form-control" id="sender-email" placeholder="Enter the sender's email address" value="{{ email_settings.sender_email|default:'' }}">
-                        </div>
-                        <div class="mb-3">
-                            <label for="check-in-template" class="form-label">Check-In Template</label>
-                            <select id="check-in-template" class="form-select">
-                                <option value="">Select template</option>
-                                {% for template in templates %}
-                                    <option value="{{ template.id }}" {% if email_settings and email_settings.check_in_template_id == template.id %}selected{% endif %}>{{ template.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div id="days-templates">
-                            <label class="form-label">Notification Templates for Specific Days:</label>
-                            {% if email_settings and email_settings.notification_rules.all %}
-                                {% for rule in email_settings.notification_rules.all %}
-                                    <div class="day-template mb-3">
-                                        <div class="input-group">
-                                            <input type="number" class="form-control" placeholder="Enter the number of days" value="{{ rule.days }}">
-                                            <select class="form-select">
-                                                <option value="">Select template</option>
-                                                {% for template in templates %}
-                                                    <option value="{{ template.id }}" {% if rule.template_id == template.id %}selected{% endif %}>{{ template.name }}</option>
-                                                {% endfor %}
-                                            </select>
-                                            <button class="btn btn-danger remove-day-template" type="button"><i class="fas fa-minus"></i></button>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            {% endif %}
-                            <div class="day-template mb-3 d-none">
-                                <div class="input-group">
-                                    <input type="number" class="form-control" placeholder="Enter the number of days">
-                                    <select class="form-select">
-                                        <option value="">Select template</option>
-                                        {% for template in templates %}
-                                            <option value="{{ template.id }}">{{ template.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    <button class="btn btn-danger remove-day-template" type="button"><i class="fas fa-minus"></i></button>
-                                </div>
+        <form>
+            <div class="mb-3">
+                <label for="sender-name" class="form-label fw-bold">Sender's Name</label>
+                <input type="text" class="form-control" id="sender-name" placeholder="Enter the sender's name" value="{{ email_settings.sender_name|default:'' }}">
+            </div>
+            <div class="mb-3">
+                <label for="sender-email" class="form-label fw-bold">Sender's Email</label>
+                <input type="email" class="form-control" id="sender-email" placeholder="Enter the sender's email address" value="{{ email_settings.sender_email|default:'' }}">
+            </div>
+            <div class="mb-3">
+                <label for="check-in-template" class="form-label fw-bold">Check-In Template</label>
+                <select id="check-in-template" class="form-select">
+                    <option value="">Select template</option>
+                    {% for template in templates %}
+                        <option value="{{ template.id }}" {% if email_settings and email_settings.check_in_template_id == template.id %}selected{% endif %}>{{ template.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div id="days-templates">
+                <label class="form-label fw-bold">Notification Templates for Specific Days:</label>
+                {% if email_settings and email_settings.notification_rules.all %}
+                    {% for rule in email_settings.notification_rules.all %}
+                        <div class="day-template mb-3">
+                            <div class="input-group">
+                                <input type="number" class="form-control" placeholder="Enter the number of days" value="{{ rule.days }}">
+                                <select class="form-select">
+                                    <option value="">Select template</option>
+                                    {% for template in templates %}
+                                        <option value="{{ template.id }}" {% if rule.template_id == template.id %}selected{% endif %}>{{ template.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button class="btn btn-danger remove-day-template" type="button"><i class="fas fa-minus"></i></button>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div class="me-2">
-                                <button type="button" class="btn btn-success" id="add-day-template"><i class="fas fa-plus"></i> Add Notification Rule</button>
-                            </div>
-                            <div>
-                                <button type="submit" class="btn btn-primary">Save Settings</button>
-                            </div>
-                        </div>
-                    </form>
+                    {% endfor %}
+                {% endif %}
+                <div class="day-template mb-3 d-none">
+                    <div class="input-group">
+                        <input type="number" class="form-control" placeholder="Enter the number of days">
+                        <select class="form-select">
+                            <option value="">Select template</option>
+                            {% for template in templates %}
+                                <option value="{{ template.id }}">{{ template.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-danger remove-day-template" type="button"><i class="fas fa-minus"></i></button>
+                    </div>
                 </div>
             </div>
-        </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="me-2">
+                    <button type="button" class="btn btn-success" id="add-day-template"><i class="fas fa-plus"></i> Add Notification Rule</button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}

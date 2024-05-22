@@ -1,47 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
 
-{% include "_messages.html" %}
+<div class="bg-body shadow rounded p-3">
+    {% include "accounts/_accountbox.html" %}
+    {% include "_messages.html" %}
 
-{% include "accounts/_accountbox.html" %}
+    {% if page_obj %}
+    <h4>Audit Log</h4>
 
-{% if page_obj %}
-<h4>Audit Log</h4>
+    {% include "accounts/_paginate.html" %}
 
-{% include "accounts/_paginate.html" %}
-
-<div class="table-responsive">
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th scope="col">User</th>
-                <th scope="col">Tracking Code</th>
-                <th scope="col">Payment</th>
-                <th scope="col">Charge</th>
-                <th scope="col">Description</th>
-                <th scope="col">Timestamp</th>
-                <th scope="col">Late Fee?</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for entry in page_obj %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead>
                 <tr>
-                    <td>{{ entry.user__first_name }} {{ entry.user__last_name }}</td>
-                    <td>
-                        <a href="/packages/{{ entry.package_id }}">
-                            {{ entry.package__tracking_code }}
-                        </a>
-                    </td>
-                    <td>${{ entry.credit }}</td>
-                    <td>${{ entry.debit }}</td>
-                    <td>{{ entry.description|default_if_none:"" }}</td>
-                    <td class="timestamp" data-timestamp="{{ entry.timestamp.isoformat }}"></td>
-                    <td>{% if entry.is_late %}Yes{% else %}No{% endif %}</td>
+                    <th scope="col">User</th>
+                    <th scope="col">Tracking Code</th>
+                    <th scope="col">Payment</th>
+                    <th scope="col">Charge</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Timestamp</th>
+                    <th scope="col">Late Fee?</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for entry in page_obj %}
+                    <tr>
+                        <td>{{ entry.user__first_name }} {{ entry.user__last_name }}</td>
+                        <td>
+                            <a href="/packages/{{ entry.package_id }}">
+                                {{ entry.package__tracking_code }}
+                            </a>
+                        </td>
+                        <td>${{ entry.credit }}</td>
+                        <td>${{ entry.debit }}</td>
+                        <td>{{ entry.description|default_if_none:"" }}</td>
+                        <td class="timestamp" data-timestamp="{{ entry.timestamp.isoformat }}"></td>
+                        <td>{% if entry.is_late %}Yes{% else %}No{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
 </div>
-{% endif %}
 
 {% endblock %}

@@ -32,8 +32,8 @@
                            "<select class=\"note-input form-control block-type\">" +
                            "<option value=\"first_name\">First Name</option>" +
                            "<option value=\"last_name\">Last Name</option>" +
-                           "<option value=\"tracking_code\">Tracking Code</option>" +
-                           "<option value=\"carrier\">Carrier</option>" +
+                           "<option value=\"tracking_code\">Tracking Code(s)</option>" +
+                           "<option value=\"carrier\">Carrier(s)</option>" +
                            "<option value=\"comment\">Comment</option>" +
                            "</select></div>";
 

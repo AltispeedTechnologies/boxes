@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <div class="d-flex justify-content-between align-items-center">
-    <h2>Search Parcels</h2>
-  </div>
+<div class="bg-body shadow rounded p-3">
+    <div class="row bg-primary bg-gradient rounded mb-3">
+        <h2 class="text-center text-white py-2">Search Parcels</h2>
+    </div>
 
-  {% include "_messages.html" %}
-  {% include "packages/_searchbox.html" %}
+    {% include "_messages.html" %}
+    {% include "packages/_searchbox.html" %}
+</div>
 {% endblock %}

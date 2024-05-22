@@ -9,10 +9,13 @@
 
 {% include "_messages.html" %}
 
-<div class="container mt-4">
+<div class="container bg-body shadow rounded p-3">
+    <div class="row bg-primary bg-gradient rounded mb-3">
+        <h2 class="text-center text-white py-2">Configure Email Templates</h2>
+    </div>
     <div class="row align-items-center mb-3">
         <div class="col-md-3">
-            <h4>Select a template:</h4>
+            <h5>Select a template:</h5>
         </div>
         <div class="col-md-9 d-flex align-items-center">
             <select id="template-selector" class="form-select">
@@ -20,7 +23,9 @@
                     <option value="{{ template.id }}">{{ template.name }}</option>
                 {% endfor %}
             </select>
-            <button id="add-btn" class="btn btn-success ms-2" data-bs-toggle="modal" data-bs-target="#addTemplateModal">
+            <button id="add-btn" class="btn btn-success ms-2"
+                    data-bs-toggle="modal" data-bs-target="#addTemplateModal"
+                    data-bs-tooltip="yes" title="Create New Template">
                 <i class="fas fa-plus"></i>
             </button>
         </div>

@@ -3,114 +3,115 @@
 {% load static %}
 <script src="{% static 'js/user_edit.js' %}"></script>
 
-{% include "_messages.html" %}
+<div class="bg-body shadow rounded p-3">
+    {% include "accounts/_accountbox.html" %}
+    {% include "_messages.html" %}
 
-{% include "accounts/_accountbox.html" %}
-
-<div class="container mt-4">
-    <div class="d-flex align-items-center justify-content-between">
-        <h4>Aliases</h4>
-        <div>
-            <i id="savingiconaliases" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
-            <i id="successiconaliases" class="fas fa-check-circle text-success" style="display: none;"></i>
-            <button id="savealiasbtn" class="btn btn-success">
-                <i class="fas fa-save"></i> Save
-            </button>
-            <button id="newaliasbtn" class="btn btn-primary">
-                <i class="fas fa-plus"></i> New
-            </button>
+    <div class="container mt-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <h4>Aliases</h4>
+            <div>
+                <i id="savingiconaliases" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+                <i id="successiconaliases" class="fas fa-check-circle text-success" style="display: none;"></i>
+                <button id="savealiasbtn" class="btn btn-success">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button id="newaliasbtn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> New
+                </button>
+            </div>
         </div>
     </div>
-</div>
 
-<br />
+    <br />
 
-<div class="container">
-    <div id="aliasesinput" data-account-id="{{ account.id }}" class="row">
-        {% for alias in aliases %}
-            {% if not alias.primary %}
-                <div class="col-md-3 d-flex align-items-center position-relative">
-                    <input type="text" class="form-control" data-id="{{ alias.id }}" value="{{ alias.alias }}">
-                    <i class="fas fa-trash position-absolute end-0 me-4 text-danger" style="display: none; cursor: pointer;"></i>
+    <div class="container">
+        <div id="aliasesinput" data-account-id="{{ account.id }}" class="row">
+            {% for alias in aliases %}
+                {% if not alias.primary %}
+                    <div class="col-md-3 d-flex align-items-center position-relative">
+                        <input type="text" class="form-control" data-id="{{ alias.id }}" value="{{ alias.alias }}">
+                        <i class="fas fa-trash position-absolute end-0 me-4 text-danger" style="display: none; cursor: pointer;"></i>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="container mt-4">
+        <div class="d-flex align-items-center justify-content-between">
+            <h4>Details</h4>
+            <div>
+                <i id="savingicondetails" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+                <i id="successicondetails" class="fas fa-check-circle text-success" style="display: none;"></i>
+                <button id="savedetailsbtn" class="btn btn-success">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <form id="userform" data-user-id="{{ custom_user.id }}">
+            <div class="row m-1 mb-2">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="billable" {% if account.billable %}checked{% endif %}></input>
+                    <label class="form-check-label" for="billable">Track individual charges for this account</label>
                 </div>
-            {% endif %}
-        {% endfor %}
+            </div>
+            <div class="row">
+                <div class="col-md-1">
+                    <label for="prefix" class="form-label">Prefix</label>
+                    <input type="text" class="form-control" id="prefix" name="prefix" value="{{ custom_user.prefix|default:"" }}">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-3">
+                    <label for="first_name" class="form-label">First Name</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" value="{{ custom_user.first_name|default:"" }}">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="middle_name" class="form-label">Middle Name</label>
+                    <input type="text" class="form-control" id="middle_name" name="middle_name" value="{{ custom_user.middle_name|default:"" }}">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="last_name" class="form-label">Last Name</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" value="{{ custom_user.last_name|default:"" }}">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-1 mb-3">
+                    <label for="suffix" class="form-label">Suffix</label>
+                    <input type="text" class="form-control" id="suffix" name="suffix" value="{{ custom_user.suffix|default:"" }}">
+                    <div class="invalid-feedback"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="company" class="form-label">Company</label>
+                    <input type="text" class="form-control" id="company" name="company" value="{{ custom_user.company|default:"" }}">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="company" class="form-label">Phone Number</label>
+                    <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ custom_user.phone_number|default:"" }}">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="company" class="form-label">Email Address</label>
+                    <input type="text" class="form-control" id="email" name="email" value="{{ custom_user.email|default:"" }}">
+                    <div class="invalid-feedback"></div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="comments" class="form-label">Comments</label>
+                <textarea class="form-control" id="comments" name="comments" rows="3">{{ custom_user.comments|default:"" }}</textarea>
+                <div class="invalid-feedback"></div>
+            </div>
+        </form>
     </div>
-</div>
-
-<hr />
-
-<div class="container mt-4">
-    <div class="d-flex align-items-center justify-content-between">
-        <h4>Details</h4>
-        <div>
-            <i id="savingicondetails" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
-            <i id="successicondetails" class="fas fa-check-circle text-success" style="display: none;"></i>
-            <button id="savedetailsbtn" class="btn btn-success">
-                <i class="fas fa-save"></i> Save
-            </button>
-        </div>
-    </div>
-</div>
-
-<div class="container">
-    <form id="userform" data-user-id="{{ custom_user.id }}">
-        <div class="row m-1 mb-2">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="billable" {% if account.billable %}checked{% endif %}></input>
-                <label class="form-check-label" for="billable">Track individual charges for this account</label>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-1">
-                <label for="prefix" class="form-label">Prefix</label>
-                <input type="text" class="form-control" id="prefix" name="prefix" value="{{ custom_user.prefix|default:"" }}">
-                <div class="invalid-feedback"></div>
-            </div>
-            <div class="col-md-3">
-                <label for="first_name" class="form-label">First Name</label>
-                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ custom_user.first_name|default:"" }}">
-                <div class="invalid-feedback"></div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <label for="middle_name" class="form-label">Middle Name</label>
-                <input type="text" class="form-control" id="middle_name" name="middle_name" value="{{ custom_user.middle_name|default:"" }}">
-                <div class="invalid-feedback"></div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <label for="last_name" class="form-label">Last Name</label>
-                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ custom_user.last_name|default:"" }}">
-                <div class="invalid-feedback"></div>
-            </div>
-            <div class="col-md-1 mb-3">
-                <label for="suffix" class="form-label">Suffix</label>
-                <input type="text" class="form-control" id="suffix" name="suffix" value="{{ custom_user.suffix|default:"" }}">
-                <div class="invalid-feedback"></div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-3 mb-3">
-                <label for="company" class="form-label">Company</label>
-                <input type="text" class="form-control" id="company" name="company" value="{{ custom_user.company|default:"" }}">
-                <div class="invalid-feedback"></div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <label for="company" class="form-label">Phone Number</label>
-                <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ custom_user.phone_number|default:"" }}">
-                <div class="invalid-feedback"></div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <label for="company" class="form-label">Email Address</label>
-                <input type="text" class="form-control" id="email" name="email" value="{{ custom_user.email|default:"" }}">
-                <div class="invalid-feedback"></div>
-            </div>
-        </div>
-        <div class="mb-3">
-            <label for="comments" class="form-label">Comments</label>
-            <textarea class="form-control" id="comments" name="comments" rows="3">{{ custom_user.comments|default:"" }}</textarea>
-            <div class="invalid-feedback"></div>
-        </div>
-    </form>
 </div>
 
 {% endblock %}

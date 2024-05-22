@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="d-flex justify-content-between align-items-center">
-        <h2>{{ picklist_title }} Picklist</h2>
+<div class="bg-body shadow rounded p-3">
+    <div class="row bg-primary bg-gradient rounded mb-3">
+        <h2 class="text-center text-white py-2">{{ picklist_title }} Picklist</h2>
     </div>
 
     {% include "_messages.html" %}
@@ -27,7 +28,9 @@
     {% if page_obj %}
     {% include "packages/_table.html" %}
     {% else %}
-    <h5 class="text-warning">No packages in picklist</h5>
+    <div class="row bg-warning bg-gradient rounded mb-3">
+        <h5 class="text-center text-white py-2">No parcels in picklist</h5>
+    </div>
     {% endif %}
 
     {% load static %}
@@ -41,4 +44,5 @@
         });
         {% endif %}
     </script>
+</div>
 {% endblock %}
