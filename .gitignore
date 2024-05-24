@@ -2,6 +2,10 @@
 
 /static/
 
+# Not needed; we're basically pure JS but need a linter
+node_modules/
+package-lock.json
+
 ## SOURCE: https://djangowaves.com/tips-tricks/gitignore-for-a-django-project/
 
 # Django #
