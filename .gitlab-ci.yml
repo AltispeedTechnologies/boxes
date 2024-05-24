@@ -65,6 +65,20 @@ deploy_staging:
     - mkdir -p ~/.ssh
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null\n" > ~/.ssh/config
     - ssh-keyscan $STAGING_SERVER >> ~/.ssh/known_hosts
-    - ssh $DEPLOY_USER@$STAGING_SERVER "cd /var/www/mikes-boxes && git pull && ./setup.sh update && sudo systemctl restart gunicorn.service && sudo systemctl restart celery.service && sudo systemctl restart celery-beat.service"
+    - ssh $STAGING_USER@$STAGING_SERVER "cd /var/www/mikes-boxes && git pull && ./setup.sh update && sudo systemctl restart gunicorn.service && sudo systemctl restart celery.service && sudo systemctl restart celery-beat.service"
+  only:
+    - main
+
+deploy_prod:
+  stage: deploy
+  script:
+    - apt-get update && apt-get install -y openssh-client
+    - eval $(ssh-agent -s)
+    - sleep 2
+    - ssh-add <(echo $DEPLOY_PRIVATE_KEY | base64 --decode)
+    - mkdir -p ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null\n" > ~/.ssh/config
+    - ssh-keyscan $PROD_SERVER >> ~/.ssh/known_hosts
+    - ssh $PROD_USER@$PROD_SERVER "cd /var/www/$PROD_SERVER && git pull && ./setup.sh update && sudo systemctl restart gunicorn.service && sudo systemctl restart celery.service && sudo systemctl restart celery-beat.service"
   only:
     - main
