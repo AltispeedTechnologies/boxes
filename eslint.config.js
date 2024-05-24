@@ -1,12 +1,14 @@
+const globals = require("./node_modules/globals/index.js");
+
 module.exports = {
     languageOptions: {
-        ecmaVersion: 2023,
-        sourceType: "module",
+        ecmaVersion: "latest",
+        sourceType: "script",
         globals: {
-            window: "readonly",
-            document: "readonly",
-            jQuery: "writable", 
-            $: "writable"
+            ...globals.browser,
+            ...globals.jquery,
+            ...globals.amd,
+            ...globals.commonjs
         }
     },
     rules: {
