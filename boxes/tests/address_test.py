@@ -1,6 +1,7 @@
 from django.test import TestCase
 from boxes.models import *
 
+
 class AddressTest(TestCase):
     def setUp(self):
         # Create a sample CustomUser, some of this may be duplicated

@@ -19,12 +19,15 @@ from django.views.decorators.http import require_http_methods
 
 def get_or_create_account(account_id, user):
     if not account_id.isdigit():
-        account, _ = Account.objects.get_or_create(user=user, balance=Decimal(0.00), billable=True, name=strip_tags(account_id))
+        account, _ = Account.objects.get_or_create(user=user, balance=Decimal(0.00), billable=True,
+                                                   name=strip_tags(account_id))
         return account
     return Account.objects.get(id=account_id)
 
+
 def all_packages(request):
     return render(request, "packages/index.html", {"search_url": reverse("search_packages")})
+
 
 def package_detail(request, pk):
     package_values = Package.objects.select_related("account", "carrier", "packagetype").values(
@@ -63,6 +66,7 @@ def package_detail(request, pk):
                                                      "enable_tracking_codes": False,
                                                      "page_obj": page_obj})
 
+
 def update_packages_util(request, state, debit_credit_switch=False):
     response_data = {"success": False, "errors": []}
     try:
@@ -100,6 +104,7 @@ def update_packages_util(request, state, debit_credit_switch=False):
         response_data["errors"] = [str(e)]
     return response_data
 
+
 @require_http_methods(["POST"])
 def check_in_packages(request):
     queue_id = request.POST.get("queue_id")
@@ -125,6 +130,7 @@ def check_out_packages(request):
     else:
         return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
 
+
 @require_http_methods(["POST"])
 def check_out_packages_reverse(request):
     result = update_packages_util(request, state=1, debit_credit_switch=False)
@@ -133,6 +139,7 @@ def check_out_packages_reverse(request):
     else:
         return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occurred."])})
 
+
 def create_package(request):
     if request.method == "POST":
         form = PackageForm(request.POST)
@@ -140,7 +147,7 @@ def create_package(request):
             package = form.save(commit=False)
 
             queue_id = form.cleaned_data["queue_id"]
-            
+
             # Use helper functions
             package.carrier = Carrier.objects.get(id=form.cleaned_data["carrier_id"])
             package.account = get_or_create_account(form.cleaned_data["account_id"], request.user)
@@ -162,6 +169,7 @@ def create_package(request):
                                                         "queues": queues,
                                                         "prices": prices})
 
+
 @require_http_methods(["GET"])
 def queue_packages(request, pk):
     packages = PackageQueue.objects.filter(queue=pk).select_related(
@@ -169,7 +177,7 @@ def queue_packages(request, pk):
         "package__package_type",
         "package__carrier"
     ).values(
-        "package__id", 
+        "package__id",
         "package__account__name",
         "package__account__id",
         "package__tracking_code",
@@ -201,6 +209,7 @@ def queue_packages(request, pk):
 
     return JsonResponse({"success": True, "packages": packages_list})
 
+
 @require_http_methods(["POST"])
 def update_queue_name(request, pk):
     try:
@@ -220,6 +229,7 @@ def update_queue_name(request, pk):
         return JsonResponse({"success": False, "message": "Missing id or description in payload"}, status=400)
     except Exception as e:
         return JsonResponse({"success": False, "message": f"Error updating queue: {str(e)}"}, status=500)
+
 
 def update_packages_fields(package_ids, package_data, user, no_ledger=False):
     packages = Package.objects.filter(pk__in=package_ids)
@@ -283,7 +293,8 @@ def update_packages_fields(package_ids, package_data, user, no_ledger=False):
                         account = accounts[account_id]
                         account.balance += change_in_price
                     else:
-                        current_balance = Account.objects.filter(pk=package.account_id).values_list("balance", flat=True).first()
+                        current_balance = Account.objects.filter(pk=package.account_id).values_list(
+                                                                 "balance", flat=True).first()
                         if current_balance is not None:
                             new_balance = current_balance + change_in_price
                             account = Account(id=package.account_id, balance=new_balance)
@@ -292,7 +303,7 @@ def update_packages_fields(package_ids, package_data, user, no_ledger=False):
                     if not no_ledger:
                         # Create the new ledger entry for the price change
                         acct_entry = AccountLedger(user_id=user.id, package_id=package.id,
-                                                   account_id=package.account_id, debit=debit, 
+                                                   account_id=package.account_id, debit=debit,
                                                    credit=credit, description="Price changed", is_late=False)
                         account_ledger.append(acct_entry)
 
@@ -317,11 +328,13 @@ def update_packages_fields(package_ids, package_data, user, no_ledger=False):
         return {"success": False, "errors": errors}
     return {"success": True}
 
+
 @require_http_methods(["POST"])
 def update_package(request, pk):
     request_data = json.loads(request.body)
     result = update_packages_fields([pk], request_data, request.user)
     return JsonResponse(result)
+
 
 @require_http_methods(["POST"])
 def update_packages(request):
@@ -333,6 +346,7 @@ def update_packages(request):
     result = update_packages_fields(package_ids, package_data, request.user, no_ledger)
     return JsonResponse(result)
 
+
 @require_http_methods(["GET"])
 def type_search(request):
     search_query = request.GET.get("term", "")
@@ -341,6 +355,7 @@ def type_search(request):
                 "text": pkgtype.description,
                 "default_price": pkgtype.default_price} for pkgtype in pkgtypes]
     return JsonResponse({"results": results})
+
 
 @require_http_methods(["GET"])
 def search_packages(request):
@@ -365,4 +380,3 @@ def search_packages(request):
                                                     "filter": request.GET.get("filter", ""),
                                                     "selected": selected,
                                                     "account_packages": True})
-

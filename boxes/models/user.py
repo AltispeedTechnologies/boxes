@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 
+
 class CustomUser(AbstractUser):
     company = models.CharField(max_length=128, null=True)
     phone_number = models.CharField(max_length=20, null=True)
@@ -17,6 +18,7 @@ class CustomUser(AbstractUser):
 
     def is_staff(self):
         return self.groups.filter(name="Admin").exists() or self.groups.filter(name="Staff").exists()
+
 
 class CustomUserEmail(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.RESTRICT)

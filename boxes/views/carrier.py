@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from boxes.models import Carrier
 
+
 @require_http_methods(["GET"])
 def carrier_search(request):
     search_query = request.GET.get("term", "")

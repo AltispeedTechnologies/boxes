@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
+
 class Picklist(models.Model):
     date = models.DateField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
@@ -12,6 +13,7 @@ class Picklist(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         super(Picklist, self).save(*args, **kwargs)
+
 
 class PackagePicklist(models.Model):
     package = models.OneToOneField("Package", on_delete=models.RESTRICT)

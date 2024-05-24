@@ -30,6 +30,7 @@ SPECIAL_ATTRIBUTES = {
 ALLOWED_ATTRIBUTES = {tag: COMMON_ATTRIBUTES for tag in ALLOWED_TAGS}
 ALLOWED_ATTRIBUTES.update(SPECIAL_ATTRIBUTES)
 
+
 def _clean_html(html):
     sanitizer = Sanitizer({
         "tags": ALLOWED_TAGS,
@@ -42,6 +43,7 @@ def _clean_html(html):
         ]
     })
     return sanitizer.sanitize(html)
+
 
 def _get_packages(**kwargs):
     # Organized by size of expected data, manually
@@ -72,12 +74,12 @@ def _get_packages(**kwargs):
         "comments",
         "check_in_time",
         "check_out_time"
-    ).filter(**kwargs
-    ).order_by("current_state", "-check_in_time")
+    ).filter(**kwargs).order_by("current_state", "-check_in_time")
 
     paginator = Paginator(packages, PACKAGES_PER_PAGE)
 
     return paginator
+
 
 def _search_packages_helper(request, **kwargs):
     query = request.GET.get("q", "").strip()
@@ -86,6 +88,7 @@ def _search_packages_helper(request, **kwargs):
                              **kwargs)
 
     return packages
+
 
 def _get_matching_users(account_id):
     # Ensure Account exists

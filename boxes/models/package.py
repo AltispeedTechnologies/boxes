@@ -7,6 +7,7 @@ PACKAGE_STATES = {
     (3, "Mis-placed"),
 }
 
+
 class PackageType(models.Model):
     shortcode = models.CharField(max_length=1)
     description = models.CharField(max_length=64)

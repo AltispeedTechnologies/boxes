@@ -4,8 +4,10 @@ from django.http import HttpResponseForbidden
 from django.urls import include, path
 from .views import *
 
+
 def is_staff(view_func):
     return login_required(user_passes_test(is_staff, login_url=HttpResponseForbidden)(view_func))
+
 
 urlpatterns = [
     path("", index, name="home"),

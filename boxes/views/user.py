@@ -7,11 +7,12 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
+
 @require_http_methods(["POST"])
 def update_user(request):
     try:
         data = json.loads(request.body)
-        
+
         responses = {}
         for user_id, user_data in data.items():
             accounts = UserAccount.objects.filter(user=user_id).values_list("account_id", flat=True)
@@ -32,10 +33,11 @@ def update_user(request):
                 form.save()
             else:
                 return JsonResponse({"success": False, "form_errors": form.errors})
-        
+
         return JsonResponse({"success": True})
     except Exception as e:
         return JsonResponse({"success": False, "errors": [str(e)]})
+
 
 # Generate a unique username
 def generate_username():
@@ -44,19 +46,21 @@ def generate_username():
         if not CustomUser.objects.filter(username=username).exists():
             return username
 
+
 @require_http_methods(["POST"])
 def create_user(request):
     try:
         data = json.loads(request.body)
         data["username"] = generate_username()
-        
+
         with transaction.atomic():
             form = CustomUserForm(data)
 
             if form.is_valid():
                 user = form.save()
                 new_account_name = " ".join(
-                    data.get(field, "") for field in ["prefix", "first_name", "middle_name", "last_name", "suffix"] if data.get(field)
+                    data.get(field, "") for field in ["prefix", "first_name", "middle_name", "last_name", "suffix"]
+                    if data.get(field)
                 ).strip()
 
                 account = Account(user=user, name=new_account_name, balance=0.00, billable=True)
@@ -70,6 +74,7 @@ def create_user(request):
                 return JsonResponse({"success": False, "form_errors": form.errors})
     except Exception as e:
         return JsonResponse({"success": False, "errors": [str(e)]})
+
 
 @require_http_methods(["POST"])
 def update_user_emails(request):

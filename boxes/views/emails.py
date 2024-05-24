@@ -2,6 +2,7 @@ from boxes.models import SentEmailContents
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 
+
 @require_http_methods(["GET"])
 def get_email_contents(request, pk):
     contents = SentEmailContents.objects.filter(

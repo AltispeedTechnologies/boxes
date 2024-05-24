@@ -12,15 +12,16 @@ from django.views.decorators.csrf import csrf_exempt
 from boxes.forms import RegisterForm
 from boxes.models import CustomUser
 
+
 def register(request):
     # Simple page viewing
     if request.method == "GET":
         form = RegisterForm()
-        return render(request, "register.html", { "form": form}) 
+        return render(request, "register.html", {"form": form})
 
     # On submission of the form
     if request.method == "POST":
-        form = RegisterForm(request.POST) 
+        form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.username = user.username.lower()
@@ -34,6 +35,7 @@ def register(request):
         else:
             # Also returns a message on the screen
             return render(request, "register.html", {"form": form})
+
 
 @csrf_exempt
 def sign_in(request):
@@ -66,5 +68,5 @@ def sign_in(request):
 
 def sign_out(request):
     logout(request)
-    messages.success(request,f"You have been logged out.")
+    messages.success(request, f"You have been logged out.")
     return redirect("home")

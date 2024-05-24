@@ -1,6 +1,7 @@
 from django.test import TestCase
 from boxes.models import *
 
+
 class AccountTest(TestCase):
     def setUp(self):
         self.user = CustomUser()

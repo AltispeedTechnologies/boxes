@@ -6,8 +6,10 @@ from django.db.models.functions import Concat
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
-from boxes.models import Account, AccountAlias, AccountLedger, CustomUserEmail, SentEmail, SentEmailContents, SentEmailPackage, SentEmailResult
+from boxes.models import (Account, AccountAlias, AccountLedger, CustomUserEmail, SentEmail, SentEmailContents,
+                          SentEmailPackage, SentEmailResult)
 from .common import _get_packages, _get_matching_users
+
 
 @require_http_methods(["GET"])
 def account_search(request):
@@ -17,6 +19,7 @@ def account_search(request):
                 "text": alias.alias,
                 "billable": alias.account.billable} for alias in aliases]
     return JsonResponse({"results": results})
+
 
 @require_http_methods(["GET"])
 def account_edit(request, pk):
@@ -28,6 +31,7 @@ def account_edit(request, pk):
                                                   "aliases": aliases,
                                                   "emails": emails,
                                                   "view_type": "edit"})
+
 
 @require_http_methods(["GET"])
 def account_ledger(request, pk):
@@ -53,6 +57,7 @@ def account_ledger(request, pk):
                                                      "account_id": pk,
                                                      "view_type": "ledger"})
 
+
 @require_http_methods(["GET"])
 def account_packages(request, pk):
     account = Account.objects.filter(id=pk).select_related("accountbalance").first()
@@ -64,6 +69,8 @@ def account_packages(request, pk):
     return render(request, "accounts/packages.html", {"account": account,
                                                       "page_obj": page_obj,
                                                       "view_type": "packages"})
+
+
 @require_http_methods(["GET"])
 def account_emails(request, pk):
     account = Account.objects.filter(id=pk).select_related("accountbalance").first()
@@ -86,7 +93,7 @@ def account_emails(request, pk):
     ).order_by("-timestamp_val")
     for email in emails:
         tracking_codes = [
-            [int(part) if i == 0 else part for i, part in enumerate(code.split(" ", 1))] 
+            [int(part) if i == 0 else part for i, part in enumerate(code.split(" ", 1))]
             for code in email.tracking_codes
         ]
         email.tracking_codes = tracking_codes
@@ -99,6 +106,7 @@ def account_emails(request, pk):
                                                     "page_obj": page_obj,
                                                     "enable_tracking_codes": True,
                                                     "view_type": "emails"})
+
 
 @require_http_methods(["POST"])
 def update_account(request, pk):
@@ -116,14 +124,14 @@ def update_account(request, pk):
         updates = {}
         for field, type_func in fields_to_update.items():
             value = request_data.get(field)
-            if value != None and type_func != bool:
+            if value is not None and type_func is not bool:
                 updates[field] = type_func(value.strip())
-            elif value != None:
+            elif value is not None:
                 updates[field] = type_func(value)
 
         for field, value in updates.items():
             setattr(account, field, value)
-        
+
         if updates:
             account.save()
 
@@ -131,6 +139,7 @@ def update_account(request, pk):
 
     except (ValueError, Decimal.InvalidOperation, TypeError) as e:
         return JsonResponse({"success": False, "errors": [f"Error updating {field}: {str(e)}"]})
+
 
 @require_http_methods(["POST"])
 def update_account_aliases(request):

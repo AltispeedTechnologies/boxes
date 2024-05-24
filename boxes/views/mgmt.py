@@ -7,18 +7,19 @@ from django.views.decorators.http import require_http_methods
 from boxes.models import AccountChargeSettings, Carrier, EmailTemplate, EmailSettings, NotificationRule, PackageType
 from .common import _clean_html
 
+
 @require_http_methods(["GET"])
 def charge_settings(request):
     charge_rules = AccountChargeSettings.objects.filter(
-        package_type_id__isnull=True, 
-        price__isnull=True, 
+        package_type_id__isnull=True,
+        price__isnull=True,
         frequency__isnull=True,
         endpoint__isnull=True
     ).order_by("days")
 
     custom_charge_rules = AccountChargeSettings.objects.filter(
-        package_type_id__isnull=False, 
-        price__isnull=False, 
+        package_type_id__isnull=False,
+        price__isnull=False,
         frequency__isnull=False,
         endpoint__isnull=True
     ).order_by("days")
@@ -33,6 +34,7 @@ def charge_settings(request):
                                                  "endpoint": endpoint,
                                                  "package_types": package_types})
 
+
 @require_http_methods(["GET"])
 def email_settings(request):
     templates = EmailTemplate.objects.all().order_by("id")
@@ -43,6 +45,7 @@ def email_settings(request):
     return render(request, "mgmt/email.html", {"templates": templates,
                                                "email_settings": email_settings})
 
+
 @require_http_methods(["GET"])
 def email_template(request):
     templates = EmailTemplate.objects.all().order_by("id")
@@ -52,6 +55,7 @@ def email_template(request):
                                                          "subject": subject,
                                                          "initial_content": initial_content})
 
+
 @require_http_methods(["GET"])
 def email_template_content(request):
     template_id = request.GET.get("id")
@@ -59,12 +63,14 @@ def email_template_content(request):
     return JsonResponse({"content": template.content,
                          "subject": template.subject})
 
+
 @require_http_methods(["POST"])
 def add_email_template(request):
     template_name = request.POST.get("name")
     if template_name:
         new_template = EmailTemplate.objects.create(name=template_name, subject="", content="")
         return JsonResponse({"id": new_template.id})
+
 
 @require_http_methods(["POST"])
 def update_email_template(request):
@@ -82,13 +88,14 @@ def update_email_template(request):
     except EmailTemplate.DoesNotExist:
         return JsonResponse({"status": "error", "message": "Template not found."}, status=404)
 
+
 @require_http_methods(["POST"])
 def save_email_settings(request):
     data = json.loads(request.body)
     sender_name = data.get("sender_name")
     sender_email = data.get("sender_email")
     check_in_template_id = data.get("check_in_template")
-    
+
     # Create or update the main email settings
     EmailSettings.objects.all().delete()
     email_settings = EmailSettings.objects.create(
@@ -96,7 +103,7 @@ def save_email_settings(request):
         sender_email=sender_email,
         check_in_template_id=check_in_template_id
     )
-    
+
     # Handle notification rules
     NotificationRule.objects.filter(email_settings=email_settings).delete()
     for rule in data.get("notification_rules", []):
@@ -107,8 +114,9 @@ def save_email_settings(request):
             days=days,
             template_id=template_id
         )
-    
+
     return JsonResponse({"status": "success", "message": "Email settings updated."})
+
 
 @require_http_methods(["POST"])
 def save_charge_settings(request):
@@ -132,10 +140,12 @@ def save_charge_settings(request):
 
     return JsonResponse({"success": True})
 
+
 @require_http_methods(["GET"])
 def package_type_settings(request):
     package_types = PackageType.objects.all().order_by("id")
     return render(request, "mgmt/types.html", {"package_types": package_types})
+
 
 @require_http_methods(["POST"])
 def update_package_types(request):
@@ -166,10 +176,12 @@ def update_package_types(request):
     except Exception as e:
         return JsonResponse({"success": False, "errors": str(e)})
 
+
 @require_http_methods(["GET"])
 def carrier_settings(request):
     carriers = Carrier.objects.all().order_by("id")
     return render(request, "mgmt/carriers.html", {"carriers": carriers})
+
 
 @require_http_methods(["POST"])
 def update_carriers(request):

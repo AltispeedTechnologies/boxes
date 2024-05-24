@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
+
 class Account(models.Model):
     user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
     name = models.CharField(max_length=64)
@@ -26,6 +27,7 @@ class Account(models.Model):
             primary_alias = AccountAlias(account=self, alias=self.name, primary=True)
             primary_alias.save()
 
+
 # Exists to denormalize AccountLedger entries
 class AccountBalance(models.Model):
     account = models.OneToOneField(Account, on_delete=models.RESTRICT)
@@ -50,6 +52,7 @@ class AccountBalance(models.Model):
 
         return late_balance
 
+
 class AccountLedger(models.Model):
     user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
@@ -60,14 +63,17 @@ class AccountLedger(models.Model):
     package = models.ForeignKey("Package", on_delete=models.RESTRICT, null=True)
     is_late = models.BooleanField()
 
+
 class UserAccount(models.Model):
     user = models.ForeignKey("CustomUser", on_delete=models.RESTRICT)
     account = models.ForeignKey(Account, on_delete=models.RESTRICT)
+
 
 class AccountAlias(models.Model):
     account = models.ForeignKey(Account, on_delete=models.RESTRICT)
     alias = models.CharField(max_length=64)
     primary = models.BooleanField()
+
 
 class AccountChargeSettings(models.Model):
     FREQUENCY_CHOICES = (

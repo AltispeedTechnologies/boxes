@@ -10,6 +10,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 from reportlab.pdfbase import pdfmetrics
 
+
 def draw_label(canvas, first_name, last_name, barcode_value, date, inside):
     page_width, page_height = 4*inch, 6*inch
 
@@ -40,7 +41,7 @@ def draw_label(canvas, first_name, last_name, barcode_value, date, inside):
         draw_centered_string(1.85*inch, "mikesparcelpickup@gmail.com", "Helvetica-Bold", 12)
         draw_centered_string(1.6*inch, "701-825-6471", "Helvetica-Bold", 12)
 
-    # Draw the variable information 
+    # Draw the variable information
     draw_centered_string(5.4*inch, first_name, "Helvetica", 24)
     draw_centered_string(4.8*inch, last_name, "Helvetica-Bold", 40)
     draw_centered_string(0.2*inch, date, "Helvetica", 10)
@@ -55,7 +56,8 @@ def draw_label(canvas, first_name, last_name, barcode_value, date, inside):
         barcode_height = 1 * inch
 
     # Draw the barcode
-    barcode = createBarcodeDrawing("Code128", value=barcode_value, barWidth=0.9, barHeight=barcode_height, humanReadable=False)
+    barcode = createBarcodeDrawing("Code128", value=barcode_value, barWidth=0.9, barHeight=barcode_height,
+                                   humanReadable=False)
     barcode_width = barcode.width
     barcode.drawOn(canvas, (page_width - barcode_width) / 2.0, barcode_y)
     draw_centered_string(barcode_y_string, barcode_value, "Helvetica", 10)
@@ -63,6 +65,7 @@ def draw_label(canvas, first_name, last_name, barcode_value, date, inside):
     # Draw the logo
     logo_path = os.path.join(settings.STATIC_ROOT, "img/logo.png")
     canvas.drawImage(logo_path, (page_width - 1*inch) / 2, 0.4*inch, width=1*inch, height=1*inch, mask="auto")
+
 
 def generate_label(request):
     ids = request.GET.get("ids")

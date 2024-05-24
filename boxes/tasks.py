@@ -16,6 +16,7 @@ from faker import Faker
 from html import unescape
 from mailjet_rest import Client
 
+
 @shared_task
 def send_emails():
     api_key = os.environ["MJ_APIKEY_PUBLIC"]
@@ -131,6 +132,7 @@ def send_emails():
                 # Store the raw JSON result, in case something goes haywire
                 SentEmailResult.objects.create(sent_email=sent_email, response=json_result)
 
+
 @shared_task
 def age_picklists():
     today = timezone.now().date()
@@ -157,6 +159,7 @@ def age_picklists():
     # Then, delete the Picklist entries
     Picklist.objects.filter(id__in=picklists_older_than_week_with_packages).delete()
 
+
 @shared_task
 def total_accounts(account_id=None):
     if account_id is not None:
@@ -165,10 +168,18 @@ def total_accounts(account_id=None):
         accounts = Account.objects.all()
 
     accounts_with_totals = accounts.annotate(
-        total_regular_credit=Coalesce(Sum("accountledger__credit", filter=Q(accountledger__is_late=False)), Decimal("0.00")),
-        total_regular_debit=Coalesce(Sum("accountledger__debit", filter=Q(accountledger__is_late=False)), Decimal("0.00")),
-        total_late_credit=Coalesce(Sum("accountledger__credit", filter=Q(accountledger__is_late=True)), Decimal("0.00")),
-        total_late_debit=Coalesce(Sum("accountledger__debit", filter=Q(accountledger__is_late=True)), Decimal("0.00"))
+        total_regular_credit=Coalesce(Sum("accountledger__credit",
+                                      filter=Q(accountledger__is_late=False)),
+                                      Decimal("0.00")),
+        total_regular_debit=Coalesce(Sum("accountledger__debit",
+                                     filter=Q(accountledger__is_late=False)),
+                                     Decimal("0.00")),
+        total_late_credit=Coalesce(Sum("accountledger__credit",
+                                   filter=Q(accountledger__is_late=True)),
+                                   Decimal("0.00")),
+        total_late_debit=Coalesce(Sum("accountledger__debit",
+                                  filter=Q(accountledger__is_late=True)),
+                                  Decimal("0.00"))
     )
 
     for account in accounts_with_totals:
@@ -181,13 +192,15 @@ def total_accounts(account_id=None):
                 defaults={"regular_balance": new_regular_balance, "late_balance": new_late_balance}
             )
 
-            if new_regular_balance != account_balance.regular_balance or new_late_balance != account_balance.late_balance:
+            if (new_regular_balance != account_balance.regular_balance or
+                    new_late_balance != account_balance.late_balance):
                 account_balance.regular_balance = new_regular_balance
                 account_balance.late_balance = new_late_balance
                 account_balance.save()
 
             account.balance = new_regular_balance + new_late_balance
             account.save()
+
 
 @shared_task
 def create_user_from_account(account_id):
@@ -228,6 +241,7 @@ def create_user_from_account(account_id):
     # Return the new CustomUser object
     return new_custom_user.id
 
+
 def get_frequency_delta(frequency):
     """Return a timedelta object based on the frequency."""
     if frequency == "D":
@@ -237,6 +251,7 @@ def get_frequency_delta(frequency):
     elif frequency == "M":
         return timedelta(days=365.2425) / 12
     return None
+
 
 @shared_task
 def age_charges():
@@ -268,14 +283,16 @@ def age_charges():
             assess_regular_charges.delay(start_time.timestamp())
         else:
             end_time = timezone.now() - timedelta(days=previous_days)
-            assess_regular_charges.delay(start_time.timestamp(), end_time.timestamp(), custom_package_types, setting.days)
+            assess_regular_charges.delay(start_time.timestamp(), end_time.timestamp(), custom_package_types,
+                                         setting.days)
         previous_days = setting.days
 
     if endpoint_setting and (not previous_days or endpoint_setting > previous_days):
         start_time = timezone.now() - timedelta(days=endpoint_setting)
         if previous_days:
             end_time = timezone.now() - timedelta(days=previous_days)
-            assess_regular_charges.delay(start_time.timestamp(), end_time.timestamp(), custom_package_types, previous_days)
+            assess_regular_charges.delay(start_time.timestamp(), end_time.timestamp(), custom_package_types,
+                                         previous_days)
         else:
             assess_regular_charges.delay(start_time.timestamp())
 
@@ -293,7 +310,9 @@ def age_charges():
             check_in_date = timezone.now() - timedelta(days=initial_days)
             endpoint_date = timezone.now() - timedelta(days=endpoint_days)
 
-            assess_custom_charges.delay(endpoint_date.timestamp(), check_in_date.timestamp(), package_type_id, frequency_seconds, initial_days, price)
+            assess_custom_charges.delay(endpoint_date.timestamp(), check_in_date.timestamp(), package_type_id,
+                                        frequency_seconds, initial_days, price)
+
 
 @shared_task
 def assess_regular_charges(start_time, end_time=None, exclude_package_types=None, rule_days=None):
@@ -346,6 +365,7 @@ def assess_regular_charges(start_time, end_time=None, exclude_package_types=None
         AccountLedger.objects.bulk_create(new_charges)
         total_accounts.delay()
 
+
 @shared_task
 def assess_custom_charges(endpoint_date, check_in_date, package_type_id, frequency_seconds, initial_days, price):
     endpoint_date = timezone.make_aware(timezone.datetime.fromtimestamp(endpoint_date))
@@ -381,6 +401,7 @@ def assess_custom_charges(endpoint_date, check_in_date, package_type_id, frequen
         AccountLedger.objects.bulk_create(new_charges)
         for account_id in account_ids:
             total_accounts.delay(account_id=account_id)
+
 
 @shared_task
 def populate_seed_data():

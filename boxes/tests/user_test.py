@@ -2,6 +2,7 @@ from django.contrib.auth.models import Group, Permission, ContentType
 from django.test import TestCase
 from boxes.models import *
 
+
 class CustomUserTest(TestCase):
     def setUp(self):
         self.user = CustomUser.objects.create_user(
@@ -15,7 +16,8 @@ class CustomUserTest(TestCase):
         )
         self.group = Group.objects.create(name="Test Group")
         content_type, created = ContentType.objects.get_or_create(app_label="boxes", model="customuser")
-        self.permission = Permission.objects.create(name="Test Permission", codename="test_permission", content_type=content_type)
+        self.permission = Permission.objects.create(name="Test Permission", codename="test_permission",
+                                                    content_type=content_type)
 
     def test_user_creation(self):
         self.assertEqual(self.user.username, "testuser")

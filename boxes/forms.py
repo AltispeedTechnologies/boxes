@@ -4,16 +4,19 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator, RegexValidator
 
+
 class RegisterForm(UserCreationForm):
     class Meta:
-        model=CustomUser
-        fields = ["username", "email", "company", "prefix", "first_name", "middle_name", "last_name", "suffix", "password1", "password2"]
+        model = CustomUser
+        fields = ["username", "email", "company", "prefix", "first_name", "middle_name", "last_name", "suffix",
+                  "password1", "password2"]
 
 
 class CustomUserForm(UserChangeForm):
     class Meta:
         model = CustomUser
-        fields = ["prefix", "first_name", "middle_name", "last_name", "suffix", "company", "phone_number", "mobile_number"]
+        fields = ["prefix", "first_name", "middle_name", "last_name", "suffix", "company", "phone_number",
+                  "mobile_number"]
 
     def __init__(self, *args, **kwargs):
         super(CustomUserForm, self).__init__(*args, **kwargs)

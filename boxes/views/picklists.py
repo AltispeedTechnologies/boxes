@@ -10,10 +10,12 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 
+
 @require_http_methods(["GET"])
 def picklist_query(request):
     results = _picklist_data()
     return JsonResponse({"results": results})
+
 
 @require_http_methods(["POST"])
 def modify_package_picklist(request):
@@ -45,6 +47,7 @@ def modify_package_picklist(request):
         messages.error(request, "An unknown error occurred.")
         return JsonResponse({"success": False, "errors": [str(e)]})
 
+
 @require_http_methods(["POST"])
 def remove_package_picklist(request):
     try:
@@ -62,10 +65,11 @@ def remove_package_picklist(request):
         return JsonResponse({"success": True})
     except ValueError:
         messages.error(request, "Invalid input")
-        return JsonResponse({"success": False, "errors": ["Invalid input provided. Ensure all package IDs are integers."]})
+        return JsonResponse({"success": False, "errors": ["Invalid input provided."]})
     except Exception as e:
         messages.error(request, "An unknown error occurred.")
         return JsonResponse({"success": False, "errors": [str(e)]})
+
 
 @require_http_methods(["GET"])
 def picklist_show(request, pk=None):
