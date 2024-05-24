@@ -28,7 +28,7 @@ fi
 
 # Define functions for various setup tasks
 function update_pip() {
-    env/bin/pip install -r requirements.txt
+    $PYTHON_PATH -m pip install -r requirements.txt
 }
 
 function migrate() {
