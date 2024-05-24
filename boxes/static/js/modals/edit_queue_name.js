@@ -1,7 +1,7 @@
 $(document).ready(function() {
     let queue_id = null;
 
-    $('[data-bs-target="#editQueueNameModal"]').on("click", function() {
+    $("[data-bs-target=\"#editQueueNameModal\"]").on("click", function() {
         let queue_name = $("#queue_select option:selected").text();
         queue_id = Number($("#queue_select option:selected").val());
         $("#editQueueNameModal").find("#queue_name").val(queue_name);
@@ -9,7 +9,7 @@ $(document).ready(function() {
 
     $("#editQueueNameModal .btn-primary").on("click", function() {
         let new_queue_name = $("#editQueueNameModal").find("#queue_name").val();
-        payload = {
+        let payload = {
             id: queue_id,
             description: new_queue_name
         };

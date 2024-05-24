@@ -1,7 +1,7 @@
 $(document).ready(function() {
     let new_type_id = 0;
 
-    $("#addpkgtype").click(function(event) {
+    $("#addpkgtype").click(function() {
         let new_row = $(".visually-hidden")
             .clone()
             .removeClass("visually-hidden")
@@ -11,17 +11,17 @@ $(document).ready(function() {
         $(this).trigger("verifySave");
     });
 
-    $("#savepkgtypes").click(function(event) {
+    $("#savepkgtypes").click(function() {
         $("#savingicon").show();
         var $table = $(document).find("#packagetypes");
 
-        payload = {};
+        let payload = {};
 
         $table.find("tr:not(.visually-hidden)").each(function() {
             let data_id = $(this).attr("data-id");
-            let shortcode = $(this).find('td[data-type="shortcode"] span.text').text().trim();
-            let description = $(this).find('td[data-type="description"] span.text').text().trim();
-            let default_price = $(this).find('td[data-type="default_price"] span.text').text().trim();
+            let shortcode = $(this).find("td[data-type=\"shortcode\"] span.text").text().trim();
+            let description = $(this).find("td[data-type=\"description\"] span.text").text().trim();
+            let default_price = $(this).find("td[data-type=\"default_price\"] span.text").text().trim();
             payload[data_id] = {shortcode: shortcode, description: description, default_price: default_price};
         });
 
@@ -36,7 +36,7 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     $.each(response.updated_types, function(key, new_id) {
-                        $table.find('tr[data-id="' + key + '"]').attr("data-id", new_id);
+                        $table.find("tr[data-id=\"" + key + "\"]").attr("data-id", new_id);
                     });
 
                     $("#savingicon").hide();
@@ -93,7 +93,7 @@ $(document).ready(function() {
         $(this).trigger("verifySave");
     });
 
-    $(document).on("verifySave", function(event) {
+    $(document).on("verifySave", function() {
         var $table = $(document).find("#packagetypes");
         let enabled = $table.find("tr:not(.visually-hidden) .editrow.d-none").length === 0;
         $("#savepkgtypes").prop("disabled", !enabled);

@@ -42,9 +42,9 @@ $(document).ready(function() {
             var frequency = $(this).find("#frequency").val();
             if (package_type_id && days && price && frequency) {
                 charge_rules.push({ package_type_id: package_type_id,
-                                    days: days,
-                                    price: price,
-                                    frequency: frequency });
+                    days: days,
+                    price: price,
+                    frequency: frequency });
             }
         });
 
@@ -58,7 +58,7 @@ $(document).ready(function() {
                 "X-CSRFToken": window.csrf_token
             },
             data: JSON.stringify(charge_rules),
-            success: function(response) {
+            success: function() {
                 $("#savingicon").hide();
                 $("#successicon").show();
                 $("#successicon").fadeOut(2000);

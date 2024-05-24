@@ -24,7 +24,7 @@ $(document).ready(function() {
         };
 
         $(".day-template:not(.d-none)").each(function() {
-            var days = $(this).find('input[type="number"]').val();
+            var days = $(this).find("input[type=\"number\"]").val();
             var template_id = $(this).find("select").val();
             if (days && template_id) {
                 form_data.notification_rules.push({ days: days, template_id: template_id });
@@ -39,7 +39,7 @@ $(document).ready(function() {
                 "X-CSRFToken": window.csrf_token
             },
             data: JSON.stringify(form_data),
-            success: function(response) {
+            success: function() {
                 $("#savingicon").hide();
                 $("#successicon").show();
                 $("#successicon").fadeOut(2000);

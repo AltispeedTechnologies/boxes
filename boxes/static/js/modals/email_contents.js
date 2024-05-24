@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    $('[data-bs-target="#showEmailModal"]').on("click", function() {
+    $("[data-bs-target=\"#showEmailModal\"]").on("click", function() {
         $("#emailcontents").html("");
         $("#loadingstatus").show();
 

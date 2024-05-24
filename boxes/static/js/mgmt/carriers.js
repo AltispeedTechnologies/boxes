@@ -1,7 +1,7 @@
 $(document).ready(function() {
     let new_type_id = 0;
 
-    $("#addcarrier").click(function(event) {
+    $("#addcarrier").click(function() {
         let new_row = $(".visually-hidden")
             .clone()
             .removeClass("visually-hidden")
@@ -11,20 +11,19 @@ $(document).ready(function() {
         $(this).trigger("verifySave");
     });
 
-    $("#savecarriers").click(function(event) {
+    $("#savecarriers").click(function() {
         $("#savingicon").show();
         var $table = $(document).find("#carriers");
 
-        payload = {};
+        let payload = {};
 
         $table.find("tr:not(.visually-hidden)").each(function() {
             let data_id = $(this).attr("data-id");
-            let name = $(this).find('td[data-type="name"] span.text').text().trim();
-            let phone_number = $(this).find('td[data-type="phone_number"] span.text').text().trim();
-            let website = $(this).find('td[data-type="website"] span.text').text().trim();
+            let name = $(this).find("td[data-type=\"name\"] span.text").text().trim();
+            let phone_number = $(this).find("td[data-type=\"phone_number\"] span.text").text().trim();
+            let website = $(this).find("td[data-type=\"website\"] span.text").text().trim();
             payload[data_id] = {name: name, phone_number: phone_number, website: website};
         });
-        console.log(payload);
 
         $.ajax({
             url: "/mgmt/packages/carriers/update",
@@ -37,16 +36,13 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     $.each(response.updated_carriers, function(key, new_id) {
-                        $table.find('tr[data-id="' + key + '"]').attr("data-id", new_id);
+                        $table.find("tr[data-id=\"" + key + "\"]").attr("data-id", new_id);
                     });
 
                     $("#savingicon").hide();
                     $("#successicon").show();
                     $("#successicon").fadeOut(2000);
                 }
-            },
-            error: function() {
-                alert("Error saving settings.");
             }
         });
     });
@@ -61,7 +57,7 @@ $(document).ready(function() {
             }
         });
 
-        var disabled = row.find("input.name").val().trim() == "";
+        var disabled = row.find("input.name").val().trim() === "";
 
         confirm_button.prop("disabled", disabled);
     });
@@ -89,7 +85,7 @@ $(document).ready(function() {
         $(this).trigger("verifySave");
     });
 
-    $(document).on("verifySave", function(event) {
+    $(document).on("verifySave", function() {
         var $table = $(document).find("#carriers");
         let enabled = $table.find("tr:not(.visually-hidden) .editrow.d-none").length === 0;
         $("#savecarriers").prop("disabled", !enabled);

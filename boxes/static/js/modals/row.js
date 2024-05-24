@@ -3,15 +3,15 @@ var row_id;
 function setup_actions() {
     $(document).on("rowsUpdated", handle_updated_rows);
 
-    $('[data-bs-target="#editModal"]').on("click", init_edit_modal);
+    $("[data-bs-target=\"#editModal\"]").on("click", init_edit_modal);
 
-    $(document).on("click", 
-        '[data-bs-target="#print"], ' +
-        '[data-bs-target="#addPicklistModal"], ' +
-        '[data-bs-target="#checkBackInModal"], ' +
-        '[data-bs-target="#checkOutModal"], ' +
-        '[data-bs-target="#moveModal"], ' +
-        '[data-bs-target="#removeModal"]', 
+    $(document).on("click",
+        "[data-bs-target=\"#print\"], " +
+        "[data-bs-target=\"#addPicklistModal\"], " +
+        "[data-bs-target=\"#checkBackInModal\"], " +
+        "[data-bs-target=\"#checkOutModal\"], " +
+        "[data-bs-target=\"#moveModal\"], " +
+        "[data-bs-target=\"#removeModal\"]",
         function() {
             var tr = $(this).closest("tr");
             row_id = tr.data("row-id");
@@ -32,7 +32,7 @@ function setup_actions() {
             "ids": [row_id],
             "picklist_id": picklist_id
         };
-        
+
         $.ajax({
             type: "POST",
             url: "/packages/picklists/modify",
@@ -97,18 +97,15 @@ function setup_actions() {
 
 
     $("#editModal .btn-primary").on("click", function() {
-        var $tr = $('tr[data-row-id="' + row_id + '"]');
+        var $tr = $("tr[data-row-id=\"" + row_id + "\"]");
 
         var tracking_code = $("#editModal").find("#tracking_code").val();
         var price = $("#editModal").find("#price").val();
         var comments = $("#editModal").find("#comments").val();
         var inside = $("#editModal").find("#id_inside").prop("checked");
         var account_id = $("#editModal").find("#id_account_id").val();
-        var account = $("#editModal").find("#id_account_id option:selected").text();
         var carrier_id = $("#editModal").find("#id_carrier_id").val();
-        var carrier = $("#editModal").find("#id_carrier_id option:selected").text();
         var package_type_id = $("#editModal").find("#id_package_type_id").val();
-        var package_type = $("#editModal").find("#id_package_type_id option:selected").text();
 
         // Prepare data for POST request
         var post_data = {
@@ -138,10 +135,10 @@ function setup_actions() {
                                 new_text = "$" + post_data[type];
                             } else if (type === "inside") {
                                 if (inside) {
-                                    const icon = '<i class="fas fa-check-circle text-warning"></i>';
+                                    const icon = "<i class=\"fas fa-check-circle text-warning\"></i>";
                                     $(this).html(icon).attr("data-id", "True");
                                 } else {
-                                    const icon = '<i class="fas fa-times-circle text-info"></i>';
+                                    const icon = "<i class=\"fas fa-times-circle text-info\"></i>";
                                     $(this).html(icon).attr("data-id", "False");
                                 }
                                 return;
@@ -223,7 +220,7 @@ function setup_actions() {
 }
 
 function init_edit_modal(event) {
-    package_data = {};
+    let package_data = {};
     var tr = $(event.target).closest("tr");
     row_id = tr.data("row-id");
 
@@ -285,8 +282,8 @@ function init_edit_modal(event) {
 }
 
 function handle_updated_rows() {
-    $('[data-bs-target="#editModal"]').off("click");
-    $('[data-bs-target="#editModal"]').on("click", init_edit_modal);
+    $("[data-bs-target=\"#editModal\"]").off("click");
+    $("[data-bs-target=\"#editModal\"]").on("click", init_edit_modal);
 }
 
 $(document).ready(function() {

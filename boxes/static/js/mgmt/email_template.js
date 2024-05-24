@@ -58,7 +58,7 @@ $(document).ready(function() {
             headers: {
                 "X-CSRFToken": window.csrf_token
             },
-            success: function(response) {
+            success: function() {
                 $("#savingicon").hide();
                 $("#successicon").show();
                 $("#successicon").fadeOut(2000);
