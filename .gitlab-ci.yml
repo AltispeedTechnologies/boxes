@@ -65,6 +65,6 @@ deploy_staging:
     - mkdir -p ~/.ssh
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null\n" > ~/.ssh/config
     - ssh-keyscan $STAGING_SERVER >> ~/.ssh/known_hosts
-    - ssh $DEPLOY_USER@$DEPLOY_SERVER "cd /var/www/mikes-boxes && git pull && ./setup.sh update"
+    - ssh $DEPLOY_USER@$STAGING_SERVER "cd /var/www/mikes-boxes && git pull && ./setup.sh update"
   only:
     - main
