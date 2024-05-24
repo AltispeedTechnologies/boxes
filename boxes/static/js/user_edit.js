@@ -1,4 +1,5 @@
-alias_internal_id = 1;
+let alias_internal_id = 1;
+let email_internal_id = 1;
 
 $(document).ready(function() {
     initial_billable_val = $("#billable").prop("checked");
@@ -51,6 +52,8 @@ $(document).ready(function() {
             return;
         }
 
+        console.log(aliases);
+
         $.ajax({
             type: "POST",
             url: "/accounts/aliases/update",
@@ -69,6 +72,82 @@ $(document).ready(function() {
                     $("#savingiconaliases").hide();
                     $("#successiconaliases").show();
                     setTimeout(function() { $("#successiconaliases").fadeOut(); }, 3000);
+                } else if (response.errors) {
+                    alert("Error: " + response.errors);
+                }
+            },
+            error: function() {
+                alert("Error saving data.");
+            }
+        });
+    });
+
+    $("#emailsinput").on("mouseenter mouseleave", ".col-md-3", function(event) {
+        $(this).find(".fa-trash").toggle(event.type === "mouseenter");
+    });
+
+    $("#emailsinput").on("click", ".fa-trash", function() {
+        var input = $(this).siblings("input");
+        var current_id = input.attr("data-id");
+        
+        if (current_id.startsWith("NEW_")) {
+            $(this).parent().remove();
+        } else {
+            $(this).parent().addClass("d-none");
+            input.attr("data-id", "REMOVE_" + current_id);
+        }
+    });
+
+    $("#newemailbtn").click(function() {
+        var input_div = $("<div>", {
+            class: "col-md-3 d-flex align-items-center position-relative"
+        }).append($("<input>", {
+            type: "text",
+            class: "form-control",
+            "data-id": "NEW_" + email_internal_id++
+        }), $('<i>', {
+            class: "fas fa-trash position-absolute end-0 me-4 text-danger",
+            css: { display: "none", cursor: "pointer" }
+        }));
+
+        $("#emailsinput").append(input_div);
+    });
+
+    $("#saveemailbtn").click(function() {
+        $("#savingiconemails").show();
+        var emails = {};
+        var account_id = $("#emailsinput").data("user-id");
+        emails[account_id] = {};
+
+        $("#emailsinput div input").each(function() {
+            var input = $(this);
+            emails[account_id][input.attr("data-id")] = input.val();
+        });
+
+        // Do nothing if there are no emails
+        if ($.isEmptyObject(emails[account_id])) {
+            $("#savingiconemails").hide();
+            return;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "/users/emails/update",
+            contentType: "application/json",
+            headers: {"X-CSRFToken": window.csrf_token},
+            data: JSON.stringify(emails),
+            success: function(response) {
+                if (response.success) {
+                    $.each(response.emails, function(old_id, new_id) {
+                        if (old_id.startsWith("NEW_")) {
+                            $('input[data-id="' + old_id + '"]').attr("data-id", new_id);
+                        } else if (old_id.startsWith("REMOVE_")) {
+                            $('input[data-id="' + old_id + '"]').closest("div").remove();
+                        }
+                    });
+                    $("#savingiconemails").hide();
+                    $("#successiconemails").show();
+                    setTimeout(function() { $("#successiconemails").fadeOut(); }, 3000);
                 } else if (response.errors) {
                     alert("Error: " + response.errors);
                 }

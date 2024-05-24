@@ -36,7 +36,7 @@ urlpatterns = [
     path("accounts/<int:pk>/ledger", is_staff(account_ledger), name="account_ledger"),
     path("accounts/<int:pk>/packages", is_staff(account_packages), name="account_packages"),
     path("accounts/<int:pk>/update", is_staff(update_account), name="update_account"),
-    path("accounts/aliases/update", is_staff(update_package_aliases), name="update_package_aliases"),
+    path("accounts/aliases/update", is_staff(update_account_aliases), name="update_account_aliases"),
     path("accounts/search", is_staff(account_search), name="account_search"),
 
     # Backend endpoints
@@ -78,4 +78,5 @@ urlpatterns = [
     # Users
     path("users/new", is_staff(create_user), name="create_user"),
     path("users/update", is_staff(update_user), name="update_user"),
+    path("users/emails/update", is_staff(update_user_emails), name="update_user_emails"),
 ]

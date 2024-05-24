@@ -6,7 +6,7 @@ from django.db.models.functions import Concat
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
-from boxes.models import Account, AccountAlias, AccountLedger, SentEmail, SentEmailContents, SentEmailPackage, SentEmailResult
+from boxes.models import Account, AccountAlias, AccountLedger, CustomUserEmail, SentEmail, SentEmailContents, SentEmailPackage, SentEmailResult
 from .common import _get_packages, _get_matching_users
 
 @require_http_methods(["GET"])
@@ -22,9 +22,11 @@ def account_search(request):
 def account_edit(request, pk):
     user, account = _get_matching_users(pk)
     aliases = AccountAlias.objects.filter(account_id=pk)
+    emails = CustomUserEmail.objects.filter(user=user)
     return render(request, "accounts/edit.html", {"custom_user": user,
                                                   "account": account,
                                                   "aliases": aliases,
+                                                  "emails": emails,
                                                   "view_type": "edit"})
 
 @require_http_methods(["GET"])
@@ -131,7 +133,7 @@ def update_account(request, pk):
         return JsonResponse({"success": False, "errors": [f"Error updating {field}: {str(e)}"]})
 
 @require_http_methods(["POST"])
-def update_package_aliases(request):
+def update_account_aliases(request):
     try:
         data = json.loads(request.body)
         updated_aliases = dict()

@@ -36,6 +36,34 @@
     <hr />
 
     <div class="container mt-4">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h4>Emails</h4>
+            <div>
+                <i id="savingiconemails" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+                <i id="successiconemails" class="fas fa-check-circle text-success" style="display: none;"></i>
+                <button id="saveemailbtn" class="btn btn-success">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button id="newemailbtn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> New
+                </button>
+            </div>
+        </div>
+        <div id="emailsinput" data-user-id="{{ custom_user.id }}" class="row">
+            {% for email in emails %}
+                {% if not email.primary %}
+                    <div class="col-md-3 d-flex align-items-center position-relative">
+                        <input type="text" class="form-control" data-id="{{ email.id }}" value="{{ email.email }}">
+                        <i class="fas fa-trash position-absolute end-0 me-4 text-danger" style="display: none; cursor: pointer;"></i>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="container mt-4">
         <div class="d-flex align-items-center justify-content-between mb-2">
             <h4>Details</h4>
             <div>

@@ -2,7 +2,7 @@ import json
 import random
 import string
 from boxes.forms import CustomUserForm
-from boxes.models import Account, CustomUser, UserAccount
+from boxes.models import Account, CustomUser, CustomUserEmail, UserAccount
 from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -70,3 +70,31 @@ def create_user(request):
                 return JsonResponse({"success": False, "form_errors": form.errors})
     except Exception as e:
         return JsonResponse({"success": False, "errors": [str(e)]})
+
+@require_http_methods(["POST"])
+def update_user_emails(request):
+    try:
+        data = json.loads(request.body)
+        updated_emails = dict()
+
+        for user_id, emails in data.items():
+            for key, value in emails.items():
+                if key.startswith("NEW_"):
+                    new_email = CustomUserEmail(user_id=user_id, email=value)
+                    new_email.save()
+                    updated_emails[key] = new_email.id
+                elif key.startswith("REMOVE_"):
+                    email_id = int(key[7:])
+                    email = CustomUserEmail.objects.get(id=email_id, user_id=user_id)
+                    email.delete()
+                    updated_emails[key] = True
+                else:
+                    email = CustomUserEmail.objects.get(id=int(key), user_id=user_id)
+                    email.email = value
+                    email.save()
+
+        return JsonResponse({"success": True, "emails": updated_emails})
+    except json.JSONDecodeError:
+        return JsonResponse({"success": False, "errors": "Invalid JSON"})
+    except Account.DoesNotExist:
+        return JsonResponse({"success": False, "errors": "Account not found"})
