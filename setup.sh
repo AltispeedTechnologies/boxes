@@ -14,7 +14,7 @@ function setup_virtualenv() {
     if [ ! -d "$VENV_DIR" ]; then
         echo "Setting up the virtual environment..."
         virtualenv $VENV_DIR
-        env/bin/pip install -r requirements.txt
+        $PYTHON_PATH -m pip install -r requirements.txt
     fi
 }
 
