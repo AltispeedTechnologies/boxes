@@ -15,6 +15,10 @@ module.exports = {
         semi: ["error", "always"],
         "no-unused-vars": ["warn"],
         "no-undef": ["error"],
-        "eqeqeq": ["error", "always"]
+        "eqeqeq": ["error", "always"],
+        "no-trailing-spaces": ["error"],
+        "space-infix-ops": ["error"],
+        "no-multi-spaces": ["error", { ignoreEOLComments: false }],
+        "space-before-blocks": ["error"]
     }
 };
