@@ -61,7 +61,9 @@ deploy_staging:
   script:
     - apt-get update && apt-get install -y openssh-client
     - eval $(ssh-agent -s)
-    - ssh-add <(echo "$DEPLOY_PRIVATE_KEY")
+    - cat "$DEPLOY_PRIVATE_KEY" > /tmp/deploy-key
+    - chmod 600 /tmp/deploy-key
+    - ssh-add /tmp/deploy-key
     - mkdir -p ~/.ssh
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null\n" > ~/.ssh/config
     - ssh-keyscan $STAGING_SERVER >> ~/.ssh/known_hosts
