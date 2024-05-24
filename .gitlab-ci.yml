@@ -1,11 +1,5 @@
 image: ubuntu:24.04
 
-services:
-  - name: postgres:16
-    alias: postgres
-  - name: rabbitmq:3.12
-    alias: rabbitmq
-
 variables:
   POSTGRES_DB: test_db
   POSTGRES_USER: user
@@ -51,6 +45,11 @@ check_eslint:
 
 build:
   stage: build
+  services:
+    - name: postgres:16
+      alias: postgres
+    - name: rabbitmq:3.12
+      alias: rabbitmq
   script:
     - ./setup.sh dev
     - env/bin/celery -A boxes worker -l info &
