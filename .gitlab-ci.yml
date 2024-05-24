@@ -22,15 +22,23 @@ variables:
   CELERY_BROKER_HOST: rabbitmq
 
 stages:
+  - check
   - build
   - deploy
 
 before_script:
   - apt-get update && apt-get -y install python3-virtualenv python3-psycopg
+  - virtualenv env
+  - env/bin/pip install -r requirements.txt
 
 cache:
   paths:
     - env
+
+check_pycodestyle:
+  stage: check
+  script:
+    - env/bin/pycodestyle --config=.pycodestylerc .
 
 build:
   stage: build
