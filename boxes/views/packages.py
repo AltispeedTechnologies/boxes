@@ -142,7 +142,19 @@ def check_out_packages_reverse(request):
 
 def create_package(request):
     if request.method == "POST":
-        form = PackageForm(request.POST)
+        # If the tracking code is None, this means we need to generate one
+        # (An empty tracking code should give the user an error)
+        data = request.POST.copy()
+        return_tracking_code = False
+        if not data.get("tracking_code"):
+            tracking_code, created = PackageSystemTrackingCode.objects.get_or_create(prefix="INT")
+            tracking_code.last_number = F("last_number") + 1
+            tracking_code.save()
+            tracking_code.refresh_from_db()
+            data["tracking_code"] = f"{tracking_code.prefix}{tracking_code.last_number:010d}"
+            return_tracking_code = True
+
+        form = PackageForm(data)
         if form.is_valid():
             package = form.save(commit=False)
 
@@ -156,7 +168,10 @@ def create_package(request):
             try:
                 package.save()
                 PackageQueue.objects.create(package=package, queue_id=queue_id)
-                return JsonResponse({"success": True, "id": package.id})
+                if return_tracking_code:
+                    return JsonResponse({"success": True, "id": package.id, "tracking_code": package.tracking_code})
+                else:
+                    return JsonResponse({"success": True, "id": package.id})
             except Exception as e:
                 return JsonResponse({"success": False, "errors": str(e)})
         else:

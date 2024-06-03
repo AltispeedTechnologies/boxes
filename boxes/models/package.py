@@ -1,11 +1,11 @@
 from django.db import models
 
-PACKAGE_STATES = {
+PACKAGE_STATES = [
     (0, "Received"),
     (1, "Checked in"),
     (2, "Checked out"),
     (3, "Mis-placed"),
-}
+]
 
 
 class PackageType(models.Model):
@@ -30,3 +30,7 @@ class PackageLedger(models.Model):
     package = models.ForeignKey(Package, on_delete=models.RESTRICT)
     state = models.PositiveSmallIntegerField(choices=PACKAGE_STATES)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+class PackageSystemTrackingCode(models.Model):
+    prefix = models.CharField(max_length=3, default="INT")
+    last_number = models.IntegerField(default=0)

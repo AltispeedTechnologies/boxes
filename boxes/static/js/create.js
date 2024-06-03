@@ -7,31 +7,7 @@ var locks = {
     carrier_is_locked: true
 };
 
-function handle_create_package() {
-    let selected_queue = localStorage.getItem("selected_queue");
-
-    let tracking_code = $("#id_tracking_code").val();
-    let price = $("#price").val();
-    let carrier_id = $("#id_carrier_id").val();
-    let account_id = $("#id_account_id").val();
-    let package_type_id = $("#id_package_type_id").val();
-    let inside = $("#id_inside").prop("checked");
-    let comments = $("#id_comments").val();
-    var carrier = $("#id_carrier_id").find(":selected").text();
-    var account = $("#id_account_id").find(":selected").text();
-    var package_type = $("#id_package_type_id").find(":selected").text();
-
-    let form_data = {
-        tracking_code: tracking_code,
-        price: price,
-        carrier_id: carrier_id,
-        account_id: account_id,
-        package_type_id: package_type_id,
-        inside: inside,
-        comments: comments,
-        queue_id: selected_queue
-    };
-
+function request_create_package(form_data, hr_fields) {
     $.ajax({
         type: "POST",
         url: "/packages/new",
@@ -44,9 +20,13 @@ function handle_create_package() {
             if (response.success) {
                 packages.add(response.id);
                 form_data.id = response.id;
-                form_data.carrier = carrier;
-                form_data.account = account;
-                form_data.package_type = package_type;
+                form_data.carrier = hr_fields.carrier;
+                form_data.account = hr_fields.account;
+                form_data.package_type = hr_fields.package_type;
+
+                if (response.tracking_code) {
+                    form_data.tracking_code = response.tracking_code;
+                }
 
                 display_packages(form_data);
                 reset_form_fields();
@@ -56,11 +36,55 @@ function handle_create_package() {
             }
         },
         error: function(xhr, status, error) {
-            window.display_error_message(xhr.responseJSON.errors);
+            window.display_error_message(error);
         }
     });
 
     $("#checkinbtn").prop("disabled", (packages.size == 0));
+}
+
+function handle_create_package() {
+    let selected_queue = localStorage.getItem("selected_queue");
+
+    let tracking_code = $("#id_tracking_code").val();
+    let price = $("#price").val();
+    let carrier_id = $("#id_carrier_id").val();
+    let account_id = $("#id_account_id").val();
+    let package_type_id = $("#id_package_type_id").val();
+    let inside = $("#id_inside").prop("checked");
+    let comments = $("#id_comments").val();
+
+    let hr_fields = {
+        carrier: $("#id_carrier_id").find(":selected").text(),
+        account: $("#id_account_id").find(":selected").text(),
+        package_type: $("#id_package_type_id").find(":selected").text()
+    };
+
+    let form_data = {
+        tracking_code: tracking_code,
+        price: price,
+        carrier_id: carrier_id,
+        account_id: account_id,
+        package_type_id: package_type_id,
+        inside: inside,
+        comments: comments,
+        queue_id: selected_queue
+    };
+
+    if (tracking_code === "") {
+        $("#noTrackingCodeModal").modal("show");
+
+        $("#noTrackingCodeModal .btn-primary").off().on("click", function() {
+            form_data["tracking_code"] = null;
+            request_create_package(form_data, hr_fields);
+        });
+
+        $("#noTrackingCodeModal .btn-secondary").off().on("click", function() {
+            request_create_package(form_data, hr_fields);
+        });
+    } else {
+        request_create_package(form_data, hr_fields);
+    }
 }
 
 function reset_form_fields() {
