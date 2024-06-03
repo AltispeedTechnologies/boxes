@@ -31,6 +31,7 @@ class PackageLedger(models.Model):
     state = models.PositiveSmallIntegerField(choices=PACKAGE_STATES)
     timestamp = models.DateTimeField(auto_now_add=True)
 
+
 class PackageSystemTrackingCode(models.Model):
     prefix = models.CharField(max_length=3, default="INT")
     last_number = models.IntegerField(default=0)
