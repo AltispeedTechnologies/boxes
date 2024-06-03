@@ -5,17 +5,9 @@
     {% include "picklists/_picklistbox.html" %}
 
     {% include "_messages.html" %}
+    {% include "packages/_bulk_actions.html" %}
+    <br /><br />
 
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                {% if page_obj %}
-                {% include "packages/_bulk_actions.html" %}
-                {% endif %}
-            </div> 
-        </div>
-    </div>
-    <br />
     {% if page_obj %}
     {% include "packages/_table.html" %}
     {% else %}

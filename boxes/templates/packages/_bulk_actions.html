@@ -5,74 +5,56 @@
 {% cache 500 bulk_actions %}
 <div class="col">
     <div class="row float-end">
-        <h4>Bulk Actions</h4>
-    </div>
-
-    <br /><br />
-    <div class="row float-end">
         <div class="col">
-            <button class="btn btn-lg btn-warning"
-                    id="bulkprintbtn"
-                    data-bs-target="#bulkPrint"
-                    data-bs-tooltip="yes" title="Print"
-                    disabled>
-                <i class="fas fa-print"></i>
-            </button>
-            <button class="btn btn-lg btn-primary"
-                    id="bulkeditbtn"
-                    data-bs-target="#bulkEditModal"
-                    data-bs-toggle="modal" 
-                    data-bs-tooltip="yes" title="Edit"
-                    disabled>
-                <i class="fas fa-edit"></i>
-            </button>
-            {% if not queues %}
-            <button class="btn btn-lg btn-success"
-                    id="bulkcheckoutbtn"
-                    data-bs-target="#bulkCheckOutModal"
-                    data-bs-toggle="modal" 
-                    data-bs-tooltip="yes" title="Check Out"
-                    disabled>
-                <i class="fas fa-check-circle"></i>
-            </button>
-            {% endif %}
-            {% if account %}
-                <button class="btn btn-lg bg-light"
-                        id="bulkcheckbackinbtn"
-                        data-bs-target="#bulkCheckBackInModal"
-                        data-bs-toggle="modal" 
-                        data-bs-tooltip="yes" title="Check Back In"
-                        disabled>
-                    <i class="fas fa-arrow-right"></i>
+            <div class="dropdown-center" id="bulkactionsdropdown" style="display: none;">
+                <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-tasks"></i> Bulk Actions
                 </button>
-            {% endif %}
-            {% if picklist_title %}
-                <button class="btn btn-lg btn-success"
-                        id="bulkpicklistmovebtn"
-                        data-bs-target="#bulkMoveModal"
-                        data-bs-toggle="modal"
-                        data-bs-tooltip="yes" title="Move to Another Picklist"
-                        disabled>
-                    <i class="fas fa-arrows-alt"></i>
-                </button>
-                <button class="btn btn-lg btn-danger"
-                        id="bulkpicklistremovebtn"
-                        data-bs-target="#bulkRemoveModal"
-                        data-bs-toggle="modal"
-                        data-bs-tooltip="yes" title="Remove From Picklist"
-                        disabled>
-                    <i class="fas fa-trash-alt"></i>
-                </button>
-            {% elif not queues %}
-                <button class="btn btn-lg btn-info"
-                        id="bulkpicklistbtn"
-                        data-bs-target="#bulkAddPicklistModal"
-                        data-bs-toggle="modal"
-                        data-bs-tooltip="yes" title="Add to Picklist"
-                        disabled>
-                    <i class="fas fa-list"></i>
-                </button>
-            {% endif %}
+                <ul class="dropdown-menu">
+                    <li>
+                        <a class="dropdown-item" id="bulkprintbtn" data-bs-target="#bulkPrint">
+                            <i class="fas fa-print"></i> Print
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" id="bulkeditbtn" data-bs-target="#bulkEditModal" data-bs-toggle="modal">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    </li>
+                    {% if not queues %}
+                    <li>
+                        <a class="dropdown-item" id="bulkcheckoutbtn" data-bs-target="#bulkCheckOutModal" data-bs-toggle="modal">
+                            <i class="fas fa-check-circle"></i> Check Out
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if account %}
+                    <li>
+                        <a class="dropdown-item" id="bulkcheckbackinbtn" data-bs-target="#bulkCheckBackInModal" data-bs-toggle="modal">
+                            <i class="fas fa-arrow-right"></i> Check Back In
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% if picklist_title %}
+                    <li>
+                        <a class="dropdown-item" id="bulkpicklistmovebtn" data-bs-target="#bulkMoveModal" data-bs-toggle="modal">
+                            <i class="fas fa-arrows-alt"></i> Move to Another Picklist
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" id="bulkpicklistremovebtn" data-bs-target="#bulkRemoveModal" data-bs-toggle="modal">
+                            <i class="fas fa-trash-alt"></i> Remove From Picklist
+                        </a>
+                    </li>
+                    {% elif not queues %}
+                    <li>
+                        <a class="dropdown-item" id="bulkpicklistbtn" data-bs-target="#bulkAddPicklistModal" data-bs-toggle="modal">
+                            <i class="fas fa-list"></i> Add to Picklist
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
     </div>
 </div>
