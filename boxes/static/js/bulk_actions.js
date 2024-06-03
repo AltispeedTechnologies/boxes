@@ -21,9 +21,7 @@ function setup_bulk_actions() {
         window.open("/packages/label?ids=" + row_ids);
     });
 
-    $("#bulkcheckoutbtn").click(function(event) {
-        event.preventDefault();
-
+    $("#bulkCheckOutModal .btn-primary").on("click", function() {
         let packages_array = Array.from(window.selected_packages);
         let packages_payload = {"ids": packages_array};
 
@@ -34,7 +32,7 @@ function setup_bulk_actions() {
             data: packages_payload,
             success: function(response) {
                 if (response.success) {
-                    window.location.href = response.redirect_url;
+                    window.location.reload();
                     window.display_error_message();
                 } else {
                     window.display_error_message(response.errors);

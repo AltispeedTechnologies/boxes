@@ -75,6 +75,11 @@ def update_packages_util(request, state, debit_credit_switch=False):
             raise ValueError("No package IDs provided.")
 
         Package.objects.filter(id__in=ids).update(current_state=state)
+
+        # Remove the packages from all queues and picklists in the process
+        PackageQueue.objects.filter(package_id__in=ids).delete()
+        PackagePicklist.objects.filter(package_id__in=ids).delete()
+
         account_ledger, package_ledger, affected_accounts = [], [], set()
         for pkg in Package.objects.filter(id__in=ids).values("id", "account_id", "price"):
             pkg_entry = PackageLedger(user_id=request.user.id, package_id=pkg["id"], state=state)

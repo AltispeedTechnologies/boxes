@@ -1,5 +1,3 @@
-let packages = new Set();
-
 function verify_package() {
     window.display_error_message();
     $("#savingicon").show();
@@ -62,5 +60,27 @@ $(document).ready(function() {
             event.preventDefault();
             verify_package();
         }
+    });
+
+    $("#picklistCheckOutModal .btn-primary").on("click", function() {
+        let packages_array = Array.from(packages);
+        let payload = {"ids": packages_array};
+
+        $.ajax({
+            type: "POST",
+            url: "/packages/checkout",
+            headers: {"X-CSRFToken": window.csrf_token},
+            data: payload,
+            success: function(response) {
+                if (response.success) {
+                    window.location.reload();
+                } else {
+                    window.display_error_message(response.errors);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("An error occurred:", error);
+            }
+        });
     });
 });

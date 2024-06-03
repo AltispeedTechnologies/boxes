@@ -12,7 +12,7 @@
 
     <div class="container mt-3">
         <div class="row align-items-center">
-            <div class="col-auto d-flex">
+            <div class="col-auto">
                 <h6 class="mb-0">Scan Parcel:</h6>
             </div>
             <div class="col">
@@ -27,6 +27,13 @@
                     </div>
                 </div>
             </div>
+            <div class="col-auto">
+                <button class="btn btn-primary"
+                        data-bs-target="#picklistCheckOutModal"
+                        data-bs-toggle="modal">
+                    Check Out All Packages
+                </button>
+            </div>
         </div>
     </div>
 
@@ -38,24 +45,39 @@
                     <th>Tracking Code</th>
                     <th>Price</th>
                     <th>Comments</th>
-                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
+                {% for pkg in packages %}
+                    <tr>
+                        <td data-type="account">
+                            <a href="/accounts/{{ pkg.account_id }}/packages">
+                                {{ pkg.account }}
+                            </a>
+                        </td>
+                        <td data-type="tracking_code">
+                            <a href="/packages/{{ pkg.id }}">
+                                {{ pkg.tracking_code }}
+                            </a>
+                        </td>
+                        <td data-type="price">${{ pkg.price }}</td>
+                        <td data-type="comments">{{ pkg.comments }}</td>
+                    </tr>
+                {% endfor %}
+
                 <tr class="visually-hidden">
                     <td data-type="account"></td>
                     <td data-type="tracking_code"></td>
                     <td data-type="price"></td>
                     <td data-type="comments"></td>
-                    <td>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
-                                data-bs-target="#editModal">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </td>
                 </tr>
             </tbody>
         </table>
     </div>
 </div>
+
+<script>
+    let packages = new Set({{ package_ids|safe }});
+</script>
+{% include "modals/picklist_checkout.html" %}
 {% endblock %}

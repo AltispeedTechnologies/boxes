@@ -58,6 +58,7 @@ def picklist_verify_can_checkout(request, pk):
         data = json.loads(request.body)
         tracking_code = str(data.get("tracking_code"))
 
+        # Get the Package matching the tracking code with a current state of 1
         package = Package.objects.select_related("account").values(
             "id",
             "account_id",
@@ -74,14 +75,28 @@ def picklist_verify_can_checkout(request, pk):
         in_picklist = len(PackagePicklist.objects.filter(picklist_id=picklist.id, package_id=package["id"])) > 0
 
         if in_picklist:
+            # Ensure a Queue exists and add to it
+            picklist_queue = PicklistQueue.objects.filter(picklist_id=picklist.id).first()
+            if not picklist_queue:
+                queue = Queue.objects.create(description="", check_in=False)
+                picklist_queue = PicklistQueue.objects.create(picklist_id=picklist.id, queue_id=queue.id)
+            else:
+                queue = Queue.objects.filter(pk=picklist_queue.queue_id).first()
+
+            # If the package is already in the Queue, error appropriately
+            queue_item = PackageQueue.objects.filter(package_id=package["id"], queue_id=queue.id)
+            if queue_item:
+                return JsonResponse({"success": False, "errors": ["Parcel already in queue"]})
+
+            # Create the queue entry
+            PackageQueue.objects.create(package_id=package["id"], queue_id=queue.id)
+
             return JsonResponse({"success": True, "package": package})
         else:
             return JsonResponse({"success": False, "errors": ["Specified parcel not in picklist"]})
     except ValueError:
-        messages.error(request, "Invalid input")
         return JsonResponse({"success": False, "errors": ["Invalid input provided."]})
     except Exception as e:
-        messages.error(request, "An unknown error occurred.")
         return JsonResponse({"success": False, "errors": [str(e)]})
 
 
@@ -155,10 +170,35 @@ def picklist_check_out(request, pk=None):
 
     picklist_title = picklist.date if picklist.date else picklist.description
 
+    # By default, no packages are rendered
+    packages = None
+    package_ids = []
+    # Check if there is already a PicklistQueue mapping
+    picklist_queue = PicklistQueue.objects.filter(picklist_id=picklist.id).first()
+    if picklist_queue:
+        # Find the queue mapped
+        queue_id = picklist_queue.queue_id
+        queue = Queue.objects.filter(pk=queue_id)
+        if queue:
+            # Grab all packages in the queue
+            package_ids = list(PackageQueue.objects.filter(queue_id=queue_id).values_list("package_id", flat=True))
+
+            packages = Package.objects.select_related("account").values(
+                "id",
+                "account_id",
+                "price",
+                "tracking_code",
+                "comments"
+            ).annotate(
+                account=F("account__name")
+            ).filter(id__in=package_ids)
+
     return render(request, "picklists/checkout.html", {"picklists": True,
                                                        "view_type": "check_out",
                                                        "picklist_title": picklist_title,
-                                                       "picklist_id": picklist.id})
+                                                       "picklist_id": picklist.id,
+                                                       "packages": packages,
+                                                       "package_ids": package_ids})
 
 
 def _picklist_data(exclude=None):
