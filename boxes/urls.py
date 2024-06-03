@@ -65,10 +65,13 @@ urlpatterns = [
     path("packages/new", is_staff(create_package), name="create_package"),
 
     # Picklists page
-    path("packages/picklists", is_staff(picklist_show), name="picklists"),
-    path("packages/picklists/<int:pk>", is_staff(picklist_show), name="picklist_show"),
-    path("packages/picklists/modify", is_staff(modify_package_picklist), name="modify_package_picklist"),
-    path("packages/picklists/remove", is_staff(remove_package_picklist), name="remove_package_picklist"),
+    path("picklists/", is_staff(picklist_list), name="picklists"),
+    path("picklists/<int:pk>/packages", is_staff(picklist_show), name="picklist_show"),
+    path("picklists/<int:pk>/checkout", is_staff(picklist_check_out), name="picklist_check_out"),
+    path("picklists/<int:pk>/checkout/verify", is_staff(picklist_verify_can_checkout),
+         name="picklist_verify_can_checkout"),
+    path("picklists/modify", is_staff(modify_package_picklist), name="modify_package_picklist"),
+    path("picklists/remove", is_staff(remove_package_picklist), name="remove_package_picklist"),
 
     # Label printing
     path("packages/label", is_staff(generate_label), name="generate_label"),

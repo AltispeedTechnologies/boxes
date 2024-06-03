@@ -55,7 +55,7 @@ function setup_bulk_actions() {
 
         $.ajax({
             type: "POST",
-            url: "/packages/picklists/modify",
+            url: "/picklists/modify",
             headers: {"X-CSRFToken": window.csrf_token},
             data: JSON.stringify(packages_payload),
             contentType: "application/json",
@@ -145,7 +145,7 @@ function setup_bulk_actions() {
 
         $.ajax({
             type: "POST",
-            url: "/packages/picklists/modify",
+            url: "/picklists/modify",
             headers: {"X-CSRFToken": window.csrf_token},
             data: JSON.stringify(post_data),
             contentType: "application/json",
@@ -169,7 +169,7 @@ function setup_bulk_actions() {
 
         $.ajax({
             type: "POST",
-            url: "/packages/picklists/remove",
+            url: "/picklists/remove",
             headers: {"X-CSRFToken": window.csrf_token},
             data: JSON.stringify(post_data),
             contentType: "application/json",

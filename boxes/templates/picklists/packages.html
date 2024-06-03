@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="bg-body shadow rounded p-3">
+    {% include "picklists/_picklistbox.html" %}
+
+    {% include "_messages.html" %}
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                {% if page_obj %}
+                {% include "packages/_bulk_actions.html" %}
+                {% endif %}
+            </div> 
+        </div>
+    </div>
+    <br />
+    {% if page_obj %}
+    {% include "packages/_table.html" %}
+    {% else %}
+    <div class="row bg-warning bg-gradient rounded mb-3">
+        <h5 class="text-center text-white py-2">No parcels in picklist</h5>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
