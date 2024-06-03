@@ -118,9 +118,14 @@ function display_packages(response) {
         .attr("data-row-id", response.id);
 
     new_row.find("td:nth-child(1) input").attr("id", "package-" + response.id);
-    new_row.find("td:nth-child(2)").text(response.account)
+
+    let account = `<a href="/accounts/${response.account_id}/packages">${response.account}</a>`;
+    new_row.find("td:nth-child(2)").html(account)
         .attr("data-id", response.account_id);
-    new_row.find("td:nth-child(3)").text(response.tracking_code);
+
+    let tracking_code = `<a href="/packages/${response.id}">${response.tracking_code}</a>`;
+    new_row.find("td:nth-child(3)").html(tracking_code);
+
     new_row.find("td:nth-child(4)").text(`$${response.price}`);
     new_row.find("td:nth-child(5)").text(response.carrier)
         .attr("data-id", response.carrier_id);
