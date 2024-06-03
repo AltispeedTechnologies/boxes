@@ -52,8 +52,6 @@ $(document).ready(function() {
             return;
         }
 
-        console.log(aliases);
-
         $.ajax({
             type: "POST",
             url: "/accounts/aliases/update",

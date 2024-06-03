@@ -212,9 +212,6 @@ function load_queue(selected_queue) {
             } else if (!response.success) {
                 console.log("No packages available for the selected queue.");
             }
-        },
-        error: function(xhr, status, error) {
-            console.log("Error: " + error);
         }
     });
 }

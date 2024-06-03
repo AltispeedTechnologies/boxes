@@ -19,12 +19,8 @@ $(document).ready(function() {
                     $("#donesavingnotes").show();
                     $("#donesavingnotes").fadeOut(2000);
                 } else {
-                    //window.display_error_message(response.errors);
-                    console.log(response);
+                    window.display_error_message(response.errors);
                 }
-            },
-            error: function(xhr, status, error) {
-                console.log(error);
             }
         });
     }, 500));

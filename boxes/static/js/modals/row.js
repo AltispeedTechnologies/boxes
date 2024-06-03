@@ -43,7 +43,6 @@ function setup_actions() {
                 if (response.success) {
                     window.location.reload();
                 } else {
-                    console.log(response.errors);
                     window.display_error_message(response.errors);
                 }
             },
