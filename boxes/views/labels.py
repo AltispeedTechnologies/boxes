@@ -76,6 +76,7 @@ def get_ids(request):
 
     return ids
 
+
 def generate_label(request):
     ids = get_ids(request)
     if not ids:

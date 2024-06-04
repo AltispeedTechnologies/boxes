@@ -8,8 +8,8 @@ $(document).ready(function() {
             data: data,
             dropdownParent: "#removePicklistModal",
             width: "100%"
-        }); 
-    }); 
+        });
+    });
 
     $.ajax({
         url: "/modals/picklistmgmt",
@@ -21,15 +21,15 @@ $(document).ready(function() {
             $("#modalContainer").html(response);
             $(document).trigger("picklistQuery");
             $(document).trigger("modalsLoaded");
-        },          
+        },
         error: function() {
             console.error("Error loading modals");
-        }   
+        }
     });
 });
 
 $(document).on("click", ".removebtn", function() {
-    var $tr = $(this).closest("tr")
+    var $tr = $(this).closest("tr");
     var count = $tr.find("#count").text();
     current_id = $tr.attr("data-id");
 
@@ -64,12 +64,12 @@ $(document).on("modalsLoaded", function() {
                 if (response.success) {
                     // Update the count for the row this picklist was merged into
                     if (response.new_count) {
-                        $tr = $("tr[data-id=\"" + new_picklist + "\"]");
+                        let $tr = $("tr[data-id=\"" + new_picklist + "\"]");
                         $tr.find("td#count").text(response.new_count);
                     }
 
                     // Remove the row for the picklist we just removed
-                    $old_tr = $("tr[data-id=\"" + current_id + "\"]");
+                    let $old_tr = $("tr[data-id=\"" + current_id + "\"]");
                     $old_tr.remove();
                 }
                 $("#removePicklistModal").modal("hide");
