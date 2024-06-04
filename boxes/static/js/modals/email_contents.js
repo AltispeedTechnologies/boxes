@@ -1,6 +1,7 @@
 $(document).ready(function() {
     $("[data-bs-target=\"#showEmailModal\"]").on("click", function() {
         $("#emailcontents").html("");
+        $("#showEmailModalLabel").text("Loading...");
         $("#loadingstatus").show();
 
         let sent_email_id = $(this).closest("tr").attr("data-id");
@@ -14,6 +15,7 @@ $(document).ready(function() {
             success: function(response) {
                 $("#loadingstatus").hide();
                 $("#emailcontents").html(response.contents);
+                $("#showEmailModalLabel").text(response.subject);
             }
         });
     });
