@@ -1,0 +1,30 @@
+{% block content %}
+<div class="modal fade" id="removePicklistModal" tabindex="-1" aria-labelledby="removePicklistModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="removePicklistModalLabel">Remove Picklist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container" id="itemsnotpresent">
+                    <p>Are you sure you would like to remove this picklist?</p>
+                </div>
+                <div class="container" id="itemspresent">
+                    <p>There are still parcels in this picklist. Which picklist would you like to move them to?</p>
+                    <select class="form-select" id="picklist-select">
+                        <option value="null">No Picklist</option>
+                        {% for item in picklist_data %}
+                            <option value="{{ item.id }}">{{ item.text }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Back</button>
+                <button type="button" class="btn btn-primary">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

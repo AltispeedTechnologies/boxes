@@ -20,18 +20,25 @@
             <tbody>
                 {% for picklist in picklists %}
                 <tr
+                    data-id="{{ picklist.id }}"
                     class="{% if picklist.today %}table-success
                            {% elif picklist.past %}table-warning
                            {% endif %}">
                     <td>{{ picklist.date }}</td>
                     <td>{{ picklist.description|default:"" }}</td>
-                    <td>{{ picklist.count }}</td>
+                    <td id="count">{{ picklist.count }}</td>
                     <td>
                         <a href="/picklists/{{ picklist.id }}/packages"
                            class="btn btn-primary"
                            role="button">
                             <i class="fa-solid fa-circle-info"></i>
                         </a>
+                        <button type="button"
+                                class="btn btn-danger removebtn"
+                                data-bs-toggle="modal"
+                                data-bs-target="#removePicklistModal">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -39,4 +46,7 @@
         </table>
     </div>
 </div>
+{% load static %}
+<script src="{% static 'js/modals/picklist_mgmt.js' %}"></script>
+<div id="modalContainer"></div>
 {% endblock %}

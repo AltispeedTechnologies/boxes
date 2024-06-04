@@ -50,6 +50,7 @@ urlpatterns = [
     path("packages/checkout/reverse", is_staff(check_out_packages_reverse), name="check_out_packages_reverse"),
     path("modals/bulk", is_staff(get_bulk_modals), name="get_bulk_modals"),
     path("modals/actions", is_staff(get_actions_modals), name="get_actions_modals"),
+    path("modals/picklistmgmt", is_staff(get_picklist_mgmt_modals), name="get_picklist_mgmt_modals"),
 
     # Generic package information
     path("packages/", is_staff(all_packages), name="packages"),
@@ -66,10 +67,11 @@ urlpatterns = [
 
     # Picklists page
     path("picklists/", is_staff(picklist_list), name="picklists"),
-    path("picklists/<int:pk>/packages", is_staff(picklist_show), name="picklist_show"),
     path("picklists/<int:pk>/checkout", is_staff(picklist_check_out), name="picklist_check_out"),
     path("picklists/<int:pk>/checkout/verify", is_staff(picklist_verify_can_checkout),
          name="picklist_verify_can_checkout"),
+    path("picklists/<int:pk>/packages", is_staff(picklist_show), name="picklist_show"),
+    path("picklists/<int:pk>/remove", is_staff(remove_picklist), name="remove_picklist"),
     path("picklists/modify", is_staff(modify_package_picklist), name="modify_package_picklist"),
     path("picklists/remove", is_staff(remove_package_picklist), name="remove_package_picklist"),
 

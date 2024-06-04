@@ -123,6 +123,53 @@ def remove_package_picklist(request):
         return JsonResponse({"success": False, "errors": [str(e)]})
 
 
+@require_http_methods(["POST"])
+def remove_picklist(request, pk):
+    try:
+        data = json.loads(request.body)
+        picklist_id_value = data.get("picklist_id")
+        new_picklist = int(picklist_id_value) if picklist_id_value else None
+
+        with transaction.atomic():
+            new_count = None
+            if new_picklist:
+                PackagePicklist.objects.filter(picklist_id=pk).update(picklist_id=new_picklist)
+                new_count = PackagePicklist.objects.filter(picklist_id=new_picklist).count()
+            else:
+                PackagePicklist.objects.filter(picklist_id=pk).delete()
+
+            # If a checkout queue exists, make sure it's cleaned up
+            # Additionally, ensure all packages in the corresponding check in queue are moved
+            old_queue = PicklistQueue.objects.filter(picklist_id=pk).first()
+            if old_queue:
+                old_queue_id = old_queue.queue_id
+                new_picklist_queue = PicklistQueue.objects.filter(picklist_id=new_picklist).first()
+
+                if not new_picklist_queue:
+                    # If there's no queue for the new picklist, create it
+                    queue = Queue.objects.create(description="", check_in=False)
+                    new_queue_id = queue.id
+                    PicklistQueue.objects.create(queue_id=new_queue_id, picklist_id=new_pickless)
+                else:
+                    new_queue_id = new_picklist_queue.queue_id
+
+                # Update all packages in the old queue to be in the new queue
+                PackageQueue.objects.filter(queue_id=old_queue_id).update(queue_id=new_queue_id)
+
+                # Delete the old picklist queue and queue itself
+                PicklistQueue.objects.filter(queue_id=old_queue_id, picklist_id=pk).delete()
+                Queue.objects.filter(pk=old_queue_id).delete()
+
+            # Delete the picklist
+            Picklist.objects.filter(pk=pk).delete()
+
+        return JsonResponse({"success": True, "new_count": new_count})
+    except ValueError:
+        return JsonResponse({"success": False, "errors": ["Invalid input provided."]})
+    except Exception as e:
+        return JsonResponse({"success": False, "errors": [str(e)]})
+
+
 @require_http_methods(["GET"])
 def picklist_list(request, pk=None):
     picklists = Picklist.objects.annotate(

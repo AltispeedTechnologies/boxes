@@ -10,3 +10,8 @@ def get_bulk_modals(request):
 @require_http_methods(["GET"])
 def get_actions_modals(request):
     return render(request, "modals/actions.html")
+
+
+@require_http_methods(["GET"])
+def get_picklist_mgmt_modals(request):
+    return render(request, "modals/picklist_mgmt.html")
