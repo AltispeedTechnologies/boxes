@@ -5,6 +5,7 @@ import re
 from boxes.models import *
 from django.conf import settings
 from django.http import HttpResponse
+from django.shortcuts import render
 from reportlab.graphics.barcode import createBarcodeDrawing
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
@@ -67,16 +68,22 @@ def draw_label(canvas, first_name, last_name, barcode_value, date, inside):
     canvas.drawImage(logo_path, (page_width - 1*inch) / 2, 0.4*inch, width=1*inch, height=1*inch, mask="auto")
 
 
-def generate_label(request):
+def get_ids(request):
     ids = request.GET.get("ids")
     if ids:
         ids = re.sub(r"[^\d,]", "", ids)
         ids = ids.split(",")
-    else:
+
+    return ids
+
+def generate_label(request):
+    ids = get_ids(request)
+    if not ids:
         return HttpResponse("No IDs provided.", content_type="text/plain", status=400)
 
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = "inline; filename='label.pdf'"
+    response["X-Frame-Options"] = "SAMEORIGIN"
 
     p = canvas.Canvas(response, pagesize=(4*inch, 6*inch))
     packages = Package.objects.filter(
@@ -97,3 +104,12 @@ def generate_label(request):
     p.save()
 
     return response
+
+
+def show_label(request):
+    ids = get_ids(request)
+
+    if not ids:
+        return HttpResponse("No IDs provided.", content_type="text/plain", status=400)
+
+    return render(request, "labels.html", {"ids": ids})

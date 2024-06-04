@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <script>
+            function printPDF() {
+                const iframe = document.getElementById("pdfIframe");
+                iframe.focus();
+                iframe.contentWindow.print();
+            }
+        </script>
+
+        <title>Labels</title>
+    </head>
+    <body onload="printPDF();">
+        <iframe id="pdfIframe" src="{% url 'generate_label' %}?ids={{ ids }}" style="position: absolute; height: 98%; width: 99%; border: none"></iframe>
+    </body>
+</html>

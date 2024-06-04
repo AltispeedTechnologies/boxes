@@ -74,7 +74,8 @@ urlpatterns = [
     path("picklists/remove", is_staff(remove_package_picklist), name="remove_package_picklist"),
 
     # Label printing
-    path("packages/label", is_staff(generate_label), name="generate_label"),
+    path("packages/label", is_staff(show_label), name="show_label"),
+    path("packages/label/pdf", is_staff(generate_label), name="generate_label"),
 
     # Basic queue data
     path("queues/<int:pk>/packages", is_staff(queue_packages), name="queue_packages"),
