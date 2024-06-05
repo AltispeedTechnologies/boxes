@@ -1,5 +1,6 @@
 import decimal
 import json
+from boxes.management.exception_catcher import exception_catcher
 from boxes.models import *
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -77,18 +78,16 @@ def add_email_template(request):
 
 
 @require_http_methods(["POST"])
+@exception_catcher()
 def update_email_template(request):
     template_id = request.POST.get("id")
     content = _clean_html(request.POST.get("content"))
     subject = request.POST.get("subject")
-    try:
-        template = EmailTemplate.objects.get(id=template_id)
-        template.subject = subject
-        template.content = content
-        template.save()
-        return JsonResponse({"status": "success", "message": "Template updated successfully."})
-    except EmailTemplate.DoesNotExist:
-        return JsonResponse({"status": "error", "message": "Template not found."}, status=404)
+    template = EmailTemplate.objects.get(id=template_id)
+    template.subject = subject
+    template.content = content
+    template.save()
+    return JsonResponse({"status": "success", "message": "Template updated successfully."})
 
 
 @require_http_methods(["POST"])
@@ -150,33 +149,29 @@ def package_type_settings(request):
 
 
 @require_http_methods(["POST"])
+@exception_catcher()
 def update_package_types(request):
-    try:
-        data = json.loads(request.body)
-        updated_types = {}
+    data = json.loads(request.body)
+    updated_types = {}
 
-        for type_id, attributes in data.items():
-            if str(type_id).startswith("NEW_"):
-                new_type = PackageType(shortcode=attributes["shortcode"],
-                                       description=attributes["description"],
-                                       default_price=attributes["default_price"])
-                new_type.save()
-                updated_types[type_id] = new_type.id
-            else:
-                try:
-                    package_type = PackageType.objects.get(id=int(type_id))
-                    package_type.shortcode = attributes["shortcode"]
-                    package_type.description = attributes["description"]
-                    package_type.default_price = attributes["default_price"]
-                    package_type.save()
-                except PackageType.DoesNotExist:
-                    updated_types[type_id] = "Not found"
+    for type_id, attributes in data.items():
+        if str(type_id).startswith("NEW_"):
+            new_type = PackageType(shortcode=attributes["shortcode"],
+                                   description=attributes["description"],
+                                   default_price=attributes["default_price"])
+            new_type.save()
+            updated_types[type_id] = new_type.id
+        else:
+            try:
+                package_type = PackageType.objects.get(id=int(type_id))
+                package_type.shortcode = attributes["shortcode"]
+                package_type.description = attributes["description"]
+                package_type.default_price = attributes["default_price"]
+                package_type.save()
+            except PackageType.DoesNotExist:
+                updated_types[type_id] = "Not found"
 
-        return JsonResponse({"success": True, "updated_types": updated_types})
-    except json.JSONDecodeError:
-        return JsonResponse({"success": False, "errors": "Invalid JSON"})
-    except Exception as e:
-        return JsonResponse({"success": False, "errors": str(e)})
+    return JsonResponse({"success": True, "updated_types": updated_types})
 
 
 @require_http_methods(["GET"])
@@ -186,34 +181,30 @@ def carrier_settings(request):
 
 
 @require_http_methods(["POST"])
+@exception_catcher()
 def update_carriers(request):
-    try:
-        data = json.loads(request.body)
-        updated_carriers = {}
+    data = json.loads(request.body)
+    updated_carriers = {}
 
-        for carrier_id, attributes in data.items():
-            if str(carrier_id).startswith("NEW_"):
-                new_carrier = Carrier(name=attributes["name"],
-                                      phone_number=attributes["phone_number"],
-                                      website=attributes["website"])
-                new_carrier.save()
-                updated_carriers[carrier_id] = new_carrier.id
-            else:
-                try:
-                    carrier = Carrier.objects.get(id=int(carrier_id))
-                    if carrier.name != attributes["name"]:
-                        carrier.name = attributes["name"]
-                    carrier.phone_number = attributes["phone_number"]
-                    carrier.website = attributes["website"]
-                    carrier.save()
-                except PackageType.DoesNotExist:
-                    updated_carriers[carrier_id] = "Not found"
+    for carrier_id, attributes in data.items():
+        if str(carrier_id).startswith("NEW_"):
+            new_carrier = Carrier(name=attributes["name"],
+                                  phone_number=attributes["phone_number"],
+                                  website=attributes["website"])
+            new_carrier.save()
+            updated_carriers[carrier_id] = new_carrier.id
+        else:
+            try:
+                carrier = Carrier.objects.get(id=int(carrier_id))
+                if carrier.name != attributes["name"]:
+                    carrier.name = attributes["name"]
+                carrier.phone_number = attributes["phone_number"]
+                carrier.website = attributes["website"]
+                carrier.save()
+            except PackageType.DoesNotExist:
+                updated_carriers[carrier_id] = "Not found"
 
-        return JsonResponse({"success": True, "updated_carriers": updated_carriers})
-    except json.JSONDecodeError:
-        return JsonResponse({"success": False, "errors": "Invalid JSON"})
-    except Exception as e:
-        return JsonResponse({"success": False, "errors": str(e)})
+    return JsonResponse({"success": True, "updated_carriers": updated_carriers})
 
 
 @require_http_methods(["GET"])

@@ -10,6 +10,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from boxes.forms import RegisterForm
+from boxes.management.exception_catcher import exception_catcher
 from boxes.models import CustomUser
 
 
@@ -38,6 +39,7 @@ def register(request):
 
 
 @csrf_exempt
+@exception_catcher()
 def sign_in(request):
     if request.method == "GET":
         return render(request, "login.html", {"form": AuthenticationForm()})
@@ -46,22 +48,18 @@ def sign_in(request):
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "").strip()
 
-        try:
-            user = CustomUser.objects.only("id", "password", "is_active").get(username=username)
+        user = CustomUser.objects.only("id", "password", "is_active").get(username=username)
 
-            if check_password(password, user.password):
-                if user.is_active:
-                    login(request, user)
-                    messages.success(request, f"Hi {username.title()}, welcome back!")
-                    success = reverse_lazy("home")
-                    return redirect(success)
-                else:
-                    messages.error(request, "Your account is not active.")
+        if check_password(password, user.password):
+            if user.is_active:
+                login(request, user)
+                messages.success(request, f"Hi {username.title()}, welcome back!")
+                success = reverse_lazy("home")
+                return redirect(success)
             else:
-                messages.error(request, "Invalid username or password")
-
-        except CustomUser.DoesNotExist:
-            messages.error(request, f"User not found with username: {username}")
+                messages.error(request, "Your account is not active.")
+        else:
+            messages.error(request, "Invalid username or password")
 
         return render(request, "login.html", {"form": AuthenticationForm()})
 

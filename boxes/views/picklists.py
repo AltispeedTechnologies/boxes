@@ -1,5 +1,6 @@
 import json
 import re
+from boxes.management.exception_catcher import exception_catcher
 from boxes.models import *
 from .common import _get_packages, _search_packages_helper
 from datetime import datetime
@@ -22,202 +23,176 @@ def picklist_query(request):
 
 
 @require_http_methods(["POST"])
+@exception_catcher()
 def create_picklist(request):
-    try:
-        data = json.loads(request.body)
-        description = data.get("description", None)
-        date = data.get("date", None)
+    data = json.loads(request.body)
+    description = data.get("description", None)
+    date = data.get("date", None)
 
-        if not description and not date:
+    if not description and not date:
+        raise ValueError
+
+    if date:
+        # MM/DD/YYYY
+        pattern = r"^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/(20[0-9][0-9])$"
+        if not re.match(pattern, date):
             raise ValueError
 
-        if date:
-            # MM/DD/YYYY
-            pattern = r"^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/(20[0-9][0-9])$"
-            if not re.match(pattern, date):
-                raise ValueError
+        date = datetime.strptime(date, "%m/%d/%Y").date()
 
-            date = datetime.strptime(date, "%m/%d/%Y").date()
+    # Do not allow duplicates to be created
+    if Picklist.objects.filter(date=date, description=description):
+        raise RuntimeError("Picklist already exists")
 
-        # Do not allow duplicates to be created
-        if Picklist.objects.filter(date=date, description=description):
-            raise RuntimeError("Picklist already exists")
+    picklist = Picklist.objects.create(date=date, description=description)
 
-        picklist = Picklist.objects.create(date=date, description=description)
+    # Human-readable value is MONTH DAY, YEAR
+    if date:
+        date = date.strftime("%B %d, %Y")
 
-        # Human-readable value is MONTH DAY, YEAR
-        if date:
-            date = date.strftime("%B %d, %Y")
-
-        return JsonResponse({"success": True, "new_id": picklist.id, "hr_date": date})
-    except ValueError:
-        return JsonResponse({"success": False, "errors": ["Invalid input provided."]})
-    except Exception as e:
-        return JsonResponse({"success": False, "errors": [str(e)]})
+    return JsonResponse({"success": True, "new_id": picklist.id, "hr_date": date})
 
 
 @require_http_methods(["POST"])
+@exception_catcher()
 def modify_package_picklist(request):
-    try:
-        data = json.loads(request.body)
-        picklist_id = int(data.get("picklist_id"))
-        package_ids = set(data.get("ids", []))
+    data = json.loads(request.body)
+    picklist_id = int(data.get("picklist_id"))
+    package_ids = set(data.get("ids", []))
 
-        existing_entries = PackagePicklist.objects.filter(package_id__in=package_ids)
-        existing_entries.update(picklist_id=picklist_id)
-        existing_package_ids = set(existing_entries.values_list("package_id", flat=True))
+    existing_entries = PackagePicklist.objects.filter(package_id__in=package_ids)
+    existing_entries.update(picklist_id=picklist_id)
+    existing_package_ids = set(existing_entries.values_list("package_id", flat=True))
 
-        # Ensure consistent data types for the set subtraction
-        package_ids = {int(pkg_id) for pkg_id in package_ids}
-        existing_package_ids = {int(pkg_id) for pkg_id in existing_package_ids}
+    # Ensure consistent data types for the set subtraction
+    package_ids = {int(pkg_id) for pkg_id in package_ids}
+    existing_package_ids = {int(pkg_id) for pkg_id in existing_package_ids}
 
-        new_package_ids = package_ids - existing_package_ids
-        new_objects = [PackagePicklist(package_id=pkg_id, picklist_id=picklist_id) for pkg_id in new_package_ids]
+    new_package_ids = package_ids - existing_package_ids
+    new_objects = [PackagePicklist(package_id=pkg_id, picklist_id=picklist_id) for pkg_id in new_package_ids]
 
-        if new_objects:
-            with transaction.atomic():
-                PackagePicklist.objects.bulk_create(new_objects)
-
-        return JsonResponse({"success": True})
-    except ValueError:
-        messages.error(request, "Invalid input")
-        return JsonResponse({"success": False, "errors": ["Invalid input provided."]})
-    except Exception as e:
-        messages.error(request, "An unknown error occurred.")
-        return JsonResponse({"success": False, "errors": [str(e)]})
-
-
-@require_http_methods(["POST"])
-def picklist_verify_can_checkout(request, pk):
-    try:
-        picklist = get_object_or_404(Picklist, pk=pk)
-
-        data = json.loads(request.body)
-        tracking_code = str(data.get("tracking_code"))
-
-        # Get the Package matching the tracking code with a current state of 1
-        package = Package.objects.select_related("account").values(
-            "id",
-            "account_id",
-            "price",
-            "tracking_code",
-            "comments"
-        ).annotate(
-            account=F("account__name")
-        ).filter(tracking_code=tracking_code, current_state=1).first()
-
-        if package is None:
-            return JsonResponse({"success": False, "errors": ["Parcel not found"]})
-
-        in_picklist = PackagePicklist.objects.filter(picklist_id=picklist.id, package_id=package["id"]).exists()
-
-        if in_picklist:
-            with transaction.atomic():
-                # Ensure a Queue exists and add to it
-                picklist_queue = PicklistQueue.objects.filter(picklist_id=picklist.id).first()
-                if not picklist_queue:
-                    queue = Queue.objects.create(description="", check_in=False)
-                    picklist_queue = PicklistQueue.objects.create(picklist_id=picklist.id, queue_id=queue.id)
-                else:
-                    queue = Queue.objects.filter(pk=picklist_queue.queue_id).first()
-
-                # If the package is already in the Queue, error appropriately
-                if PackageQueue.objects.filter(package_id=package["id"], queue_id=queue.id).exists():
-                    return JsonResponse({"success": False, "errors": ["Parcel already in queue"]})
-
-                # Create the queue entry
-                PackageQueue.objects.create(package_id=package["id"], queue_id=queue.id)
-
-                # Remove from the picklist
-                PackagePicklist.objects.filter(picklist_id=picklist.id, package_id=package["id"]).delete()
-
-                return JsonResponse({"success": True, "package": package})
-        else:
-            return JsonResponse({"success": False, "errors": ["Specified parcel not in picklist"]})
-    except ValueError:
-        return JsonResponse({"success": False, "errors": ["Invalid input provided."]})
-    except Exception as e:
-        return JsonResponse({"success": False, "errors": [str(e)]})
-
-
-@require_http_methods(["POST"])
-def remove_package_picklist(request):
-    try:
-        data = json.loads(request.body)
-        package_ids = set(data.get("ids", []))
-
-        if not package_ids:
-            messages.error(request, "No package IDs provided.")
-            return JsonResponse({"success": False, "errors": ["No package IDs provided."]})
-
-        package_ids = [int(pkg_id) for pkg_id in package_ids]
-        PackagePicklist.objects.filter(package_id__in=package_ids).delete()
-
-        messages.success(request, "Successfully removed packages from picklist")
-        return JsonResponse({"success": True})
-    except ValueError:
-        messages.error(request, "Invalid input")
-        return JsonResponse({"success": False, "errors": ["Invalid input provided."]})
-    except Exception as e:
-        messages.error(request, "An unknown error occurred.")
-        return JsonResponse({"success": False, "errors": [str(e)]})
-
-
-@require_http_methods(["POST"])
-def remove_picklist(request, pk):
-    try:
-        data = json.loads(request.body)
-        picklist_id_value = data.get("picklist_id")
-        new_picklist = int(picklist_id_value) if picklist_id_value else None
-
+    if new_objects:
         with transaction.atomic():
-            new_count, new_queue_count = None, None
-            if new_picklist:
-                PackagePicklist.objects.filter(picklist_id=pk).update(picklist_id=new_picklist)
+            PackagePicklist.objects.bulk_create(new_objects)
 
-                # Get the number of items in the picklist
-                new_count = PackagePicklist.objects.filter(picklist_id=new_picklist).count()
 
-                # If a checkout queue exists, make sure it's cleaned up
-                # Additionally, ensure all packages in the corresponding check in queue are moved
-                old_queue = PicklistQueue.objects.filter(picklist_id=pk).first()
-                if old_queue:
-                    old_queue_id = old_queue.queue_id
-                    new_picklist_queue = PicklistQueue.objects.filter(picklist_id=new_picklist).first()
+@require_http_methods(["POST"])
+@exception_catcher()
+def picklist_verify_can_checkout(request, pk):
+    picklist = get_object_or_404(Picklist, pk=pk)
 
-                    if not new_picklist_queue:
-                        # If there's no queue for the new picklist, create it
-                        queue = Queue.objects.create(description="", check_in=False)
-                        new_queue_id = queue.id
-                        PicklistQueue.objects.create(queue_id=new_queue_id, picklist_id=new_picklist)
-                    else:
-                        new_queue_id = new_picklist_queue.queue_id
+    data = json.loads(request.body)
+    tracking_code = str(data.get("tracking_code"))
 
-                    # Update all packages in the old queue to be in the new queue
-                    PackageQueue.objects.filter(queue_id=old_queue_id).update(queue_id=new_queue_id)
+    # Get the Package matching the tracking code with a current state of 1
+    package = Package.objects.select_related("account").values(
+        "id",
+        "account_id",
+        "price",
+        "tracking_code",
+        "comments"
+    ).annotate(
+        account=F("account__name")
+    ).filter(tracking_code=tracking_code, current_state=1).first()
 
-                    # Ensure we know how many packages are in the new queue
-                    new_queue_count = PackageQueue.objects.filter(queue_id=new_queue_id).count()
+    if package is None:
+        return JsonResponse({"success": False, "errors": ["Parcel not found"]})
 
-                    # Delete the old picklist queue and queue itself
-                    PicklistQueue.objects.filter(queue_id=old_queue_id, picklist_id=pk).delete()
-                    Queue.objects.filter(pk=old_queue_id).delete()
+    in_picklist = PackagePicklist.objects.filter(picklist_id=picklist.id, package_id=package["id"]).exists()
+
+    if in_picklist:
+        with transaction.atomic():
+            # Ensure a Queue exists and add to it
+            picklist_queue = PicklistQueue.objects.filter(picklist_id=picklist.id).first()
+            if not picklist_queue:
+                queue = Queue.objects.create(description="", check_in=False)
+                picklist_queue = PicklistQueue.objects.create(picklist_id=picklist.id, queue_id=queue.id)
             else:
-                PackagePicklist.objects.filter(picklist_id=pk).delete()
-                queue = PicklistQueue.objects.filter(picklist_id=pk).first()
-                if queue:
-                    queue_id = queue.queue_id
-                    PackageQueue.objects.filter(queue_id=queue_id).delete()
-                    queue.delete()
+                queue = Queue.objects.filter(pk=picklist_queue.queue_id).first()
 
-            # Delete the picklist
-            Picklist.objects.filter(pk=pk).delete()
+            # If the package is already in the Queue, error appropriately
+            if PackageQueue.objects.filter(package_id=package["id"], queue_id=queue.id).exists():
+                return JsonResponse({"success": False, "errors": ["Parcel already in queue"]})
 
-        return JsonResponse({"success": True, "new_count": new_count, "new_queue_count": new_queue_count})
-    except ValueError:
-        return JsonResponse({"success": False, "errors": ["Invalid input provided."]})
-    except Exception as e:
-        return JsonResponse({"success": False, "errors": [str(e)]})
+            # Create the queue entry
+            PackageQueue.objects.create(package_id=package["id"], queue_id=queue.id)
+
+            # Remove from the picklist
+            PackagePicklist.objects.filter(picklist_id=picklist.id, package_id=package["id"]).delete()
+
+            return JsonResponse({"success": True, "package": package})
+    else:
+        return JsonResponse({"success": False, "errors": ["Specified parcel not in picklist"]})
+
+
+@require_http_methods(["POST"])
+@exception_catcher()
+def remove_package_picklist(request):
+    data = json.loads(request.body)
+    package_ids = set(data.get("ids", []))
+
+    if not package_ids:
+        messages.error(request, "No package IDs provided.")
+        return JsonResponse({"success": False, "errors": ["No package IDs provided."]})
+
+    package_ids = [int(pkg_id) for pkg_id in package_ids]
+    PackagePicklist.objects.filter(package_id__in=package_ids).delete()
+
+    messages.success(request, "Successfully removed packages from picklist")
+    return JsonResponse({"success": True})
+
+
+@require_http_methods(["POST"])
+@exception_catcher()
+def remove_picklist(request, pk):
+    data = json.loads(request.body)
+    picklist_id_value = data.get("picklist_id")
+    new_picklist = int(picklist_id_value) if picklist_id_value else None
+
+    with transaction.atomic():
+        new_count, new_queue_count = None, None
+        if new_picklist:
+            PackagePicklist.objects.filter(picklist_id=pk).update(picklist_id=new_picklist)
+
+            # Get the number of items in the picklist
+            new_count = PackagePicklist.objects.filter(picklist_id=new_picklist).count()
+
+            # If a checkout queue exists, make sure it's cleaned up
+            # Additionally, ensure all packages in the corresponding check in queue are moved
+            old_queue = PicklistQueue.objects.filter(picklist_id=pk).first()
+            if old_queue:
+                old_queue_id = old_queue.queue_id
+                new_picklist_queue = PicklistQueue.objects.filter(picklist_id=new_picklist).first()
+
+                if not new_picklist_queue:
+                    # If there's no queue for the new picklist, create it
+                    queue = Queue.objects.create(description="", check_in=False)
+                    new_queue_id = queue.id
+                    PicklistQueue.objects.create(queue_id=new_queue_id, picklist_id=new_picklist)
+                else:
+                    new_queue_id = new_picklist_queue.queue_id
+
+                # Update all packages in the old queue to be in the new queue
+                PackageQueue.objects.filter(queue_id=old_queue_id).update(queue_id=new_queue_id)
+
+                # Ensure we know how many packages are in the new queue
+                new_queue_count = PackageQueue.objects.filter(queue_id=new_queue_id).count()
+
+                # Delete the old picklist queue and queue itself
+                PicklistQueue.objects.filter(queue_id=old_queue_id, picklist_id=pk).delete()
+                Queue.objects.filter(pk=old_queue_id).delete()
+        else:
+            PackagePicklist.objects.filter(picklist_id=pk).delete()
+            queue = PicklistQueue.objects.filter(picklist_id=pk).first()
+            if queue:
+                queue_id = queue.queue_id
+                PackageQueue.objects.filter(queue_id=queue_id).delete()
+                queue.delete()
+
+        # Delete the picklist
+        Picklist.objects.filter(pk=pk).delete()
+
+    return JsonResponse({"success": True, "new_count": new_count, "new_queue_count": new_queue_count})
 
 
 @require_http_methods(["GET"])

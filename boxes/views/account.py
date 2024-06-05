@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
 from boxes.models import (Account, AccountAlias, AccountLedger, CustomUserEmail, SentEmail, SentEmailContents,
                           SentEmailPackage, SentEmailResult)
+from boxes.management.exception_catcher import exception_catcher
 from .common import _get_packages, _get_matching_users
 
 
@@ -109,6 +110,7 @@ def account_emails(request, pk):
 
 
 @require_http_methods(["POST"])
+@exception_catcher()
 def update_account(request, pk):
     request_data = json.loads(request.body)
     account = get_object_or_404(Account, pk=pk)
@@ -120,51 +122,41 @@ def update_account(request, pk):
         "comments": str
     }
 
-    try:
-        updates = {}
-        for field, type_func in fields_to_update.items():
-            value = request_data.get(field)
-            if value is not None and type_func is not bool:
-                updates[field] = type_func(value.strip())
-            elif value is not None:
-                updates[field] = type_func(value)
+    updates = {}
+    for field, type_func in fields_to_update.items():
+        value = request_data.get(field)
+        if value is not None and type_func is not bool:
+            updates[field] = type_func(value.strip())
+        elif value is not None:
+            updates[field] = type_func(value)
 
-        for field, value in updates.items():
-            setattr(account, field, value)
+    for field, value in updates.items():
+        setattr(account, field, value)
 
-        if updates:
-            account.save()
-
-        return JsonResponse({"success": True})
-
-    except (ValueError, Decimal.InvalidOperation, TypeError) as e:
-        return JsonResponse({"success": False, "errors": [f"Error updating {field}: {str(e)}"]})
+    if updates:
+        account.save()
 
 
 @require_http_methods(["POST"])
+@exception_catcher()
 def update_account_aliases(request):
-    try:
-        data = json.loads(request.body)
-        updated_aliases = dict()
+    data = json.loads(request.body)
+    updated_aliases = dict()
 
-        for account_id, aliases in data.items():
-            for key, value in aliases.items():
-                if key.startswith("NEW_"):
-                    new_alias = AccountAlias(account_id=account_id, alias=value, primary=False)
-                    new_alias.save()
-                    updated_aliases[key] = new_alias.id
-                elif key.startswith("REMOVE_"):
-                    alias_id = int(key[7:])
-                    alias = AccountAlias.objects.get(id=alias_id, account_id=account_id)
-                    alias.delete()
-                    updated_aliases[key] = True
-                else:
-                    alias = AccountAlias.objects.get(id=int(key), account_id=account_id)
-                    alias.alias = value
-                    alias.save()
+    for account_id, aliases in data.items():
+        for key, value in aliases.items():
+            if key.startswith("NEW_"):
+                new_alias = AccountAlias(account_id=account_id, alias=value, primary=False)
+                new_alias.save()
+                updated_aliases[key] = new_alias.id
+            elif key.startswith("REMOVE_"):
+                alias_id = int(key[7:])
+                alias = AccountAlias.objects.get(id=alias_id, account_id=account_id)
+                alias.delete()
+                updated_aliases[key] = True
+            else:
+                alias = AccountAlias.objects.get(id=int(key), account_id=account_id)
+                alias.alias = value
+                alias.save()
 
-        return JsonResponse({"success": True, "aliases": updated_aliases})
-    except json.JSONDecodeError:
-        return JsonResponse({"success": False, "errors": "Invalid JSON"})
-    except Account.DoesNotExist:
-        return JsonResponse({"success": False, "errors": "Account not found"})
+    return JsonResponse({"success": True, "aliases": updated_aliases})

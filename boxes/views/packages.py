@@ -2,6 +2,7 @@ import json
 import re
 from .common import _get_packages, _search_packages_helper
 from boxes.forms import PackageForm
+from boxes.management.exception_catcher import exception_catcher
 from boxes.models import *
 from boxes.tasks import total_accounts
 from decimal import Decimal
@@ -231,26 +232,19 @@ def queue_packages(request, pk):
 
 
 @require_http_methods(["POST"])
+@exception_catcher()
 def update_queue_name(request, pk):
-    try:
-        data = json.loads(request.body)
-        queue_id = data["id"]
-        description = data["description"]
+    data = json.loads(request.body)
+    queue_id = data["id"]
+    description = data["description"]
 
-        queue = get_object_or_404(Queue, pk=queue_id)
+    queue = get_object_or_404(Queue, pk=queue_id)
 
-        queue.description = description
-        queue.save()
-
-        return JsonResponse({"success": True})
-    except json.JSONDecodeError:
-        return JsonResponse({"success": False, "message": "Invalid JSON"}, status=400)
-    except KeyError:
-        return JsonResponse({"success": False, "message": "Missing id or description in payload"}, status=400)
-    except Exception as e:
-        return JsonResponse({"success": False, "message": f"Error updating queue: {str(e)}"}, status=500)
+    queue.description = description
+    queue.save()
 
 
+@exception_catcher()
 def update_packages_fields(package_ids, package_data, user, no_ledger=False):
     packages = Package.objects.filter(pk__in=package_ids)
     updates = []
@@ -346,7 +340,6 @@ def update_packages_fields(package_ids, package_data, user, no_ledger=False):
 
     if errors:
         return {"success": False, "errors": errors}
-    return {"success": True}
 
 
 @require_http_methods(["POST"])
