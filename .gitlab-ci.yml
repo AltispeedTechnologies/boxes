@@ -16,40 +16,45 @@ variables:
   CELERY_BROKER_HOST: rabbitmq
 
 stages:
-  - check
-  - build
+  - lint
+  - test
   - deploy
-
-before_script:
-  - apt-get update && apt-get -y install curl python3-virtualenv python3-psycopg
-  - virtualenv env
-  - env/bin/pip install -r requirements.txt
 
 cache:
   paths:
     - env
     - node_modules
 
-check_pycodestyle:
-  stage: check
+lint_pycodestyle:
+  stage: lint
+  before_script:
+    - apt-get update && apt-get -y install python3-virtualenv
+    - virtualenv env
+    - env/bin/pip install -r requirements.txt
   script:
     - env/bin/pycodestyle --config=.pycodestylerc .
 
-check_eslint:
-  stage: check
+lint_eslint:
+  stage: lint
+  before_script:
+    - apt-get update && apt-get -y install curl
   script:
     - curl -fsSL https://deb.nodesource.com/setup_20.x | bash - 
     - apt-get install -y nodejs
     - npm install
     - npm run lint
 
-build:
-  stage: build
+test_seeddata_setup:
+  stage: test
   services:
     - name: postgres:16
       alias: postgres
     - name: rabbitmq:3.12
       alias: rabbitmq
+  before_script:
+    - apt-get update && apt-get -y install curl python3-virtualenv python3-psycopg
+    - virtualenv env
+    - env/bin/pip install -r requirements.txt
   script:
     - ./setup.sh dev
     - env/bin/celery -A boxes worker -l info &
