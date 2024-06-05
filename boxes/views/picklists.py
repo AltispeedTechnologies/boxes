@@ -2,6 +2,7 @@ import json
 import re
 from boxes.models import *
 from .common import _get_packages, _search_packages_helper
+from datetime import datetime
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -18,6 +19,41 @@ from django.utils.timezone import localtime
 def picklist_query(request):
     results = _picklist_data()
     return JsonResponse({"results": results})
+
+
+@require_http_methods(["POST"])
+def create_picklist(request):
+    try:
+        data = json.loads(request.body)
+        description = data.get("description", None)
+        date = data.get("date", None)
+
+        if not description and not date:
+            raise ValueError
+
+        if date:
+            # MM/DD/YYYY
+            pattern = r"^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/(20[0-9][0-9])$"
+            if not re.match(pattern, date):
+                raise ValueError
+
+            date = datetime.strptime(date, "%m/%d/%Y").date()
+
+        # Do not allow duplicates to be created
+        if Picklist.objects.filter(date=date, description=description):
+            raise RuntimeError("Picklist already exists")
+
+        picklist = Picklist.objects.create(date=date, description=description)
+
+        # Human-readable value is MONTH DAY, YEAR
+        if date:
+            date = date.strftime("%B %d, %Y")
+
+        return JsonResponse({"success": True, "new_id": picklist.id, "hr_date": date})
+    except ValueError:
+        return JsonResponse({"success": False, "errors": ["Invalid input provided."]})
+    except Exception as e:
+        return JsonResponse({"success": False, "errors": [str(e)]})
 
 
 @require_http_methods(["POST"])
@@ -169,9 +205,10 @@ def remove_picklist(request, pk):
             else:
                 PackagePicklist.objects.filter(picklist_id=pk).delete()
                 queue = PicklistQueue.objects.filter(picklist_id=pk).first()
-                queue_id = queue.queue_id
-                PackageQueue.objects.filter(queue_id=queue_id).delete()
-                queue.delete()
+                if queue:
+                    queue_id = queue.queue_id
+                    PackageQueue.objects.filter(queue_id=queue_id).delete()
+                    queue.delete()
 
             # Delete the picklist
             Picklist.objects.filter(pk=pk).delete()
@@ -203,8 +240,13 @@ def picklist_list(request, pk=None):
             When(date__lt=localtime().date(), then=Value(True)),
             default=Value(False),
             output_field=BooleanField()
+        ),
+        is_date_null=Case(
+            When(date__isnull=True, then=Value(0)),
+            default=Value(1),
+            output_field=IntegerField()
         )
-    ).order_by("date")
+    ).order_by("is_date_null", "date", "description")
 
     return render(request, "picklists/picklist_list.html", {"picklists": picklists})
 

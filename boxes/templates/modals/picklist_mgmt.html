@@ -27,4 +27,30 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="picklistNewModal" tabindex="-1" aria-labelledby="picklistNewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="picklistNewModalLabel">Create New Picklist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container">
+                <div class="input-group">
+                    <span class="input-group-text">Description</span>
+                    <input class="form-control" type="text" id="newpicklistdesc">
+                </div>
+                <h6 class="text-center my-1">and/or</h6>
+                <div class="input-group">
+                    <span class="input-group-text">Date</span>
+                    <input class="form-control" type="text" id="datepicker">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Discard</button>
+                <button type="button" class="btn btn-primary" id="save_changes" disabled>Create</button>
+            </div>
+        </div>  
+    </div>  
+</div>  
 {% endblock %}
