@@ -26,21 +26,23 @@ def draw_label(canvas, first_name, last_name, barcode_value, date, inside):
         canvas.setFont(font_name, font_size)
         canvas.drawString(x, y, text)
 
+    globalsettings = GlobalSettings.objects.filter(id=1).first()
+
     # Draw the fixed information
     if inside:
-        draw_centered_string(2.75*inch, "Mike's Parcel", "Helvetica-Bold", 18)
-        draw_centered_string(2.5*inch, "373 W Stutsman Street", "Helvetica-Bold", 12)
-        draw_centered_string(2.25*inch, "Pembina, ND 58271", "Helvetica-Bold", 12)
-        draw_centered_string(2.0*inch, "www.mikesparcelpickup.com", "Helvetica-Bold", 12)
-        draw_centered_string(1.75*inch, "mikesparcelpickup@gmail.com", "Helvetica-Bold", 12)
-        draw_centered_string(1.5*inch, "701-825-6471", "Helvetica-Bold", 12)
+        draw_centered_string(2.75*inch, globalsettings.name, "Helvetica-Bold", 18)
+        draw_centered_string(2.5*inch, globalsettings.address1, "Helvetica-Bold", 12)
+        draw_centered_string(2.25*inch, globalsettings.address2, "Helvetica-Bold", 12)
+        draw_centered_string(2.0*inch, globalsettings.website, "Helvetica-Bold", 12)
+        draw_centered_string(1.75*inch, globalsettings.email, "Helvetica-Bold", 12)
+        draw_centered_string(1.5*inch, globalsettings.phone_number, "Helvetica-Bold", 12)
     else:
-        draw_centered_string(2.85*inch, "Mike's Parcel", "Helvetica-Bold", 18)
-        draw_centered_string(2.6*inch, "373 W Stutsman Street", "Helvetica-Bold", 12)
-        draw_centered_string(2.35*inch, "Pembina, ND 58271", "Helvetica-Bold", 12)
-        draw_centered_string(2.1*inch, "www.mikesparcelpickup.com", "Helvetica-Bold", 12)
-        draw_centered_string(1.85*inch, "mikesparcelpickup@gmail.com", "Helvetica-Bold", 12)
-        draw_centered_string(1.6*inch, "701-825-6471", "Helvetica-Bold", 12)
+        draw_centered_string(2.85*inch, globalsettings.name, "Helvetica-Bold", 18)
+        draw_centered_string(2.6*inch, globalsettings.address1, "Helvetica-Bold", 12)
+        draw_centered_string(2.35*inch, globalsettings.address2, "Helvetica-Bold", 12)
+        draw_centered_string(2.1*inch, globalsettings.website, "Helvetica-Bold", 12)
+        draw_centered_string(1.85*inch, globalsettings.email, "Helvetica-Bold", 12)
+        draw_centered_string(1.6*inch, globalsettings.phone_number, "Helvetica-Bold", 12)
 
     # Draw the variable information
     draw_centered_string(5.4*inch, first_name, "Helvetica", 24)

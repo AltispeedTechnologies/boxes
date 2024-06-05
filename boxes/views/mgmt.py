@@ -218,12 +218,20 @@ def update_carriers(request):
 
 @require_http_methods(["GET"])
 def general_settings(request):
-    return render(request, "mgmt/general.html", {})
+    settings, _ = GlobalSettings.objects.get_or_create(id=1)
+    return render(request, "mgmt/general.html", {"settings": settings})
 
 
 @require_http_methods(["POST"])
 def save_general_settings(request):
     settings, _ = GlobalSettings.objects.get_or_create(id=1)
+
+    payload = request.POST.get("payload")
+    if payload:
+        payload = json.loads(payload)
+        for key, value in payload.items():
+            if hasattr(settings, key):
+                setattr(settings, key, value)
 
     logo = request.FILES.get("image")
     if logo and logo.name.endswith(".png"):
@@ -257,9 +265,9 @@ def save_general_settings(request):
         favicon = image.resize((48, 48), Image.Resampling.LANCZOS)
         favicon.save(favicon_buffer, format="ICO", sizes=sizes)
         settings.favicon_image.save("favicon.ico", ContentFile(favicon_buffer.getvalue()), save=False)
-
-        # Save the settings instance
-        settings.save()
-        return JsonResponse({"success": True})
-    else:
+    elif logo:
         return JsonResponse({"success": False, "errors": "Invalid PNG image"})
+
+    # Save the settings instance
+    settings.save()
+    return JsonResponse({"success": True})

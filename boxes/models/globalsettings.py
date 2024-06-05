@@ -9,6 +9,7 @@ class GlobalSettings(models.Model):
     address2 = models.CharField(max_length=64)
     website = models.CharField(max_length=64)
     email = models.CharField(max_length=64)
+    phone_number = models.CharField(max_length=20, null=True)
     source_image = models.ImageField(storage=OverwriteStorage(), upload_to="images/")
     login_image = models.ImageField(storage=OverwriteStorage(), upload_to="images/")
     label_image = models.ImageField(storage=OverwriteStorage(), upload_to="images/")
