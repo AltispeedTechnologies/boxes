@@ -52,13 +52,22 @@ test_seeddata_setup:
     - name: rabbitmq:3.12
       alias: rabbitmq
   before_script:
-    - apt-get update && apt-get -y install curl python3-virtualenv python3-psycopg
+    - apt-get update && apt-get -y install python3-virtualenv python3-psycopg
     - virtualenv env
     - env/bin/pip install -r requirements.txt
   script:
     - ./setup.sh dev
     - env/bin/celery -A boxes worker -l info &
     - ci/monitor-celery.sh
+
+test_unit:
+  stage: test
+  before_script:
+    - apt-get update && apt-get -y install python3-virtualenv
+    - virtualenv env
+    - env/bin/pip install -r requirements.txt
+  script: 
+    - env/bin/python3 manage.py test
 
 deploy_staging:
   stage: deploy

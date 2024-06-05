@@ -12,8 +12,8 @@ class AccountTest(TestCase):
         account = Account.objects.create(
             user=self.user,
             balance=100.00,
-            is_good_standing=True,
-            description="Sample account"
+            name="Sample account",
+            billable=True
         )
 
         # Retrieve the created account from the database
@@ -22,24 +22,26 @@ class AccountTest(TestCase):
         # Check if the retrieved account matches the created one
         self.assertEqual(retrieved_account.user, self.user)
         self.assertEqual(retrieved_account.balance, 100.00)
-        self.assertEqual(retrieved_account.is_good_standing, True)
-        self.assertEqual(retrieved_account.description, "Sample account")
+        self.assertEqual(retrieved_account.billable, True)
+        self.assertEqual(retrieved_account.name, "Sample account")
 
     def test_create_account_ledger(self):
         # Create an Account instance
         account = Account.objects.create(
             user=self.user,
             balance=100.00,
-            is_good_standing=True,
-            description="Sample account"
+            name="Sample account",
+            billable=True
         )
 
         # Create an AccountLedger instance
         ledger_entry = AccountLedger.objects.create(
+            user=self.user,
             account=account,
             credit=50.00,
             debit=0.00,
-            description="Credit entry"
+            description="Credit entry",
+            is_late=False
         )
 
         # Retrieve the created ledger entry from the database
@@ -55,8 +57,8 @@ class AccountTest(TestCase):
         account = Account.objects.create(
             user=self.user,
             balance=100.00,
-            is_good_standing=True,
-            description="Sample account"
+            name="Sample account",
+            billable=True
         )
         user_account = UserAccount.objects.create(
             user=self.user,
@@ -72,16 +74,18 @@ class AccountTest(TestCase):
         account = Account.objects.create(
             user=self.user,
             balance=100.00,
-            is_good_standing=True,
-            description="Sample account"
+            name="Sample account",
+            billable=True
         )
 
         # Create an AccountLedger instance
         ledger_entry = AccountLedger.objects.create(
+            user=self.user,
             account=account,
             credit=50.00,
             debit=0.00,
-            description="Credit entry"
+            description="Credit entry",
+            is_late=False
         )
 
         # Retrieve the account from the ledger entry relationship
@@ -95,8 +99,8 @@ class AccountTest(TestCase):
         account = Account.objects.create(
             user=self.user,
             balance=100.00,
-            is_good_standing=True,
-            description="Sample account"
+            name="Sample account",
+            billable=True
         )
 
         # Create a UserAccount instance
