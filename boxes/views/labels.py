@@ -64,7 +64,7 @@ def draw_label(canvas, first_name, last_name, barcode_value, date, inside):
     draw_centered_string(barcode_y_string, barcode_value, "Helvetica", 10)
 
     # Draw the logo
-    logo_path = os.path.join(settings.STATIC_ROOT, "img/logo.png")
+    logo_path = os.path.join(settings.MEDIA_ROOT, "images/label_logo.png")
     canvas.drawImage(logo_path, (page_width - 1*inch) / 2, 0.4*inch, width=1*inch, height=1*inch, mask="auto")
 
 
