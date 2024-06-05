@@ -141,33 +141,37 @@ def remove_picklist(request, pk):
 
                 # Get the number of items in the picklist
                 new_count = PackagePicklist.objects.filter(picklist_id=new_picklist).count()
+
+                # If a checkout queue exists, make sure it's cleaned up
+                # Additionally, ensure all packages in the corresponding check in queue are moved
+                old_queue = PicklistQueue.objects.filter(picklist_id=pk).first()
+                if old_queue:
+                    old_queue_id = old_queue.queue_id
+                    new_picklist_queue = PicklistQueue.objects.filter(picklist_id=new_picklist).first()
+
+                    if not new_picklist_queue:
+                        # If there's no queue for the new picklist, create it
+                        queue = Queue.objects.create(description="", check_in=False)
+                        new_queue_id = queue.id
+                        PicklistQueue.objects.create(queue_id=new_queue_id, picklist_id=new_picklist)
+                    else:
+                        new_queue_id = new_picklist_queue.queue_id
+
+                    # Update all packages in the old queue to be in the new queue
+                    PackageQueue.objects.filter(queue_id=old_queue_id).update(queue_id=new_queue_id)
+
+                    # Ensure we know how many packages are in the new queue
+                    new_queue_count = PackageQueue.objects.filter(queue_id=new_queue_id).count()
+
+                    # Delete the old picklist queue and queue itself
+                    PicklistQueue.objects.filter(queue_id=old_queue_id, picklist_id=pk).delete()
+                    Queue.objects.filter(pk=old_queue_id).delete()
             else:
                 PackagePicklist.objects.filter(picklist_id=pk).delete()
-
-            # If a checkout queue exists, make sure it's cleaned up
-            # Additionally, ensure all packages in the corresponding check in queue are moved
-            old_queue = PicklistQueue.objects.filter(picklist_id=pk).first()
-            if old_queue:
-                old_queue_id = old_queue.queue_id
-                new_picklist_queue = PicklistQueue.objects.filter(picklist_id=new_picklist).first()
-
-                if not new_picklist_queue:
-                    # If there's no queue for the new picklist, create it
-                    queue = Queue.objects.create(description="", check_in=False)
-                    new_queue_id = queue.id
-                    PicklistQueue.objects.create(queue_id=new_queue_id, picklist_id=new_picklist)
-                else:
-                    new_queue_id = new_picklist_queue.queue_id
-
-                # Update all packages in the old queue to be in the new queue
-                PackageQueue.objects.filter(queue_id=old_queue_id).update(queue_id=new_queue_id)
-
-                # Ensure we know how many packages are in the new queue
-                new_queue_count = PackageQueue.objects.filter(queue_id=new_queue_id).count()
-
-                # Delete the old picklist queue and queue itself
-                PicklistQueue.objects.filter(queue_id=old_queue_id, picklist_id=pk).delete()
-                Queue.objects.filter(pk=old_queue_id).delete()
+                queue = PicklistQueue.objects.filter(picklist_id=pk).first()
+                queue_id = queue.queue_id
+                PackageQueue.objects.filter(queue_id=queue_id).delete()
+                queue.delete()
 
             # Delete the picklist
             Picklist.objects.filter(pk=pk).delete()
