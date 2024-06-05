@@ -1,10 +1,14 @@
 import decimal
 import json
+from boxes.models import *
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
-from boxes.models import AccountChargeSettings, Carrier, EmailTemplate, EmailSettings, NotificationRule, PackageType
+from io import BytesIO
+from PIL import Image
 from .common import _clean_html
 
 
@@ -210,3 +214,52 @@ def update_carriers(request):
         return JsonResponse({"success": False, "errors": "Invalid JSON"})
     except Exception as e:
         return JsonResponse({"success": False, "errors": str(e)})
+
+
+@require_http_methods(["GET"])
+def general_settings(request):
+    return render(request, "mgmt/general.html", {})
+
+
+@require_http_methods(["POST"])
+def save_general_settings(request):
+    settings, _ = GlobalSettings.objects.get_or_create(id=1)
+
+    logo = request.FILES.get("image")
+    if logo and logo.name.endswith(".png"):
+        # Save the source image
+        settings.source_image.save("logo.png", ContentFile(logo.read()), save=False)
+        logo.seek(0)
+
+        image = Image.open(logo)
+
+        # Process and save the navbar image
+        navbar_image = image.resize((40, 40), Image.Resampling.LANCZOS)
+        navbar_buffer = BytesIO()
+        navbar_image.save(navbar_buffer, format="PNG")
+        settings.navbar_image.save("navbar_logo.png", ContentFile(navbar_buffer.getvalue()), save=False)
+
+        # Process and save the label image
+        label_image = image.resize((100, 100), Image.Resampling.LANCZOS)
+        label_buffer = BytesIO()
+        label_image.save(label_buffer, format="PNG")
+        settings.label_image.save("label_logo.png", ContentFile(label_buffer.getvalue()), save=False)
+
+        # Process and save the label image
+        login_image = image.resize((64, 64), Image.Resampling.LANCZOS)
+        login_buffer = BytesIO()
+        login_image.save(login_buffer, format="PNG")
+        settings.login_image.save("login_logo.png", ContentFile(login_buffer.getvalue()), save=False)
+
+        # Process and save the favicon
+        favicon_buffer = BytesIO()
+        sizes = [(16, 16), (32, 32), (48, 48)]
+        favicon = image.resize((48, 48), Image.Resampling.LANCZOS)
+        favicon.save(favicon_buffer, format="ICO", sizes=sizes)
+        settings.favicon_image.save("favicon.ico", ContentFile(favicon_buffer.getvalue()), save=False)
+
+        # Save the settings instance
+        settings.save()
+        return JsonResponse({"success": True})
+    else:
+        return JsonResponse({"success": False, "errors": "Invalid PNG image"})

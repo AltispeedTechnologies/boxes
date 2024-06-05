@@ -265,15 +265,15 @@ STORAGES = {
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"
-MEDIA_ROOT = ""
+MEDIA_ROOT = os.path.join(BASE_DIR, "public/media")
 
 # URL that handles the media served from MEDIA_ROOT.
 # Examples: "http://example.com/media/", "http://media.example.com/"
-MEDIA_URL = ""
+MEDIA_URL = "/media/"
 
 # Absolute path to the directory static files should be collected to.
 # Example: "/var/www/example.com/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, "public/static")
 
 # URL that handles the static files served from STATIC_ROOT.
 # Example: "http://example.com/static/", "http://static.example.com/"

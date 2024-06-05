@@ -2,7 +2,10 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
     <div class="container-fluid">
         {% if request.user.is_authenticated %}
-            <span class="navbar-text fw-bold">Hello, {{ request.user.first_name | title }}!</span>
+            <div>
+                <img src="/media/images/navbar_logo.png" alt="Logo" />
+                <span class="navbar-text fw-bold">Hello, {{ request.user.first_name | title }}!</span>
+            </div>
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
                     <a class="nav-link fw-bold" href="{% url 'home' %}">Home</a>
@@ -25,6 +28,7 @@
                         <li><a class="dropdown-item" href="{% url 'charge_settings' %}">Charges</a></li>
                         <li><a class="dropdown-item" href="{% url 'email_settings' %}">Email</a></li>
                         <li><a class="dropdown-item" href="{% url 'email_template' %}">Email Templates</a></li>
+                        <li><a class="dropdown-item" href="{% url 'general_settings' %}">General</a></li>
                         <li><a class="dropdown-item" href="{% url 'package_type_settings' %}">Package Types</a></li>
                     </ul>
                 </li>
