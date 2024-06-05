@@ -68,6 +68,12 @@ $(document).on("modalsLoaded", function() {
                         $tr.find("td#count").text(response.new_count);
                     }
 
+                    // Update the queue count as well
+                    if (response.new_queue_count) {
+                        let $tr = $("tr[data-id=\"" + new_picklist + "\"]");
+                        $tr.find("td#queue_count").text(response.new_queue_count);
+                    }
+
                     // Remove the row for the picklist we just removed
                     let $old_tr = $("tr[data-id=\"" + current_id + "\"]");
                     $old_tr.remove();

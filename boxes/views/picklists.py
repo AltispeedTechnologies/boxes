@@ -5,7 +5,8 @@ from .common import _get_packages, _search_packages_helper
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import BooleanField, Case, Count, F, Value, When
+from django.db.models import *
+from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
@@ -134,9 +135,11 @@ def remove_picklist(request, pk):
         new_picklist = int(picklist_id_value) if picklist_id_value else None
 
         with transaction.atomic():
-            new_count = None
+            new_count, new_queue_count = None, None
             if new_picklist:
                 PackagePicklist.objects.filter(picklist_id=pk).update(picklist_id=new_picklist)
+
+                # Get the number of items in the picklist
                 new_count = PackagePicklist.objects.filter(picklist_id=new_picklist).count()
             else:
                 PackagePicklist.objects.filter(picklist_id=pk).delete()
@@ -152,12 +155,15 @@ def remove_picklist(request, pk):
                     # If there's no queue for the new picklist, create it
                     queue = Queue.objects.create(description="", check_in=False)
                     new_queue_id = queue.id
-                    PicklistQueue.objects.create(queue_id=new_queue_id, picklist_id=new_pickless)
+                    PicklistQueue.objects.create(queue_id=new_queue_id, picklist_id=new_picklist)
                 else:
                     new_queue_id = new_picklist_queue.queue_id
 
                 # Update all packages in the old queue to be in the new queue
                 PackageQueue.objects.filter(queue_id=old_queue_id).update(queue_id=new_queue_id)
+
+                # Ensure we know how many packages are in the new queue
+                new_queue_count = PackageQueue.objects.filter(queue_id=new_queue_id).count()
 
                 # Delete the old picklist queue and queue itself
                 PicklistQueue.objects.filter(queue_id=old_queue_id, picklist_id=pk).delete()
@@ -166,7 +172,7 @@ def remove_picklist(request, pk):
             # Delete the picklist
             Picklist.objects.filter(pk=pk).delete()
 
-        return JsonResponse({"success": True, "new_count": new_count})
+        return JsonResponse({"success": True, "new_count": new_count, "new_queue_count": new_queue_count})
     except ValueError:
         return JsonResponse({"success": False, "errors": ["Invalid input provided."]})
     except Exception as e:
@@ -177,6 +183,13 @@ def remove_picklist(request, pk):
 def picklist_list(request, pk=None):
     picklists = Picklist.objects.annotate(
         count=Count("packagepicklist"),
+        queue_count=Coalesce(Subquery(
+            PicklistQueue.objects.filter(picklist_id=OuterRef("id"))
+            .annotate(
+                package_count=Count("queue__packagequeue")
+            )
+            .values("package_count")[:1]
+        ), 0),
         today=Case(
             When(date=localtime().date(), then=Value(True)),
             default=Value(False),
