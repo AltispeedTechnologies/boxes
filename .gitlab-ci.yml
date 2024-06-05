@@ -62,8 +62,11 @@ test_seeddata_setup:
 
 test_unit:
   stage: test
+  services:
+    - name: postgres:16
+      alias: postgres
   before_script:
-    - apt-get update && apt-get -y install python3-virtualenv
+    - apt-get update && apt-get -y install python3-virtualenv python3-psycopg
     - virtualenv env
     - env/bin/pip install -r requirements.txt
   script: 
