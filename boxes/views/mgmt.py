@@ -213,6 +213,19 @@ def general_settings(request):
     return render(request, "mgmt/general.html", {"settings": settings})
 
 
+def resize_and_save(image, size, format, model, attribute, filename):
+    # Resize the image
+    resized_image = image.resize(size, Image.Resampling.LANCZOS)
+
+    # Save to buffer
+    buffer = BytesIO()
+    resized_image.save(buffer, format=format)
+    buffer_content = buffer.getvalue()
+
+    # Save the image to the specified model field
+    getattr(model, attribute).save(filename, ContentFile(buffer_content), save=False)
+
+
 @require_http_methods(["POST"])
 def save_general_settings(request):
     settings, _ = GlobalSettings.objects.get_or_create(id=1)
@@ -228,29 +241,16 @@ def save_general_settings(request):
     if logo and logo.name.endswith(".png"):
         # Save the source image
         settings.source_image.save("logo.png", ContentFile(logo.read()), save=False)
-        logo.seek(0)
+        logo.seek(0)  # Rewind to the beginning of the file after reading
 
         image = Image.open(logo)
 
-        # Process and save the navbar image
-        navbar_image = image.resize((40, 40), Image.Resampling.LANCZOS)
-        navbar_buffer = BytesIO()
-        navbar_image.save(navbar_buffer, format="PNG")
-        settings.navbar_image.save("navbar_logo.png", ContentFile(navbar_buffer.getvalue()), save=False)
+        # Process and save various resized images
+        resize_and_save(image, (40, 40), "PNG", settings, "navbar_image", "navbar_logo.png")
+        resize_and_save(image, (100, 100), "PNG", settings, "label_image", "label_logo.png")
+        resize_and_save(image, (64, 64), "PNG", settings, "login_image", "login_logo.png")
 
-        # Process and save the label image
-        label_image = image.resize((100, 100), Image.Resampling.LANCZOS)
-        label_buffer = BytesIO()
-        label_image.save(label_buffer, format="PNG")
-        settings.label_image.save("label_logo.png", ContentFile(label_buffer.getvalue()), save=False)
-
-        # Process and save the label image
-        login_image = image.resize((64, 64), Image.Resampling.LANCZOS)
-        login_buffer = BytesIO()
-        login_image.save(login_buffer, format="PNG")
-        settings.login_image.save("login_logo.png", ContentFile(login_buffer.getvalue()), save=False)
-
-        # Process and save the favicon
+        # Special case for favicon with multiple sizes
         favicon_buffer = BytesIO()
         sizes = [(16, 16), (32, 32), (48, 48)]
         favicon = image.resize((48, 48), Image.Resampling.LANCZOS)
