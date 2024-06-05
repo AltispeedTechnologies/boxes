@@ -72,7 +72,7 @@ def picklist_verify_can_checkout(request, pk):
         if package is None:
             return JsonResponse({"success": False, "errors": ["Parcel not found"]})
 
-        in_picklist = len(PackagePicklist.objects.filter(picklist_id=picklist.id, package_id=package["id"])) > 0
+        in_picklist = PackagePicklist.objects.filter(picklist_id=picklist.id, package_id=package["id"]).exists()
 
         if in_picklist:
             with transaction.atomic():
@@ -85,8 +85,7 @@ def picklist_verify_can_checkout(request, pk):
                     queue = Queue.objects.filter(pk=picklist_queue.queue_id).first()
 
                 # If the package is already in the Queue, error appropriately
-                queue_item = PackageQueue.objects.filter(package_id=package["id"], queue_id=queue.id)
-                if queue_item:
+                if PackageQueue.objects.filter(package_id=package["id"], queue_id=queue.id).exists():
                     return JsonResponse({"success": False, "errors": ["Parcel already in queue"]})
 
                 # Create the queue entry
