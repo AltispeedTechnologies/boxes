@@ -48,7 +48,7 @@ def email_logs(request):
         email.tracking_codes = tracking_codes
 
     page_number = request.GET.get("page")
-    paginator = Paginator(emails, 15)
+    paginator = Paginator(emails, 10)
     page_obj = paginator.get_page(page_number)
 
     return render(request, "mgmt/email_logs.html", {"page_obj": page_obj,
