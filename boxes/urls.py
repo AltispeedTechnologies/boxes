@@ -4,6 +4,7 @@ from django.http import HttpResponseForbidden
 from django.urls import include, path
 from boxes.views import *
 from boxes.views.mgmt import *
+from boxes.views.packages import *
 
 
 def is_staff(view_func):
@@ -66,8 +67,9 @@ urlpatterns = [
     path("packages/search", is_staff(search_packages), name="search_packages"),
 
     # Check in page
-    path("packages/checkin", is_staff(check_in_packages), name="check_in_packages"),
-    path("packages/new", is_staff(create_package), name="create_package"),
+    path("packages/checkin", is_staff(check_in), name="check_in"),
+    path("packages/checkin/create", is_staff(create_package), name="create_package"),
+    path("packages/checkin/submit", is_staff(check_in_packages), name="check_in_packages"),
 
     # Picklists page
     path("picklists/", is_staff(picklist_list), name="picklists"),

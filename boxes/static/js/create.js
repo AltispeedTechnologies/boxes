@@ -1,7 +1,7 @@
 function request_create_package(form_data, hr_fields) {
     $.ajax({
         type: "POST",
-        url: "/packages/new",
+        url: "/packages/checkin/create",
         headers: {
             "X-CSRFToken": window.csrf_token
         },
@@ -106,15 +106,15 @@ function display_packages(response) {
     let new_row = $("tbody#checkin").find(".visually-hidden")
         .clone()
         .removeClass("visually-hidden")
-        .attr("data-row-id", response.id);
+        .attr("data-row-id", response.package_id);
 
-    new_row.find("td:nth-child(1) input").attr("id", "package-" + response.id);
+    new_row.find("td:nth-child(1) input").attr("id", "package-" + response.package_id);
 
     let account = `<a href="/accounts/${response.account_id}/packages">${response.account}</a>`;
     new_row.find("td:nth-child(2)").html(account)
         .attr("data-id", response.account_id);
 
-    let tracking_code = `<a href="/packages/${response.id}">${response.tracking_code}</a>`;
+    let tracking_code = `<a href="/packages/${response.package_id}">${response.tracking_code}</a>`;
     new_row.find("td:nth-child(3)").html(tracking_code);
 
     new_row.find("td:nth-child(4)").text(`$${response.price}`);
@@ -156,7 +156,7 @@ function handle_checkin() {
     let packages_payload = { ids: packages_array, queue_id: selected_queue };
     $.ajax({
         type: "POST",
-        url: "/packages/checkin",
+        url: "/packages/checkin/submit",
         headers: {
             "X-CSRFToken": window.csrf_token
         },
@@ -193,15 +193,15 @@ function load_queue(selected_queue) {
 
             if (response.success && response.packages.length > 0) {
                 response.packages.forEach(function(package) {
-                    window.packages.add(package.id);
+                    window.packages.add(package.package_id);
                     display_packages(package);
                 });
 
                 $(document).trigger("rowsUpdated");
             } else if (response.success && response.packages.length == 0) {
                 $("#checkinbtn").prop("disabled", true);
-            } else if (!response.success) {
-                console.log("No packages available for the selected queue.");
+            } else {
+                window.display_error_message(response.errors);
             }
         }
     });
