@@ -90,7 +90,6 @@ def email_logs(request):
                                                     "view_type": "logs"})
 
 
-
 @require_http_methods(["GET"])
 def email_template(request):
     templates = EmailTemplate.objects.all().order_by("id")
