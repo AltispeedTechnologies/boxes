@@ -63,10 +63,15 @@ function init_email_template_mgmt_page() {
             headers: {
                 "X-CSRFToken": window.csrf_token
             },
-            success: function() {
-                $("#savingicon").hide();
-                $("#successicon").show();
-                $("#successicon").fadeOut(2000);
+            success: function(response) {
+                window.display_error_message();
+                if (response.success) {
+                    $("#savingicon").hide();
+                    $("#successicon").show();
+                    $("#successicon").fadeOut(2000);
+                } else {
+                    window.display_error_message(response.errors);
+                }
             }
         });
     });
@@ -83,11 +88,20 @@ function init_email_template_mgmt_page() {
                 "X-CSRFToken": window.csrf_token
             },
             success: function(response) {
-                var new_option = new Option(template_name, response.id, true, true);
-                $("#template-selector").append(new_option).trigger("change");
-                $("#templateName").val("");
-                $("#email_subject").val("");
-                $("#addTemplateModal").modal("hide");
+                window.display_error_message();
+
+                if (response.success) {
+                    var new_option = new Option(template_name, response.id, true, true);
+                    $("#template-selector").append(new_option).trigger("change");
+                    $("#templateName").val("");
+                    $("#email_subject").val("");
+                    $("#addTemplateModal").modal("hide");
+                } else {
+                    window.display_error_message(response.errors);
+                }
+            },
+            error: function(response) {
+                window.display_error_message(response.errors);
             }
         });
     });

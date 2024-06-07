@@ -34,6 +34,8 @@ function init_carrier_mgmt_page() {
             },
             data: JSON.stringify(payload),
             success: function(response) {
+                window.display_error_message();
+
                 if (response.success) {
                     $.each(response.updated_carriers, function(key, new_id) {
                         $table.find("tr[data-id=\"" + key + "\"]").attr("data-id", new_id);
@@ -42,6 +44,8 @@ function init_carrier_mgmt_page() {
                     $("#savingicon").hide();
                     $("#successicon").show();
                     $("#successicon").fadeOut(2000);
+                } else {
+                    window.display_error_message(response.errors);
                 }
             }
         });

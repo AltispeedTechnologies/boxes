@@ -42,10 +42,16 @@ function init_general_mgmt_page() {
             headers: {
                 "X-CSRFToken": window.csrf_token
             },
-            success: function() {
-                $("#savingicon").hide();
-                $("#successicon").show();
-                $("#successicon").fadeOut(2000);
+            success: function(response) {
+                window.display_error_message();
+
+                if (response.success) {
+                    $("#savingicon").hide();
+                    $("#successicon").show();
+                    $("#successicon").fadeOut(2000);
+                } else {
+                    window.display_error_message(response.errors);
+                }
             }
         });
     });

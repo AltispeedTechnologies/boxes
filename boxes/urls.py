@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponseForbidden
 from django.urls import include, path
-from .views import *
+from boxes.views import *
+from boxes.views.mgmt import *
 
 
 def is_staff(view_func):

@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% include "_messages.html" %}
-
 <div class="container bg-body shadow rounded p-3 col-md-8" id="generalmgmt">
     <div class="row bg-primary bg-gradient rounded mb-3">
         <h2 class="text-center text-white py-2">General Configuration</h2>
     </div>
+
+    {% include "_messages.html" %}
+
     <div class="d-flex justify-content-end mb-3">
         <div class="me-2 align-self-center">
             <i id="savingicon" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>

@@ -17,12 +17,12 @@ def exception_catcher():
                     return JsonResponse({"success": True})
                 return result
             except json.JSONDecodeError as jde:
-                return JsonResponse({"success": False, "errors": "Invalid JSON"}, status=400)
+                return JsonResponse({"success": False, "errors": ["Invalid JSON"]})
             except (ValueError, TypeError, KeyError, decimal.InvalidOperation):
-                return JsonResponse({"success": False, "errors": "Invalid input"}, status=400)
+                return JsonResponse({"success": False, "errors": ["Invalid input"]})
             except ObjectDoesNotExist:
-                return JsonResponse({"success": False, "errors": "Requested object not found"}, status=404)
+                return JsonResponse({"success": False, "errors": ["Requested object not found"]})
             except Exception as e:
-                return JsonResponse({"success": False, "errors": str(e)}, status=500)
+                return JsonResponse({"success": False, "errors": [str(e)]})
         return wrapper
     return decorator
