@@ -51,8 +51,6 @@ urlpatterns = [
     path("emails/<int:pk>/contents", is_staff(get_email_contents), name="get_email_contents"),
     path("picklists/query", is_staff(picklist_query), name="picklist_query"),
     path("types/search", is_staff(type_search), name="type_search"),
-    path("packages/checkout", is_staff(check_out_packages), name="check_out_packages"),
-    path("packages/checkout/reverse", is_staff(check_out_packages_reverse), name="check_out_packages_reverse"),
     path("modals/bulk", is_staff(get_bulk_modals), name="get_bulk_modals"),
     path("modals/actions", is_staff(get_actions_modals), name="get_actions_modals"),
     path("modals/picklistmgmt", is_staff(get_picklist_mgmt_modals), name="get_picklist_mgmt_modals"),
@@ -71,11 +69,15 @@ urlpatterns = [
     path("packages/checkin/create", is_staff(create_package), name="create_package"),
     path("packages/checkin/submit", is_staff(check_in_packages), name="check_in_packages"),
 
+    # Check out page
+    path("packages/checkout", is_staff(check_out), name="check_out"),
+    path("packages/checkout/submit", is_staff(check_out_packages), name="check_out_packages"),
+    path("packages/checkout/reverse", is_staff(check_out_packages_reverse), name="check_out_packages_reverse"),
+    path("packages/checkout/verify", is_staff(verify_can_checkout), name="verify_can_checkout"),
+
     # Picklists page
     path("picklists/", is_staff(picklist_list), name="picklists"),
     path("picklists/<int:pk>/checkout", is_staff(picklist_check_out), name="picklist_check_out"),
-    path("picklists/<int:pk>/checkout/verify", is_staff(picklist_verify_can_checkout),
-         name="picklist_verify_can_checkout"),
     path("picklists/<int:pk>/packages", is_staff(picklist_show), name="picklist_show"),
     path("picklists/<int:pk>/remove", is_staff(remove_picklist), name="remove_picklist"),
     path("picklists/create", is_staff(create_picklist), name="create_picklist"),

@@ -62,7 +62,7 @@ function setup_actions() {
 
         window.ajax_request({
             type: "POST",
-            url: "/packages/checkout",
+            url: "/packages/checkout/submit",
             payload: packages,
             on_success: function() {
                 window.location.reload();

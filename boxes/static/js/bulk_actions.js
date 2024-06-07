@@ -46,7 +46,7 @@ function setup_bulk_actions() {
 
         window.ajax_request({
             type: "POST",
-            url: "/packages/checkout",
+            url: "/packages/checkout/submit",
             payload: packages_payload,
             on_success: function(response) {
                 window.location.reload();
@@ -74,7 +74,7 @@ function setup_bulk_actions() {
 
     // Handle the bulk check back in and out modal logic
     $("#bulkCheckBackInModal .btn-primary, #bulkCheckOutModal .btn-primary").off("click").on("click", function() {
-        let url = $(this).closest(".modal").attr("id") === "bulkCheckBackInModal" ? "/packages/checkout/reverse" : "/packages/checkout";
+        let url = $(this).closest(".modal").attr("id") === "bulkCheckBackInModal" ? "/packages/checkout/reverse" : "/packages/checkout/submit";
         let packages = {"ids": [...window.selected_packages]};
 
         window.ajax_request({

@@ -78,55 +78,6 @@ def modify_package_picklist(request):
 
 @require_http_methods(["POST"])
 @exception_catcher()
-def picklist_verify_can_checkout(request, pk):
-    picklist = get_object_or_404(Picklist, pk=pk)
-
-    data = json.loads(request.body)
-    tracking_code = str(data.get("tracking_code"))
-
-    # Get the Package matching the tracking code with a current state of 1
-    package = Package.objects.select_related("account").values(
-        "id",
-        "account_id",
-        "price",
-        "tracking_code",
-        "comments"
-    ).annotate(
-        account=F("account__name")
-    ).filter(tracking_code=tracking_code, current_state=1).first()
-
-    if package is None:
-        return JsonResponse({"success": False, "errors": ["Parcel not found"]})
-
-    in_picklist = PackagePicklist.objects.filter(picklist_id=picklist.id, package_id=package["id"]).exists()
-
-    if in_picklist:
-        with transaction.atomic():
-            # Ensure a Queue exists and add to it
-            picklist_queue = PicklistQueue.objects.filter(picklist_id=picklist.id).first()
-            if not picklist_queue:
-                queue = Queue.objects.create(description="", check_in=False)
-                picklist_queue = PicklistQueue.objects.create(picklist_id=picklist.id, queue_id=queue.id)
-            else:
-                queue = Queue.objects.filter(pk=picklist_queue.queue_id).first()
-
-            # If the package is already in the Queue, error appropriately
-            if PackageQueue.objects.filter(package_id=package["id"], queue_id=queue.id).exists():
-                return JsonResponse({"success": False, "errors": ["Parcel already in queue"]})
-
-            # Create the queue entry
-            PackageQueue.objects.create(package_id=package["id"], queue_id=queue.id)
-
-            # Remove from the picklist
-            PackagePicklist.objects.filter(picklist_id=picklist.id, package_id=package["id"]).delete()
-
-            return JsonResponse({"success": True, "package": package})
-    else:
-        return JsonResponse({"success": False, "errors": ["Specified parcel not in picklist"]})
-
-
-@require_http_methods(["POST"])
-@exception_catcher()
 def remove_package_picklist(request):
     data = json.loads(request.body)
     package_ids = set(data.get("ids", []))
