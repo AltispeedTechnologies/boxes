@@ -1,9 +1,9 @@
 var row_id;
 
 function setup_actions() {
-    $(document).on("rowsUpdated", handle_updated_rows);
+    $(document).off("rowsUpdated").on("rowsUpdated", handle_updated_rows);
 
-    $("[data-bs-target=\"#editModal\"]").on("click", init_edit_modal);
+    $("[data-bs-target=\"#editModal\"]").off("click").on("click", init_edit_modal);
 
     $(document).on("click",
         "[data-bs-target=\"#print\"], " +
@@ -25,7 +25,7 @@ function setup_actions() {
         }
     );
 
-    $("#addPicklistModal .btn-primary").on("click", function() {
+    $("#addPicklistModal .btn-primary").off("click").on("click", function() {
         event.preventDefault();
         let picklist_id = $("#picklist-select-row").find(":selected").val();
         let packages_payload = {
@@ -52,7 +52,7 @@ function setup_actions() {
         });
     });
 
-    $("#checkBackInModal .btn-primary").on("click", function() {
+    $("#checkBackInModal .btn-primary").off("click").on("click", function() {
         let packages = {"ids": [row_id]};
 
         $.ajax({
@@ -73,7 +73,7 @@ function setup_actions() {
         });
     });
 
-    $("#checkOutModal .btn-primary").on("click", function() {
+    $("#checkOutModal .btn-primary").off("click").on("click", function() {
         let packages = {"ids": [row_id]};
 
         $.ajax({
@@ -95,7 +95,7 @@ function setup_actions() {
     });
 
 
-    $("#editModal .btn-primary").on("click", function() {
+    $("#editModal .btn-primary").off("click").on("click", function() {
         var $tr = $("tr[data-row-id=\"" + row_id + "\"]");
 
         var tracking_code = $("#editModal").find("#tracking_code").val();
@@ -105,6 +105,9 @@ function setup_actions() {
         var account_id = $("#editModal").find("#id_account_id").val();
         var carrier_id = $("#editModal").find("#id_carrier_id").val();
         var package_type_id = $("#editModal").find("#id_package_type_id").val();
+        var carrier = $("#editModal").find("#id_carrier_id").find(":selected").text();
+        var account = $("#editModal").find("#id_account_id").find(":selected").text();
+        var package_type = $("#editModal").find("#id_package_type_id").find(":selected").text();
 
         // Prepare data for POST request
         var post_data = {
@@ -141,6 +144,12 @@ function setup_actions() {
                                     $(this).html(icon).attr("data-id", "False");
                                 }
                                 return;
+                            } else if (type === "account") {
+                                new_text = account;
+                            } else if (type === "carrier") {
+                                new_text = carrier;
+                            } else if (type === "package_type") {
+                                new_text = package_type;
                             } else {
                                 new_text = post_data[type];
                             }
@@ -162,7 +171,7 @@ function setup_actions() {
         });
     });
 
-    $("#moveModal .btn-primary").on("click", function() {
+    $("#moveModal .btn-primary").off("click").on("click", function() {
         var picklist_id = $("#picklist-select").val();
 
         var post_data = {
@@ -190,7 +199,7 @@ function setup_actions() {
         });
     });
 
-    $("#removeModal .btn-primary").on("click", function() {
+    $("#removeModal .btn-primary").off("click").on("click", function() {
         const id_array = [row_id];
 
         // Prepare data for POST request
@@ -285,42 +294,28 @@ function handle_updated_rows() {
     $("[data-bs-target=\"#editModal\"]").on("click", init_edit_modal);
 }
 
-$(document).ready(function() {
-    window.picklist_total_functions++;
+function row_modals() {
+    window.picklist_data().then(function(data) {
+        let picklist_data = data;
 
-    $(document).on("picklistQueryDone", function(event, data) {
         $("#picklist-select").select2({
-            data: data,
+            data: picklist_data,
             dropdownParent: "#moveModal",
             width: "100%"
         });
 
         $("#picklist-select-row").select2({
-            data: data,
+            data: picklist_data,
             dropdownParent: "#addPicklistModal",
             width: "100%"
         });
 
-        $("#picklist-select").select2({
-            data: data,
-            dropdownParent: "#moveModal",
-            width: "100%"
-        });
+        window.select2properheight("#picklist-select");
+        window.select2properheight("#picklist-select-row");
     });
+    setup_actions();
+}
 
-    $.ajax({
-        url: "/modals/actions",
-        type: "GET",
-        headers: {
-            "X-CSRFToken": window.csrf_token
-        },
-        success: function(response) {
-            $("#modalContainer").html(response);
-            setup_actions();
-            $(document).trigger("picklistQuery");
-        },
-        error: function() {
-            console.error("Error loading modals");
-        }
-    });
-});
+if ($("#editModal").length !== 0) {
+    row_modals();
+}

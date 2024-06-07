@@ -1,5 +1,5 @@
-$(document).ready(function() {
-    $("#accountnotes").on("input", window.debounce(function() {
+function init_account_page() {
+    $("#accountnotes").off("input").on("input", window.debounce(function() {
         $("#savingnotes").removeClass("d-none");
         let account_id = $(this).attr("data-id");
 
@@ -24,4 +24,8 @@ $(document).ready(function() {
             }
         });
     }, 500));
-});
+}
+
+if ($("#accountnotes").length !== 0) {
+    init_account_page();
+}

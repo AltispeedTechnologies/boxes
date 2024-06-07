@@ -1,12 +1,3 @@
-let packages = new Set();
-let billable = true;
-let default_price = null;
-var locks = {
-    acct_is_locked: true,
-    type_is_locked: true,
-    carrier_is_locked: true
-};
-
 function request_create_package(form_data, hr_fields) {
     $.ajax({
         type: "POST",
@@ -18,7 +9,7 @@ function request_create_package(form_data, hr_fields) {
         success: function(response) {
             $(".is-invalid").removeClass("is-invalid");
             if (response.success) {
-                packages.add(response.id);
+                window.packages.add(response.id);
                 form_data.id = response.id;
                 form_data.carrier = hr_fields.carrier;
                 form_data.account = hr_fields.account;
@@ -40,7 +31,7 @@ function request_create_package(form_data, hr_fields) {
         }
     });
 
-    $("#checkinbtn").prop("disabled", (packages.size == 0));
+    $("#checkinbtn").prop("disabled", (window.packages.size == 0));
 }
 
 function handle_create_package() {
@@ -90,21 +81,21 @@ function handle_create_package() {
 function reset_form_fields() {
     $("#id_tracking_code").val("");
     $("#id_inside").prop("checked", false);
-    if (!locks["acct_is_locked"]) {
+    if (!window.locks["acct_is_locked"]) {
         $("#id_account_id").val(null).trigger("change");
-        billable = true;
+        window.billable = true;
     }
 
-    if (!locks["carrier_is_locked"]) {
+    if (!window.locks["carrier_is_locked"]) {
         $("#id_carrier_id").val(null).trigger("change");
     }
 
-    if (!locks["type_is_locked"]) {
+    if (!window.locks["type_is_locked"]) {
         $("#id_package_type_id").val(null).trigger("change");
-        default_price = null;
+        window.default_price = null;
     }
 
-    if (!locks["acct_is_locked"] && !locks["type_is_locked"]) {
+    if (!window.locks["acct_is_locked"] && !window.locks["type_is_locked"]) {
         $("#price").val(null).trigger("change");
     }
 }
@@ -112,7 +103,7 @@ function reset_form_fields() {
 function display_packages(response) {
     $("#checkinbtn").prop("disabled", false);
 
-    let new_row = $(".visually-hidden")
+    let new_row = $("tbody#checkin").find(".visually-hidden")
         .clone()
         .removeClass("visually-hidden")
         .attr("data-row-id", response.id);
@@ -142,7 +133,7 @@ function display_packages(response) {
 
     new_row.find("td:nth-child(8)").text(response.comments);
 
-    $("tbody").append(new_row);
+    $("tbody#checkin").append(new_row);
 }
 
 function handle_errors(response) {
@@ -161,7 +152,7 @@ function handle_errors(response) {
 function handle_checkin() {
     let selected_queue = localStorage.getItem("selected_queue");
 
-    let packages_array = [...packages];
+    let packages_array = [...window.packages];
     let packages_payload = { ids: packages_array, queue_id: selected_queue };
     $.ajax({
         type: "POST",
@@ -174,9 +165,9 @@ function handle_checkin() {
             if (response.success) {
                 window.display_error_message();
                 window.open(`/packages/label?ids=${packages_array.toString()}`, "_blank");
-                document.querySelectorAll("tbody tr:not(.visually-hidden)").forEach(row => row.remove());
+                document.querySelectorAll("tbody#checkin tr:not(.visually-hidden)").forEach(row => row.remove());
                 $(document).trigger("rowsUpdated");
-                packages.clear();
+                window.packages.clear();
                 $("#checkinbtn").prop("disabled", true);
             } else {
                 window.display_error_message(response.errors);
@@ -197,12 +188,12 @@ function load_queue(selected_queue) {
             "X-CSRFToken": window.csrf_token
         },
         success: function(response) {
-            document.querySelectorAll("tbody tr:not(.visually-hidden)").forEach(row => row.remove());
-            packages.clear();
+            document.querySelectorAll("tbody#checkin tr:not(.visually-hidden)").forEach(row => row.remove());
+            window.packages.clear();
 
             if (response.success && response.packages.length > 0) {
                 response.packages.forEach(function(package) {
-                    packages.add(package.id);
+                    window.packages.add(package.id);
                     display_packages(package);
                 });
 
@@ -216,7 +207,16 @@ function load_queue(selected_queue) {
     });
 }
 
-$(document).ready(function() {
+function init_create_page() {
+    window.packages = new Set();
+    window.billable = true;
+    window.default_price = null;
+    window.locks = {
+        acct_is_locked: true,
+        type_is_locked: true,
+        carrier_is_locked: true
+    };
+
     let selected_queue = localStorage.getItem("selected_queue");
     if (selected_queue) {
         $("#queue_select").val(selected_queue);
@@ -230,25 +230,25 @@ $(document).ready(function() {
     window.initialize_async_select2("carrier", "/carriers/search");
     window.initialize_async_select2("package_type", "/types/search");
 
-    $("#toggle_acct_lock_btn, #toggle_type_lock_btn, #toggle_carrier_lock_btn").click(function() {
+    $("#toggle_acct_lock_btn, #toggle_type_lock_btn, #toggle_carrier_lock_btn").off("click").on("click", function() {
         var lock_state_key = $(this).data("lock-state");
-        locks[lock_state_key] = !locks[lock_state_key];
+        window.locks[lock_state_key] = !window.locks[lock_state_key];
         $(this).find("i").toggleClass("fa-lock fa-unlock");
     });
 
-    $("#checkinbtn, #createbtn").click(function(event) {
+    $("#checkinbtn, #createbtn").off("click").on("click", function(event) {
         event.preventDefault();
         $(this).attr("id") === "checkinbtn" ? handle_checkin() : handle_create_package();
     });
 
-    $("#id_tracking_code").keydown(function(event) {
+    $("#id_tracking_code").off("keydown").on("keydown", function(event) {
         if (event.keyCode === 13) {  // Enter key
             event.preventDefault();
             handle_create_package();
         }
     });
 
-    $("#queue_select").change(function() {
+    $("#queue_select").off("change").on("change", function() {
         var selected_queue = $(this).val();
         localStorage.setItem("selected_queue", selected_queue);
         load_queue(selected_queue);
@@ -257,19 +257,23 @@ $(document).ready(function() {
     $("#price").select2();
     window.select2properheight("#price");
 
-    $("#id_package_type_id").on("select2:select", function(event) {
-        default_price = event.params.data.default_price;
-        if (billable) {
-            $("#price").val(default_price).trigger("change");
+    $("#id_package_type_id").off("select2:select").on("select2:select", function(event) {
+        window.default_price = event.params.data.default_price;
+        if (window.billable) {
+            $("#price").val(window.default_price).trigger("change");
         }
     });
 
-    $("#id_account_id").on("select2:select", function(event) {
-        billable = event.params.data.billable;
-        if (billable && default_price) {
-            $("#price").val(default_price).trigger("change");
-        } else if (!billable) {
+    $("#id_account_id").off("select2:select").on("select2:select", function(event) {
+        window.billable = event.params.data.billable;
+        if (window.billable && window.default_price) {
+            $("#price").val(window.default_price).trigger("change");
+        } else if (!window.billable) {
             $("#price").val("0.00").trigger("change");
         }
     });
-});
+}
+
+if ($("#checkinpage").length !== 0) {
+    init_create_page();
+}

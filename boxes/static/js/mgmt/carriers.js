@@ -1,7 +1,7 @@
-$(document).ready(function() {
+function init_carrier_mgmt_page() {
     let new_type_id = 0;
 
-    $("#addcarrier").click(function() {
+    $("#addcarrier").off("click").on("click", function() {
         let new_row = $(".visually-hidden")
             .clone()
             .removeClass("visually-hidden")
@@ -11,7 +11,7 @@ $(document).ready(function() {
         $(this).trigger("verifySave");
     });
 
-    $("#savecarriers").click(function() {
+    $("#savecarriers").off("click").on("click", function() {
         $("#savingicon").show();
         var $table = $(document).find("#carriers");
 
@@ -47,7 +47,7 @@ $(document).ready(function() {
         });
     });
 
-    $("#carriers").on("input", "input.form-control", function() {
+    $("#carriers").off("input", "input.form-control").on("input", "input.form-control", function() {
         var row = $(this).closest("tr");
         var confirm_button = row.find(".confirmrow");
 
@@ -62,7 +62,7 @@ $(document).ready(function() {
         confirm_button.prop("disabled", disabled);
     });
 
-    $(document).on("click", ".editrow, .confirmrow", function() {
+    $(document).off("click", ".editrow, .confirmrow").on("click", ".editrow, .confirmrow", function() {
         var $parent_tr = $(this).closest("tr");
         var editing = $(this).hasClass("editrow");
 
@@ -85,9 +85,13 @@ $(document).ready(function() {
         $(this).trigger("verifySave");
     });
 
-    $(document).on("verifySave", function() {
+    $(document).off("verifySave").on("verifySave", function() {
         var $table = $(document).find("#carriers");
         let enabled = $table.find("tr:not(.visually-hidden) .editrow.d-none").length === 0;
         $("#savecarriers").prop("disabled", !enabled);
     });
-});
+}
+
+if ($("div#carriermgmt").length !== 0) {
+    init_carrier_mgmt_page();
+}

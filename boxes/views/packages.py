@@ -263,70 +263,67 @@ def update_packages_fields(package_ids, package_data, user, no_ledger=False):
     accounts, account_ledger = {}, []
 
     for package in packages:
-        try:
-            for field, type_func in fields_to_update.items():
-                if field not in package_data.keys():
+        for field, type_func in fields_to_update.items():
+            if field not in package_data.keys():
+                continue
+            elif package_data[field] is None:
+                continue
+
+            if type_func == bool:
+                field_data = package_data[field]
+            else:
+                field_data = package_data[field].strip()
+
+            if field == "account_id":
+                entity = get_or_create_account(field_data, user)
+                setattr(package, "account", entity)
+            elif field == "carrier_id":
+                entity = Carrier.objects.get(id=field_data)
+                setattr(package, "carrier", entity)
+            elif field == "package_type_id":
+                entity = PackageType.objects.get(id=field_data)
+                setattr(package, "package_type", entity)
+            elif field == "comments" and package_data[field] is None:
+                setattr(package, field, "")
+            elif field == "price":
+                field_data = type_func(field_data)
+                if package.price == field_data:
                     continue
-                elif package_data[field] is None:
-                    continue
 
-                if type_func == bool:
-                    field_data = package_data[field]
+                # Calculate the change in price
+                change_in_price = package.price - field_data
+                if change_in_price > 0:
+                    credit = change_in_price
+                    debit = 0
                 else:
-                    field_data = package_data[field].strip()
+                    credit = 0
+                    debit = change_in_price * -1
 
-                if field == "account_id":
-                    entity = get_or_create_account(field_data, user)
-                    setattr(package, "account", entity)
-                elif field == "carrier_id":
-                    entity = Carrier.objects.get(id=field_data)
-                    setattr(package, "carrier", entity)
-                elif field == "package_type_id":
-                    entity = PackageType.objects.get(id=field_data)
-                    setattr(package, "package_type", entity)
-                elif field == "comments" and package_data[field] is None:
-                    setattr(package, field, "")
-                elif field == "price":
-                    field_data = type_func(field_data)
-                    if package.price == field_data:
-                        continue
+                # Update the balance for the account
+                account_id = package.account_id
 
-                    # Calculate the change in price
-                    change_in_price = package.price - field_data
-                    if change_in_price > 0:
-                        credit = change_in_price
-                        debit = 0
-                    else:
-                        credit = 0
-                        debit = change_in_price * -1
-
-                    # Update the balance for the account
-                    account_id = package.account_id
-
-                    if account_id in accounts:
-                        account = accounts[account_id]
-                        account.balance += change_in_price
-                    else:
-                        current_balance = Account.objects.filter(pk=package.account_id).values_list(
-                                                                 "balance", flat=True).first()
-                        if current_balance is not None:
-                            new_balance = current_balance + change_in_price
-                            account = Account(id=package.account_id, balance=new_balance)
-                            accounts[account_id] = account
-
-                    if not no_ledger:
-                        # Create the new ledger entry for the price change
-                        acct_entry = AccountLedger(user_id=user.id, package_id=package.id,
-                                                   account_id=package.account_id, debit=debit,
-                                                   credit=credit, description="Price changed", is_late=False)
-                        account_ledger.append(acct_entry)
-
-                    setattr(package, field, type_func(field_data))
+                if account_id in accounts:
+                    account = accounts[account_id]
+                    account.balance += change_in_price
                 else:
-                    setattr(package, field, type_func(field_data))
-            updates.append(package)
-        except (ValueError, Decimal.InvalidOperation, TypeError) as e:
-            errors.append(f"Error updating Package ID {package.pk}: {str(e)}")
+                    current_balance = Account.objects.filter(pk=package.account_id).values_list(
+                                                             "balance", flat=True).first()
+                    if current_balance is not None:
+                        new_balance = current_balance + change_in_price
+                        account = Account(id=package.account_id, balance=new_balance)
+                        accounts[account_id] = account
+
+                if not no_ledger:
+                    # Create the new ledger entry for the price change
+                    acct_entry = AccountLedger(user_id=user.id, package_id=package.id,
+                                               account_id=package.account_id, debit=debit,
+                                               credit=credit, description="Price changed", is_late=False)
+                    account_ledger.append(acct_entry)
+
+                setattr(package, field, type_func(field_data))
+            else:
+                setattr(package, field, type_func(field_data))
+        updates.append(package)
 
     if updates:
         Package.objects.bulk_update(updates, package_data.keys())
@@ -339,14 +336,14 @@ def update_packages_fields(package_ids, package_data, user, no_ledger=False):
         AccountLedger.objects.bulk_create(account_ledger)
 
     if errors:
-        return {"success": False, "errors": errors}
+        return JsonResponse({"success": False, "errors": errors})
 
 
 @require_http_methods(["POST"])
 def update_package(request, pk):
     request_data = json.loads(request.body)
     result = update_packages_fields([pk], request_data, request.user)
-    return JsonResponse(result)
+    return result
 
 
 @require_http_methods(["POST"])
@@ -357,7 +354,7 @@ def update_packages(request):
     no_ledger = request_data.get("no_ledger")
 
     result = update_packages_fields(package_ids, package_data, request.user, no_ledger)
-    return JsonResponse(result)
+    return result
 
 
 @require_http_methods(["GET"])

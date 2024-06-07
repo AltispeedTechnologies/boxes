@@ -1,7 +1,4 @@
 {% block content %}
-{% load static %}
-<script src="{% static 'js/modals/email_contents.js' %}"></script>
-
 <div class="modal fade" id="showEmailModal" tabindex="-1" aria-labelledby="showEmailModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -23,4 +20,7 @@
         </div>
     </div>
 </div>
+
+{% load static %}
+<script src="{% static 'js/modals/email_contents.js' %}"></script>
 {% endblock %}

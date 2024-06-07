@@ -1,12 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% load static %}
-<script src="{% static 'js/mgmt/charges.js' %}"></script>
-
 {% include "_messages.html" %}
 
-<div class="container bg-body shadow rounded p-3 col-md-8">
+<div class="container bg-body shadow rounded p-3 col-md-8" id="chargesmgmt">
     <div class="row bg-primary bg-gradient rounded mb-3">
         <h2 class="text-center text-white py-2">Configure Charges</h2>
     </div>
@@ -128,4 +125,7 @@
         </div>
     </div>
 </div>
+
+{% load static %}
+<script src="{% static 'js/mgmt/charges.js' %}"></script>
 {% endblock %}

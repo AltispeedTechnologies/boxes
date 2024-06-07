@@ -1,14 +1,14 @@
-let alias_internal_id = 1;
-let email_internal_id = 1;
+function init_user_edit_page() {
+    window.alias_internal_id = 1;
+    window.email_internal_id = 1;
 
-$(document).ready(function() {
-    initial_billable_val = $("#billable").prop("checked");
+    let initial_billable_val = $("#billable").prop("checked");
 
-    $("#aliasesinput").on("mouseenter mouseleave", ".col-md-3", function(event) {
+    $("#aliasesinput").off("mouseenter mouseleave", ".col-md-3").on("mouseenter mouseleave", ".col-md-3", function(event) {
         $(this).find(".fa-trash").toggle(event.type === "mouseenter");
     });
 
-    $("#aliasesinput").on("click", ".fa-trash", function() {
+    $("#aliasesinput").off("click", ".fa-trash").on("click", ".fa-trash", function() {
         var input = $(this).siblings("input");
         var current_id = input.attr("data-id");
         
@@ -20,13 +20,13 @@ $(document).ready(function() {
         }
     });
 
-    $("#newaliasbtn").click(function() {
+    $("#newaliasbtn").off("click").on("click", function() {
         var input_div = $("<div>", {
             class: "col-md-3 d-flex align-items-center position-relative"
         }).append($("<input>", {
             type: "text",
             class: "form-control",
-            "data-id": "NEW_" + alias_internal_id++
+            "data-id": "NEW_" + window.alias_internal_id++
         }), $('<i>', {
             class: "fas fa-trash position-absolute end-0 me-4 text-danger",
             css: { display: "none", cursor: "pointer" }
@@ -35,7 +35,7 @@ $(document).ready(function() {
         $("#aliasesinput").append(input_div);
     });
 
-    $("#savealiasbtn").click(function() {
+    $("#savealiasbtn").off("click").on("click", function() {
         $("#savingiconaliases").show();
         var aliases = {};
         var account_id = $("#aliasesinput").data("account-id");
@@ -74,17 +74,17 @@ $(document).ready(function() {
                     alert("Error: " + response.errors);
                 }
             },
-            error: function() {
-                alert("Error saving data.");
+            error: function(response) {
+                alert("Error saving data");
             }
         });
     });
 
-    $("#emailsinput").on("mouseenter mouseleave", ".col-md-3", function(event) {
+    $("#emailsinput").off("mouseenter mouseleave", ".col-md-3").on("mouseenter mouseleave", ".col-md-3", function(event) {
         $(this).find(".fa-trash").toggle(event.type === "mouseenter");
     });
 
-    $("#emailsinput").on("click", ".fa-trash", function() {
+    $("#emailsinput").off("click", ".fa-trash").on("click", ".fa-trash", function() {
         var input = $(this).siblings("input");
         var current_id = input.attr("data-id");
         
@@ -96,13 +96,13 @@ $(document).ready(function() {
         }
     });
 
-    $("#newemailbtn").click(function() {
+    $("#newemailbtn").off("click").on("click", function() {
         var input_div = $("<div>", {
             class: "col-md-3 d-flex align-items-center position-relative"
         }).append($("<input>", {
             type: "text",
             class: "form-control",
-            "data-id": "NEW_" + email_internal_id++
+            "data-id": "NEW_" + window.email_internal_id++
         }), $('<i>', {
             class: "fas fa-trash position-absolute end-0 me-4 text-danger",
             css: { display: "none", cursor: "pointer" }
@@ -111,7 +111,7 @@ $(document).ready(function() {
         $("#emailsinput").append(input_div);
     });
 
-    $("#saveemailbtn").click(function() {
+    $("#saveemailbtn").off("click").on("click", function() {
         $("#savingiconemails").show();
         var emails = {};
         var account_id = $("#emailsinput").data("user-id");
@@ -156,7 +156,7 @@ $(document).ready(function() {
         });
     });
 
-    $("#savedetailsbtn").click(function() {
+    $("#savedetailsbtn").off("click").on("click", function() {
         $("#savingicondetails").show();
         var $form = $("#userform");
 
@@ -231,4 +231,8 @@ $(document).ready(function() {
             }
         });
     });
-});
+}
+
+if ($("#accountedit").length !== 0) {
+    init_user_edit_page();
+}

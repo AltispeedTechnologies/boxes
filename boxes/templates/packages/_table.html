@@ -116,13 +116,12 @@
         <p class="mt-3">No packages found.</p>
     {% endif %}
 
-    {% load static %}
-    <script src="{% static 'js/table_select.js' %}"></script>
-    <script src="{% static 'js/modals/row.js' %}"></script>
-
     <script>
         window.selected_packages = new Set({{ selected|safe }});
     </script>
 
-    <div id="modalContainer"></div>
+    {% load static %}
+    <script src="{% static 'js/table_select.js' %}"></script>
+
+    {% include "modals/row.html" %}
 {% endblock %}

@@ -24,7 +24,7 @@
         <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.4/dist/turbo.es2017-umd.min.js"></script>
 
         <!-- Application-wide JS -->
-        <script src="{% static 'js/app.js' %}" defer></script>
+        <script src="{% static 'js/app.js' %}" data-turbo-eval="false"></script>
 
         <title>Boxes</title>
     </head>
@@ -32,7 +32,7 @@
         {% include "_navbar.html" %}
 
         <main>
-            <div class="container mt-5">    
+            <div class="container mt-5"> 
                 {% block content %}
                 {% endblock content %}
             </div>

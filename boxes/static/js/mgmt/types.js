@@ -1,7 +1,7 @@
-$(document).ready(function() {
+function init_types_mgmt_page() {
     let new_type_id = 0;
 
-    $("#addpkgtype").click(function() {
+    $("#addpkgtype").off("click").on("click", function() {
         let new_row = $(".visually-hidden")
             .clone()
             .removeClass("visually-hidden")
@@ -11,7 +11,7 @@ $(document).ready(function() {
         $(this).trigger("verifySave");
     });
 
-    $("#savepkgtypes").click(function() {
+    $("#savepkgtypes").off("click").on("click", function() {
         $("#savingicon").show();
         var $table = $(document).find("#packagetypes");
 
@@ -50,7 +50,7 @@ $(document).ready(function() {
         });
     });
 
-    $("#packagetypes").on("input", "input.form-control", function() {
+    $("#packagetypes").off("input", "input.form-control").on("input", "input.form-control", function() {
         var row = $(this).closest("tr");
         var confirm_button = row.find(".confirmrow");
 
@@ -70,7 +70,7 @@ $(document).ready(function() {
         confirm_button.prop("disabled", disabled);
     });
 
-    $(document).on("click", ".editrow, .confirmrow", function() {
+    $(document).off("click", ".editrow, .confirmrow").on("click", ".editrow, .confirmrow", function() {
         var $parent_tr = $(this).closest("tr");
         var editing = $(this).hasClass("editrow");
 
@@ -93,9 +93,13 @@ $(document).ready(function() {
         $(this).trigger("verifySave");
     });
 
-    $(document).on("verifySave", function() {
+    $(document).off("verifySave").on("verifySave", function() {
         var $table = $(document).find("#packagetypes");
         let enabled = $table.find("tr:not(.visually-hidden) .editrow.d-none").length === 0;
         $("#savepkgtypes").prop("disabled", !enabled);
     });
-});
+}
+
+if ($("div#typesmgmt").length !== 0) {
+    init_types_mgmt_page();
+}

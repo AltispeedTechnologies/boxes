@@ -1,5 +1,5 @@
+import decimal
 import json
-from decimal import Decimal
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from functools import wraps
@@ -18,7 +18,7 @@ def exception_catcher():
                 return result
             except json.JSONDecodeError as jde:
                 return JsonResponse({"success": False, "errors": "Invalid JSON"}, status=400)
-            except (ValueError, TypeError, KeyError, Decimal.InvalidOperation):
+            except (ValueError, TypeError, KeyError, decimal.InvalidOperation):
                 return JsonResponse({"success": False, "errors": "Invalid input"}, status=400)
             except ObjectDoesNotExist:
                 return JsonResponse({"success": False, "errors": "Requested object not found"}, status=404)

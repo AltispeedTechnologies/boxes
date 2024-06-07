@@ -1,5 +1,5 @@
-$(document).ready(function() {
-    $("#createNewCustomerModal .btn-primary").on("click", function() {
+function new_acct() {
+    $("#createNewCustomerModal .btn-primary").off("click").on("click", function() {
         $("#savingiconnew").show();
         var $form = $("#userform");
 
@@ -34,4 +34,8 @@ $(document).ready(function() {
             }
         });
     });
-});
+}
+
+if ($("#createNewCustomerModal").length !== 0) {
+    new_acct();
+}

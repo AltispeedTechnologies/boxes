@@ -167,8 +167,19 @@ window.format_price_input = function(input_element) {
     input_element.val(value);
 }
 
+window.picklist_data = async function() {
+    const response = await $.ajax({
+        type: "GET",
+        url: "/picklists/query",
+        headers: {
+            "X-CSRFToken": window.csrf_token
+        }
+    });
+    return response.results;
+};
+
 /// Functionality to run once the content has fully loaded
-$(document).ready(function() {
+function init_page() {
     // Timestamps are stored in the database as UTC, this does the conversion
     // client-side to the current browser time
     $(".timestamp").each(function() {
@@ -184,27 +195,9 @@ $(document).ready(function() {
     var tooltip_list = tooltip_trigger_list.map(function (tooltip_trigger_el) {
         return new bootstrap.Tooltip(tooltip_trigger_el)
     })
+}
 
-    // Deduplicate requests for a list of picklists
-    // When the list of picklists is needed in a script, it increments
-    // window.picklist_total_functions, does another async request, then
-    // triggers picklistQuery on a successful result. For example, if two
-    // functions want this information, window.picklist_total_functions will
-    // equal 2, and the list is only fetched once every script that wants it is
-    // ready for it
-    let picklist_count = 0;
-    $(document).on("picklistQuery", function(event) {
-        if (++picklist_count === window.picklist_total_functions) {
-            $.ajax({
-                type: "GET",
-                url: "/picklists/query",
-                headers: {
-                    "X-CSRFToken": window.csrf_token
-                },
-                success: function(response) {
-                    $(document).trigger("picklistQueryDone", [response.results]);
-                }
-            });
-        }
-    });
-});
+// Ensure turbo:load is only bound once when needed
+window.turbo_load = {};
+
+document.addEventListener("turbo:load", init_page);

@@ -1,13 +1,13 @@
-$(document).ready(function() {
+function edit_queue_name() {
     let queue_id = null;
 
-    $("[data-bs-target=\"#editQueueNameModal\"]").on("click", function() {
+    $("[data-bs-target=\"#editQueueNameModal\"]").off("click").on("click", function() {
         let queue_name = $("#queue_select option:selected").text();
         queue_id = Number($("#queue_select option:selected").val());
         $("#editQueueNameModal").find("#queue_name").val(queue_name);
     });
 
-    $("#editQueueNameModal .btn-primary").on("click", function() {
+    $("#editQueueNameModal .btn-primary").off("click").on("click", function() {
         let new_queue_name = $("#editQueueNameModal").find("#queue_name").val();
         let payload = {
             id: queue_id,
@@ -32,4 +32,8 @@ $(document).ready(function() {
             }
         });
     });
-});
+}
+
+if ($("#editQueueNameModal").length !== 0) {
+    edit_queue_name();
+}

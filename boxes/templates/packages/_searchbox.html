@@ -1,5 +1,5 @@
 {% block content %}
-<div class="container input-group">
+<div class="container input-group" id="searchbox">
     <form id="search_form" method="get">
         <div id="search_input_container" class="input-group-append">
             <input name="q" type="text" class="form-control" placeholder="Search..." value="{{ query }}">
@@ -29,9 +29,9 @@
 </div>
 {% load static %}
 <script>
-        let account_id = "{{ account.id }}";
-        let account_name = "{{ account.name }}";
-        let filter = "{{ filter }}";
+    window.account_id = "{{ account.id }}";
+    window.account_name = "{{ account.name }}";
+    window.filter = "{{ filter }}";
 </script>
 <script src="{% static 'js/searchbox.js' %}"></script>
 {% endblock content %}

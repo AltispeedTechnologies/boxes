@@ -1,5 +1,5 @@
-$(document).ready(function() {
-    $("#add-charge-template").click(function() {
+function init_charges_mgmt_page() {
+    $("#add-charge-template").off("click").on("click", function() {
         var new_entry = $(".charge-template.d-none").clone().removeClass("d-none");
         new_entry.find(".remove-charge-template").click(function() {
             $(this).closest(".charge-template").remove();
@@ -7,11 +7,11 @@ $(document).ready(function() {
         $("#charges-templates").append(new_entry);
     });
 
-    $(".remove-charge-template").click(function() {
+    $(".remove-charge-template").off("click").on("click", function() {
         $(this).closest(".charge-template").remove();
     });
 
-    $("#add-custom-charge-template").click(function() {
+    $("#add-custom-charge-template").off("click").on("click", function() {
         var new_entry = $(".custom-charge-template.d-none").clone().removeClass("d-none");
         new_entry.find(".remove-custom-charge-template").click(function() {
             $(this).closest(".custom-charge-template").remove();
@@ -19,11 +19,11 @@ $(document).ready(function() {
         $("#custom-charges-templates").append(new_entry);
     });
 
-    $(".remove-custom-charge-template").click(function() {
+    $(".remove-custom-charge-template").off("click").on("click", function() {
         $(this).closest(".custom-charge-template").remove();
     });
 
-    $("#savebtn").click(function() {
+    $("#savebtn").off("click").on("click", function() {
         $("#savingicon").show();
 
         let charge_rules = [];
@@ -65,4 +65,8 @@ $(document).ready(function() {
             }
         });
     });
-});
+}
+
+if ($("div#chargesmgmt").length !== 0) {
+    init_charges_mgmt_page();
+}

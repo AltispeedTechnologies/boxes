@@ -1,5 +1,3 @@
-let last_checked = null;
-
 function update_pagination_links() {
     // Convert the Set to a comma-separated string
     let selected_ids_str = Array.from(window.selected_packages).join(",");
@@ -33,28 +31,34 @@ function update_package_selection(is_checked, package_id) {
     update_pagination_links();
 }
 
-$(document).ready(function() {
+function init_checkbox() {
+    window.last_checked = null;
+
     if (typeof window.selected_packages === "undefined" || window.selected_packages === null) {
         window.selected_packages = new Set();
     }
 
     if (window.selected_packages.size > 0) { update_pagination_links(); }
 
-    $(document).on("click", ".package-checkbox", function(e) {
+    $(document).off("click", ".package-checkbox").on("click", ".package-checkbox", function(e) {
         let package_id = this.id.split("-")[1];
         
         if (!last_checked) {
-            last_checked = this;
+            window.last_checked = this;
             update_package_selection(this.checked, package_id);
             return;
         }
 
-        if (e.shiftKey && last_checked) {
-            handle_shift_select(this, last_checked);
+        if (e.shiftKey && window.last_checked) {
+            handle_shift_select(this, window.last_checked);
         } else {
             update_package_selection(this.checked, package_id);
         }
 
-        last_checked = this;
+        window.last_checked = this;
     });
-});
+}
+
+if ($(".package-checkbox").length !== 0) {
+    init_checkbox();
+}

@@ -1,15 +1,15 @@
-$(document).ready(function() {
-    $("#clear-file").on("click", function() {
+function init_general_mgmt_page() {
+    $("#clear-file").off("click").on("click", function() {
         $("#image").val("");
         $(this).prop("disabled", true);
     });
 
-    $("#image").on("change", function() {
+    $("#image").off("change").on("change", function() {
         var selected = $(this).val() !== "";
         $("#clear-file").prop("disabled", !selected);
     });
 
-    $("#saveconfig").on("click", function() {
+    $("#saveconfig").off("click").on("click", function() {
         // Display the saving icon
         $("#savingicon").show();
 
@@ -49,4 +49,8 @@ $(document).ready(function() {
             }
         });
     });
-});
+}
+
+if ($("div#generalmgmt").length !== 0) {
+    init_general_mgmt_page();
+}

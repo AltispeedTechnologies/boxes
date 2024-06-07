@@ -23,10 +23,15 @@ $(document).ready(function() {
         dialogsInBody: true,
         dialogsFade: true,
     });
+});
 
+function init_email_template_mgmt_page() {
     $("#template-selector").select2();
-    $("#template-selector").on("change", function() {
+    window.select2properheight("#template-selector");
+
+    $("#template-selector").change(function() {
         var id = $(this).val();
+
         $.ajax({
             url: "/mgmt/email/templates/fetch",
             type: "GET",
@@ -41,7 +46,7 @@ $(document).ready(function() {
         });
     });
 
-    $("#save-btn").click(function() {
+    $("#save-btn").off("click").on("click", function() {
         $("#savingicon").show();
         var template_id = $("#template-selector").val();
         var content = $("#content").summernote("code");
@@ -66,7 +71,7 @@ $(document).ready(function() {
         });
     });
 
-    $("#addTemplateForm").on("submit", function(event) {
+    $("#addTemplateForm").off("submit").on("submit", function(event) {
         event.preventDefault();
         var template_name = $("#templateName").val();
 
@@ -86,4 +91,8 @@ $(document).ready(function() {
             }
         });
     });
-});
+}
+
+if ($("div#emailtemplatemgmt").length !== 0) {
+    init_email_template_mgmt_page();
+}

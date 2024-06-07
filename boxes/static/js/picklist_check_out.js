@@ -54,15 +54,15 @@ function display_packages(pkg) {
     $("tbody").append(new_row);
 }
 
-$(document).ready(function() {
-    $("#tracking_code").keydown(function(event) {
+function init_picklist_checkout_page() {
+    $("#tracking_code").off("keydown").on("keydown", function(event) {
         if (event.keyCode === 13) {  // Enter key
             event.preventDefault();
             verify_package();
         }
     });
 
-    $("#picklistCheckOutModal .btn-primary").on("click", function() {
+    $("#picklistCheckOutModal .btn-primary").off("click").on("click", function() {
         let packages_array = Array.from(packages);
         let payload = {"ids": packages_array};
 
@@ -83,4 +83,8 @@ $(document).ready(function() {
             }
         });
     });
-});
+}
+
+if ($("div#picklistcheckout").length !== 0) {
+    init_picklist_checkout_page();
+}

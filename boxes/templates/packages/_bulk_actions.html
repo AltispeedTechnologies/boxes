@@ -1,8 +1,4 @@
 {% block content %}
-{% load static %}
-<script src="{% static 'js/bulk_actions.js' %}"></script>
-{% load cache %}
-{% cache 500 bulk_actions %}
 <div class="col">
     <div class="row float-end">
         <div class="col">
@@ -58,6 +54,5 @@
         </div>
     </div>
 </div>
-{% endcache %}
-<div id="bulkModalContainer"></div>
+{% include "modals/bulk.html" %}
 {% endblock content %}

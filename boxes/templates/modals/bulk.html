@@ -1,127 +1,131 @@
 {% block content %}
-<div class="modal fade" id="bulkAddPicklistModal" tabindex="-1" aria-labelledby="bulkAddPicklistModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="bulkAddPicklistModalLabel">Add to Picklist</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div>
-                    <select class="form-select" id="picklist-select-bulk"></select>
+<div id="bulkactions">
+    <div class="modal fade" id="bulkAddPicklistModal" tabindex="-1" aria-labelledby="bulkAddPicklistModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkAddPicklistModalLabel">Add to Picklist</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <select class="form-select" id="picklist-select-bulk"></select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save</button>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save</button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="bulkCheckBackInModal" tabindex="-1" aria-labelledby="bulkCheckBackInModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkCheckBackInModalLabel">Check Package Back In</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body container">
+                    Are you sure you would like to check these packages back in?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary" id="save_changes">Yes</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="modal fade" id="bulkCheckBackInModal" tabindex="-1" aria-labelledby="bulkCheckBackInModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="bulkCheckBackInModalLabel">Check Package Back In</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body container">
-                Are you sure you would like to check these packages back in?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-                <button type="button" class="btn btn-primary" id="save_changes">Yes</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="bulkCheckOutModal" tabindex="-1" aria-labelledby="bulkCheckOutModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="bulkCheckOutModalLabel">Check Out Parcels</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body container">
-                Are you sure you would like to check out these packages?
+    <div class="modal fade" id="bulkCheckOutModal" tabindex="-1" aria-labelledby="bulkCheckOutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkCheckOutModalLabel">Check Out Parcels</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body container">
+                    Are you sure you would like to check out these packages?
+                </div>  
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary" id="save_changes">Yes</button>
+                </div>
             </div>  
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-                <button type="button" class="btn btn-primary" id="save_changes">Yes</button>
-            </div>
         </div>  
     </div>  
-</div>  
 
-<div class="modal fade" id="bulkEditModal" tabindex="-1" aria-labelledby="bulkEditModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="bulkEditModalLabel">Edit Parcels</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body container">
-                <div class="row mr-2"> 
-                    <div class="col">
-                        <strong><label for="price">Price</label></strong>
-                        <input type="text" id="price" name="price" class="form-control">
-                    </div>
-                    <div class="col">
-                        <strong><label for="carrier_id">Carrier</label></strong>
-                        <select name="bulk_carrier_id" class="form-control select2 mr-2" id="id_bulk_carrier_id"></select>
+    <div class="modal fade" id="bulkEditModal" tabindex="-1" aria-labelledby="bulkEditModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkEditModalLabel">Edit Parcels</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body container">
+                    <div class="row mr-2"> 
+                        <div class="col">
+                            <strong><label for="price">Price</label></strong>
+                            <input type="text" id="price" name="price" class="form-control">
+                        </div>
+                        <div class="col">
+                            <strong><label for="carrier_id">Carrier</label></strong>
+                            <select name="bulk_carrier_id" class="form-control select2 mr-2" id="id_bulk_carrier_id"></select>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="save_changes">Save Changes</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="bulkMoveModal" tabindex="-1" aria-labelledby="bulkMoveModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="bulkMoveModalLabel">Move Parcels</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div>
-                    <select class="form-select" id="picklist-select-bulk-move">
-                        {% for item in picklist_data %}
-                            <option value="{{ item.id }}">{{ item.text }}</option>
-                        {% endfor %}
-                    </select>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save_changes">Save Changes</button>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary">Save</button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="bulkMoveModal" tabindex="-1" aria-labelledby="bulkMoveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkMoveModalLabel">Move Parcels</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <select class="form-select" id="picklist-select-bulk-move">
+                            {% for item in picklist_data %}
+                                <option value="{{ item.id }}">{{ item.text }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="bulkRemoveModal" tabindex="-1" aria-labelledby="bulkRemoveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkRemoveModalLabel">Remove Parcels From Picklist</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you would like to remove these packages from the picklist?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-primary">Yes</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="bulkRemoveModal" tabindex="-1" aria-labelledby="bulkRemoveModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="bulkRemoveModalLabel">Remove Parcels From Picklist</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you would like to remove these packages from the picklist?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-                <button type="button" class="btn btn-primary">Yes</button>
-            </div>
-        </div>
-    </div>
-</div>
-
+{% load static %}
+<script src="{% static 'js/bulk_actions.js' %}"></script>
 {% endblock %}

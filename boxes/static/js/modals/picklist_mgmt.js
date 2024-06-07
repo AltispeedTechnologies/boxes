@@ -1,49 +1,19 @@
 var current_id = null;
 
-$(document).ready(function() {
-    window.picklist_total_functions++;
+function picklist_list_page() {
+    window.picklist_data().then(function(data) {
+        let picklist_data = data;
 
-    $(document).on("picklistQueryDone", function(event, data) {
         $("#picklist-select").select2({
-            data: data,
+            data: picklist_data,
             dropdownParent: "#removePicklistModal",
             width: "100%"
         });
+
+        window.select2properheight("#picklist-select");
     });
 
-    $.ajax({
-        url: "/modals/picklistmgmt",
-        type: "GET",
-        headers: {
-            "X-CSRFToken": window.csrf_token
-        },
-        success: function(response) {
-            $("#modalContainer").html(response);
-            $(document).trigger("picklistQuery");
-            $(document).trigger("modalsLoaded");
-        },
-        error: function() {
-            console.error("Error loading modals");
-        }
-    });
-});
-
-$(document).on("click", ".removebtn", function() {
-    var $tr = $(this).closest("tr");
-    var count = $tr.find("#count").text();
-    current_id = $tr.attr("data-id");
-
-    if (count > 0) {
-        $("#itemsnotpresent").hide();
-        $("#itemspresent").show();
-    } else {
-        $("#itemspresent").hide();
-        $("#itemsnotpresent").show();
-    }
-});
-
-$(document).on("modalsLoaded", function() {
-    $("#removePicklistModal .btn-primary").on("click", function() {
+    $("#removePicklistModal .btn-primary").off("click").on("click", function() {
         var new_picklist = $("#picklist-select").val();
 
         if (new_picklist === "null") {
@@ -87,7 +57,7 @@ $(document).on("modalsLoaded", function() {
         });
     });
 
-    $("#picklistNewModal .btn-primary").on("click", function() {
+    $("#picklistNewModal .btn-primary").off("click").on("click", function() {
         // Ensure the date matches MM/DD/YYYY, if it doesn't, error
         var date = $("#datepicker").val();
         if (date !== "") {
@@ -125,9 +95,24 @@ $(document).on("modalsLoaded", function() {
     });
 
     // Disable the Create button if there is nothing to submit
-    $("#newpicklistdesc, #datepicker").on("input", function() {
+    $("#newpicklistdesc, #datepicker").off("input").on("input", function() {
         var disabled = ($("#newpicklistdesc").val() === "" && $("#datepicker").val() === "");
         $("#picklistNewModal .btn-primary").attr("disabled", disabled);
+    });
+
+    // If a picklist is targeted for removal, ensure the modal is updated accordingly
+    $(document).off("click", ".removebtn").on("click", ".removebtn", function() {
+        var $tr = $(this).closest("tr");
+        var count = $tr.find("#count").text();
+        current_id = $tr.attr("data-id");
+
+        if (count > 0) {
+            $("#itemsnotpresent").hide();
+            $("#itemspresent").show();
+        } else {
+            $("#itemspresent").hide();
+            $("#itemsnotpresent").show();
+        }
     });
 
     // Initialize the date picker
@@ -143,4 +128,8 @@ $(document).on("modalsLoaded", function() {
         minDate: 0,
         maxDate: 30
     });
-});
+}
+
+if ($("div#picklistlist").length !== 0) {
+    picklist_list_page();
+}

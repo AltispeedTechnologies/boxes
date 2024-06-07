@@ -1,5 +1,5 @@
-$(document).ready(function() {
-    $("#add-day-template").click(function() {
+function init_email_mgmt_page() {
+    $("#add-day-template").off("click").on("click", function() {
         var new_entry = $(".day-template.d-none").clone().removeClass("d-none");
         new_entry.find("input").val("");
         new_entry.find("select").prop("selectedIndex", 0);
@@ -9,11 +9,11 @@ $(document).ready(function() {
         $("#days-templates").append(new_entry);
     });
 
-    $(".remove-day-template").click(function() {
+    $(".remove-day-template").off("click").on("click", function() {
         $(this).closest(".day-template").remove();
     });
 
-    $("#saveconfig").click(function() {
+    $("#saveconfig").off("click").on("click", function() {
         $("#savingicon").show();
 
         var form_data = {
@@ -46,4 +46,8 @@ $(document).ready(function() {
             }
         });
     });
-});
+}
+
+if ($("div#emailmgmt").length !== 0) {
+    init_email_mgmt_page();
+}

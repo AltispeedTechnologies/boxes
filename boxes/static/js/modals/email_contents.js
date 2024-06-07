@@ -1,5 +1,5 @@
-$(document).ready(function() {
-    $("[data-bs-target=\"#showEmailModal\"]").on("click", function() {
+function email_contents() {
+    $("[data-bs-target=\"#showEmailModal\"]").off("click").on("click", function() {
         $("#emailcontents").html("");
         $("#showEmailModalLabel").text("Loading...");
         $("#loadingstatus").show();
@@ -19,4 +19,8 @@ $(document).ready(function() {
             }
         });
     });
-});
+}
+
+if ($("#showEmailModal").length !== 0) {
+    email_contents();
+}

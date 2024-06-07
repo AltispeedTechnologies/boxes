@@ -103,7 +103,6 @@
 {% load static %}
 {% include "modals/new_acct.html" %}
 {% include "modals/system_tracking_code.html" %}
-<script src="{% static 'js/bulk_actions.js' %}"></script>
-<div id="bulkModalContainer"></div>
+{% include "modals/bulk.html" %}
 
 {% endblock content %}
