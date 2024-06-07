@@ -291,6 +291,23 @@ def _picklist_data(exclude=None):
     else:
         picklists = Picklist.objects.all()
 
-    picklist_data = [{"id": picklist.id, "text": f"{picklist.date}"} for picklist in picklists]
+    picklists = picklists.annotate(
+        is_date_null=Case(
+            When(date__isnull=True, then=Value(0)),
+            default=Value(1),
+            output_field=IntegerField()
+        )
+    ).order_by("is_date_null", "date", "description")
+
+    picklist_data = []
+    for picklist in picklists:
+        if picklist.date and picklist.description:
+            text = str(picklist.date) + " - " + picklist.description
+        elif picklist.date:
+            text = str(picklist.date)
+        elif picklist.description:
+            text = picklist.description
+
+        picklist_data.append({"id": picklist.id, "text": text})
 
     return picklist_data
