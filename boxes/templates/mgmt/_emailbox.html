@@ -1,0 +1,16 @@
+{% block content %}
+
+<div class="row bg-primary bg-gradient rounded mb-3">
+    <h2 class="text-center text-white py-2">Emails</h2>
+</div>
+{% include "_messages.html" %}
+
+<div class="row mx-auto text-center align-items-center">
+    <nav class="nav nav-pills flex-column flex-sm-row">
+        <a class="flex-sm-fill text-sm-center nav-link {% if view_type == "configure" %}active{% else %}bg-light{% endif %}"
+           href="/mgmt/email/configure">Configure</a>
+        <a class="flex-sm-fill text-sm-center nav-link {% if view_type == "logs" %}active{% else %}bg-light{% endif %}"
+           href="/mgmt/email/logs">Logs</a>
+    </nav>
+</div>
+{% endblock %}

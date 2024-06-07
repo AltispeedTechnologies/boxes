@@ -2,9 +2,12 @@ import decimal
 import json
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import *
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from django.db.models import Count
+from django.core.paginator import Paginator
+from django.db.models import Count, F, Value, CharField, Q
+from django.db.models.functions import Concat
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
@@ -48,7 +51,44 @@ def email_settings(request):
     except EmailSettings.DoesNotExist:
         email_settings = None
     return render(request, "mgmt/email.html", {"templates": templates,
-                                               "email_settings": email_settings})
+                                               "email_settings": email_settings,
+                                               "view_type": "configure"})
+
+
+@require_http_methods(["GET"])
+def email_logs(request):
+    emails = SentEmail.objects.annotate(
+        sent_id=F("pk"),
+        timestamp_val=F("timestamp"),
+        subject_val=F("subject"),
+        email_val=F("email"),
+        status=F("success"),
+        tracking_codes=ArrayAgg(
+            Concat(
+                F("sentemailpackage__package__id"),
+                Value(" "),
+                F("sentemailpackage__package__tracking_code"),
+                output_field=CharField()
+            ),
+            distinct=True,
+            filter=Q(sentemailpackage__package__isnull=False)
+        )
+    ).order_by("-timestamp_val")
+    for email in emails:
+        tracking_codes = [
+            [int(part) if i == 0 else part for i, part in enumerate(code.split(" ", 1))]
+            for code in email.tracking_codes
+        ]
+        email.tracking_codes = tracking_codes
+
+    page_number = request.GET.get("page")
+    paginator = Paginator(emails, 15)
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, "mgmt/email_logs.html", {"page_obj": page_obj,
+                                                    "enable_tracking_codes": True,
+                                                    "view_type": "logs"})
+
 
 
 @require_http_methods(["GET"])

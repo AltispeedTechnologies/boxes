@@ -21,7 +21,8 @@ urlpatterns = [
     # Management dropdown
     path("mgmt/charges", is_staff(charge_settings), name="charge_settings"),
     path("mgmt/charges/update", is_staff(save_charge_settings), name="save_charge_settings"),
-    path("mgmt/email", is_staff(email_settings), name="email_settings"),
+    path("mgmt/email/configure", is_staff(email_settings), name="email_settings"),
+    path("mgmt/email/logs", is_staff(email_logs), name="email_logs"),
     path("mgmt/email/update", is_staff(save_email_settings), name="save_email_settings"),
     path("mgmt/email/templates", is_staff(email_template), name="email_template"),
     path("mgmt/email/templates/add", is_staff(add_email_template), name="add_email_template"),
