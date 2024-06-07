@@ -167,6 +167,7 @@ window.format_price_input = function(input_element) {
     input_element.val(value);
 }
 
+// Grab picklist data appropriately
 window.picklist_data = async function() {
     const response = await $.ajax({
         type: "GET",
@@ -176,6 +177,51 @@ window.picklist_data = async function() {
         }
     });
     return response.results;
+};
+
+// Generic ajax request wrapper, for deduplication
+window.ajax_request = function({ type, url, payload = null, content_type = "application/x-www-form-urlencoded; charset=UTF-8", process_data = true, on_success, on_response }) {
+    $.ajax({
+        type: type,
+        url: url,
+        headers: {
+            "X-CSRFToken": window.csrf_token
+        },
+        data: payload,
+        contentType: content_type,
+        processData: process_data,
+        success: function(response) {
+            window.display_error_message();
+
+            if (on_response) {
+                on_response();
+            }
+
+            if (response.success) {
+                on_success(response);
+            } else if (response.form_errors) {
+                $.each(response.form_errors, function(field, errors) {
+                    if (errors.length > 0) {
+                        $form.find("#" + field).addClass("is-invalid");
+                        $form.find("#" + field).next(".invalid-feedback").text(errors[0]).show();
+                    }
+                });
+            } else {
+                window.display_error_message(response.errors || ["An unexpected error occurred."]);
+            }
+        },
+        error: function(xhr, status, error) {
+            let error_message = "An unexpected error occurred.";
+            if (xhr.responseJSON && xhr.responsePlJSON.errors) {
+                error_message = xhr.responseJSON.errors;
+            } else if (error) {
+                error_message = [error];
+            } else if (xhr.statusText) {
+                error_message = [xhr.statusText];
+            }
+            window.display_error_message(error_message);
+        }
+    });
 };
 
 /// Functionality to run once the content has fully loaded
@@ -196,8 +242,4 @@ function init_page() {
         return new bootstrap.Tooltip(tooltip_trigger_el)
     })
 }
-
-// Ensure turbo:load is only bound once when needed
-window.turbo_load = {};
-
 document.addEventListener("turbo:load", init_page);

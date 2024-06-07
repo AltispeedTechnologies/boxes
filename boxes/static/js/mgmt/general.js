@@ -33,25 +33,16 @@ function init_general_mgmt_page() {
         };
         form_data.append("payload", JSON.stringify(payload));
 
-        $.ajax({
-            url: "/mgmt/general/update",
+        window.ajax_request({
             type: "POST",
-            data: form_data,
-            contentType: false,
-            processData: false,
-            headers: {
-                "X-CSRFToken": window.csrf_token
-            },
-            success: function(response) {
-                window.display_error_message();
-
-                if (response.success) {
-                    $("#savingicon").hide();
-                    $("#successicon").show();
-                    $("#successicon").fadeOut(2000);
-                } else {
-                    window.display_error_message(response.errors);
-                }
+            url: "/mgmt/general/update",
+            payload: form_data,
+            content_type: false,
+            process_data: false,
+            on_success: function() {
+                $("#savingicon").hide();
+                $("#successicon").show();
+                $("#successicon").fadeOut(2000);
             }
         });
     });

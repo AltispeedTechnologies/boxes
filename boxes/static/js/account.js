@@ -6,21 +6,14 @@ function init_account_page() {
         new_comments = $(this).val();
         let payload = JSON.stringify({"comments": new_comments});
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/accounts/" + account_id + "/update",
-            headers: {
-                "X-CSRFToken": window.csrf_token
-            },
-            data: payload,
-            success: function(response) {
-                if (response.success) {
-                    $("#savingnotes").addClass("d-none");
-                    $("#donesavingnotes").show();
-                    $("#donesavingnotes").fadeOut(2000);
-                } else {
-                    window.display_error_message(response.errors);
-                }
+            payload: payload,
+            on_success: function(response) {
+                $("#savingnotes").addClass("d-none");
+                $("#donesavingnotes").show();
+                $("#donesavingnotes").fadeOut(2000);
             }
         });
     }, 500));

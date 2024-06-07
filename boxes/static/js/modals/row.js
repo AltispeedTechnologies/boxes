@@ -33,21 +33,13 @@ function setup_actions() {
             "picklist_id": picklist_id
         };
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/picklists/modify",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: JSON.stringify(packages_payload),
-            contentType: "application/json",
-            success: function(response) {
-                if (response.success) {
-                    window.location.reload();
-                } else {
-                    window.display_error_message(response.errors);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("An error occurred:", error);
+            payload: JSON.stringify(packages_payload),
+            content_type: "application/json",
+            on_success: function() {
+                window.location.reload();
             }
         });
     });
@@ -55,20 +47,12 @@ function setup_actions() {
     $("#checkBackInModal .btn-primary").off("click").on("click", function() {
         let packages = {"ids": [row_id]};
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/packages/checkout/reverse",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: packages,
-            success: function(response) {
-                if (response.success) {
-                    window.location.reload();
-                } else {
-                    window.display_error_message(response.errors);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("An error occurred:", error);
+            payload: packages,
+            on_success: function() {
+                window.location.reload();
             }
         });
     });
@@ -76,20 +60,12 @@ function setup_actions() {
     $("#checkOutModal .btn-primary").off("click").on("click", function() {
         let packages = {"ids": [row_id]};
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/packages/checkout",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: packages,
-            success: function(response) {
-                if (response.success) {
-                    window.location.reload();
-                } else {
-                    window.display_error_message(response.errors);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("An error occurred:", error);
+            payload: packages,
+            on_success: function() {
+                window.location.reload();
             }
         });
     });
@@ -120,53 +96,44 @@ function setup_actions() {
             inside: inside
         };
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/packages/" + row_id + "/update",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: JSON.stringify(post_data),
-            contentType: "application/json",
-            success: function(response) {
-                if (response.success) {
-                    $tr.find("td").each(function() {
-                        var type = $(this).data("type");
-                        var new_text;
+            payload: JSON.stringify(post_data),
+            content_type: "application/json",
+            on_success: function() {
+                $tr.find("td").each(function() {
+                    var type = $(this).data("type");
+                    var new_text;
 
-                        if (type) {
-                            if (type === "price") {
-                                new_text = "$" + post_data[type];
-                            } else if (type === "inside") {
-                                if (inside) {
-                                    const icon = "<i class=\"fas fa-check-circle text-warning\"></i>";
-                                    $(this).html(icon).attr("data-id", "True");
-                                } else {
-                                    const icon = "<i class=\"fas fa-times-circle text-info\"></i>";
-                                    $(this).html(icon).attr("data-id", "False");
-                                }
-                                return;
-                            } else if (type === "account") {
-                                new_text = account;
-                            } else if (type === "carrier") {
-                                new_text = carrier;
-                            } else if (type === "package_type") {
-                                new_text = package_type;
+                    if (type) {
+                        if (type === "price") {
+                            new_text = "$" + post_data[type];
+                        } else if (type === "inside") {
+                            if (inside) {
+                                const icon = "<i class=\"fas fa-check-circle text-warning\"></i>";
+                                $(this).html(icon).attr("data-id", "True");
                             } else {
-                                new_text = post_data[type];
+                                const icon = "<i class=\"fas fa-times-circle text-info\"></i>";
+                                $(this).html(icon).attr("data-id", "False");
                             }
-
-                            var $target = $(this).find("a").length ? $(this).find("a") : $(this);
-                            $target.text(new_text);
+                            return;
+                        } else if (type === "account") {
+                            new_text = account;
+                        } else if (type === "carrier") {
+                            new_text = carrier;
+                        } else if (type === "package_type") {
+                            new_text = package_type;
+                        } else {
+                            new_text = post_data[type];
                         }
-                    });
 
-                    $("#editModal").modal("hide");
-                    window.display_error_message();
-                } else {
-                    window.display_error_message(response.errors);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("An error occurred:", error);
+                        var $target = $(this).find("a").length ? $(this).find("a") : $(this);
+                        $target.text(new_text);
+                    }
+                });
+
+                $("#editModal").modal("hide");
             }
         });
     });
@@ -179,22 +146,13 @@ function setup_actions() {
             picklist_id: Number(picklist_id)
         };
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/picklists/modify",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: JSON.stringify(post_data),
-            contentType: "application/json",
-            success: function(response) {
-                if (response.success) {
-                    window.location.reload();
-                } else {
-                    console.error("Move to picklist failed:", response.errors.join("; "));
-                    window.display_error_message(response.errors);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("An error occurred:", error);
+            payload: JSON.stringify(post_data),
+            content_type: "application/json",
+            on_success: function() {
+                window.location.reload();
             }
         });
     });
@@ -207,21 +165,13 @@ function setup_actions() {
             ids: id_array
         };
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/picklists/remove",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: JSON.stringify(post_data),
-            contentType: "application/json",
-            success: function(response) {
-                if (response.success) {
-                    window.location.reload();
-                } else {
-                    window.display_error_message(response.errors);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("An error occurred:", error);
+            payload: JSON.stringify(post_data),
+            content_type: "application/json",
+            on_success: function() {
+                window.location.reload();
             }
         });
     });

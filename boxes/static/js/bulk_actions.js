@@ -44,21 +44,12 @@ function setup_bulk_actions() {
         let packages_array = Array.from(window.selected_packages);
         let packages_payload = {"ids": packages_array};
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/packages/checkout",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: packages_payload,
-            success: function(response) {
-                if (response.success) {
-                    window.location.reload();
-                    window.display_error_message();
-                } else {
-                    window.display_error_message(response.errors);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("An error occurred:", error);
+            payload: packages_payload,
+            on_success: function(response) {
+                window.location.reload();
             }
         });
     });
@@ -70,21 +61,13 @@ function setup_bulk_actions() {
             "picklist_id": picklist_id
         };
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/picklists/modify",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: JSON.stringify(packages_payload),
-            contentType: "application/json",
-            success: function(response) {
-                if (response.success) {
-                    window.location.reload();
-                } else {
-                    window.display_error_message(response.errors);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("An error occurred:", error);
+            payload: JSON.stringify(packages_payload),
+            content_type: "application/json",
+            on_success: function(response) {
+                window.location.reload();
             }
         });
     });
@@ -94,20 +77,12 @@ function setup_bulk_actions() {
         let url = $(this).closest(".modal").attr("id") === "bulkCheckBackInModal" ? "/packages/checkout/reverse" : "/packages/checkout";
         let packages = {"ids": [...window.selected_packages]};
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: url,
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: packages,
-            success: function(response) {
-                if (response.success) {
-                    window.location.reload();
-                } else {
-                    window.display_error_message(response.errors);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("An error occurred:", error);
+            payload: packages,
+            on_success: function(response) {
+                window.location.reload();
             }
         });
     });
@@ -133,22 +108,13 @@ function setup_bulk_actions() {
             no_ledger: window.no_ledger
         };
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/packages/update",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: JSON.stringify(payload),
-            contentType: "application/json",
-            success: function(response) {
-                if (response.success) {
-                    $("#bulkEditModal").modal("hide");
-                    update_package_rows(price, carrier);
-                } else {
-                    window.display_error_message(response.errors);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("An error occurred:", error);
+            payload: JSON.stringify(payload),
+            on_success: function(response) {
+                $("#bulkEditModal").modal("hide");
+                update_package_rows(price, carrier);
             }
         });
     });
@@ -160,21 +126,13 @@ function setup_bulk_actions() {
             picklist_id: Number(picklist_id)
         };
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/picklists/modify",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: JSON.stringify(post_data),
-            contentType: "application/json",
-            success: function(response) {
-                if (response.success) {
-                    window.location.reload();
-                } else {
-                    window.display_error_message(response.errors);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("An error occurred:", error);
+            payload: JSON.stringify(post_data),
+            content_type: "application/json",
+            on_success: function(response) {
+                window.location.reload();
             }
         });
     });
@@ -184,21 +142,13 @@ function setup_bulk_actions() {
             ids: Array.from(window.selected_packages),
         };
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/picklists/remove",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: JSON.stringify(post_data),
-            contentType: "application/json",
-            success: function(response) {
-                if (response.success) {
-                    window.location.reload();
-                } else {
-                    window.display_error_message(response.errors);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("An error occurred:", error);
+            payload: JSON.stringify(post_data),
+            content_type: "application/json",
+            on_success: function(response) {
+                window.location.reload();
             }
         });
     });

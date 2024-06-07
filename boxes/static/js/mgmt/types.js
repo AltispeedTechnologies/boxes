@@ -25,27 +25,19 @@ function init_types_mgmt_page() {
             payload[data_id] = {shortcode: shortcode, description: description, default_price: default_price};
         });
 
-        $.ajax({
-            url: "/mgmt/packages/types/update",
+        window.ajax_request({
             type: "POST",
-            contentType: "application/json",
-            headers: {
-                "X-CSRFToken": window.csrf_token
-            },
-            data: JSON.stringify(payload),
-            success: function(response) {
-                if (response.success) {
-                    $.each(response.updated_types, function(key, new_id) {
-                        $table.find("tr[data-id=\"" + key + "\"]").attr("data-id", new_id);
-                    });
+            url: "/mgmt/packages/types/update",
+            payload: JSON.stringify(payload),
+            content_type: "application/json",
+            on_success: function(response) {
+                $.each(response.updated_types, function(key, new_id) {
+                    $table.find("tr[data-id=\"" + key + "\"]").attr("data-id", new_id);
+                });
 
-                    $("#savingicon").hide();
-                    $("#successicon").show();
-                    $("#successicon").fadeOut(2000);
-                }
-            },
-            error: function() {
-                alert("Error saving settings.");
+                $("#savingicon").hide();
+                $("#successicon").show();
+                $("#successicon").fadeOut(2000);
             }
         });
     });

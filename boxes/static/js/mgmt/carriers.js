@@ -25,28 +25,19 @@ function init_carrier_mgmt_page() {
             payload[data_id] = {name: name, phone_number: phone_number, website: website};
         });
 
-        $.ajax({
-            url: "/mgmt/packages/carriers/update",
+        window.ajax_request({
             type: "POST",
-            contentType: "application/json",
-            headers: {
-                "X-CSRFToken": window.csrf_token
-            },
-            data: JSON.stringify(payload),
-            success: function(response) {
-                window.display_error_message();
+            url: "/mgmt/packages/carriers/update",
+            payload: JSON.stringify(payload),
+            content_type: "application/json",
+            on_success: function(response) {
+                $.each(response.updated_carriers, function(key, new_id) {
+                    $table.find("tr[data-id=\"" + key + "\"]").attr("data-id", new_id);
+                });
 
-                if (response.success) {
-                    $.each(response.updated_carriers, function(key, new_id) {
-                        $table.find("tr[data-id=\"" + key + "\"]").attr("data-id", new_id);
-                    });
-
-                    $("#savingicon").hide();
-                    $("#successicon").show();
-                    $("#successicon").fadeOut(2000);
-                } else {
-                    window.display_error_message(response.errors);
-                }
+                $("#savingicon").hide();
+                $("#successicon").show();
+                $("#successicon").fadeOut(2000);
             }
         });
     });

@@ -1,33 +1,25 @@
 function request_create_package(form_data, hr_fields) {
-    $.ajax({
+    window.ajax_request({
         type: "POST",
         url: "/packages/checkin/create",
-        headers: {
-            "X-CSRFToken": window.csrf_token
-        },
-        data: form_data,
-        success: function(response) {
-            $(".is-invalid").removeClass("is-invalid");
-            if (response.success) {
-                window.packages.add(response.id);
-                form_data.id = response.id;
-                form_data.carrier = hr_fields.carrier;
-                form_data.account = hr_fields.account;
-                form_data.package_type = hr_fields.package_type;
+        payload: form_data,
+        on_success: function(response) {
+            window.packages.add(response.id);
+            form_data.id = response.id;
+            form_data.carrier = hr_fields.carrier;
+            form_data.account = hr_fields.account;
+            form_data.package_type = hr_fields.package_type;
 
-                if (response.tracking_code) {
-                    form_data.tracking_code = response.tracking_code;
-                }
-
-                display_packages(form_data);
-                reset_form_fields();
-                $(document).trigger("rowsUpdated");
-            } else {
-                handle_errors(response);
+            if (response.tracking_code) {
+                form_data.tracking_code = response.tracking_code;
             }
+
+            display_packages(form_data);
+            reset_form_fields();
+            $(document).trigger("rowsUpdated");
         },
-        error: function(xhr, status, error) {
-            window.display_error_message(error);
+        on_response: function() {
+            $(".is-invalid").removeClass("is-invalid");
         }
     });
 
@@ -136,73 +128,44 @@ function display_packages(response) {
     $("tbody#checkin").append(new_row);
 }
 
-function handle_errors(response) {
-    if (response.errors) {
-        window.display_error_message(response.errors);
-    } else if (response.form_errors) {
-        $.each(response.form_errors, function(field, errors) {
-            if (errors.length > 0) {
-                $("#id_" + field).addClass("is-invalid");
-                $("#id_" + field).next(".invalid-feedback").text(errors[0]).show();
-            }
-        });
-    }
-}
-
 function handle_checkin() {
     let selected_queue = localStorage.getItem("selected_queue");
 
     let packages_array = [...window.packages];
     let packages_payload = { ids: packages_array, queue_id: selected_queue };
-    $.ajax({
+    window.ajax_request({
         type: "POST",
         url: "/packages/checkin/submit",
-        headers: {
-            "X-CSRFToken": window.csrf_token
-        },
-        data: packages_payload,
-        success: function(response) {
-            if (response.success) {
-                window.display_error_message();
-                window.open(`/packages/label?ids=${packages_array.toString()}`, "_blank");
-                document.querySelectorAll("tbody#checkin tr:not(.visually-hidden)").forEach(row => row.remove());
-                $(document).trigger("rowsUpdated");
-                window.packages.clear();
-                $("#checkinbtn").prop("disabled", true);
-            } else {
-                window.display_error_message(response.errors);
-            }
-        },
-        error: function(xhr, status, error) {
-            console.log("Error: " + error);
+        payload: packages_payload,
+        on_success: function(response) {
+            window.open(`/packages/label?ids=${packages_array.toString()}`, "_blank");
+            document.querySelectorAll("tbody#checkin tr:not(.visually-hidden)").forEach(row => row.remove());
+            $(document).trigger("rowsUpdated");
+            window.packages.clear();
+            $("#checkinbtn").prop("disabled", true);
         }
     });
-
 }
 
 function load_queue(selected_queue) {
-    $.ajax({
+    window.ajax_request({
         type: "GET",
         url: "/queues/" + selected_queue + "/packages",
-        headers: {
-            "X-CSRFToken": window.csrf_token
-        },
-        success: function(response) {
-            document.querySelectorAll("tbody#checkin tr:not(.visually-hidden)").forEach(row => row.remove());
-            window.packages.clear();
-
-            if (response.success && response.packages.length > 0) {
+        on_success: function(response) {
+            if (response.packages.length > 0) {
                 response.packages.forEach(function(package) {
                     window.packages.add(package.package_id);
                     display_packages(package);
                 });
 
                 $(document).trigger("rowsUpdated");
-            } else if (response.success && response.packages.length == 0) {
-                $("#checkinbtn").prop("disabled", true);
             } else {
-                window.display_error_message(response.errors);
+                $("#checkinbtn").prop("disabled", true);
             }
+        },
+        on_response: function(response) {
+            document.querySelectorAll("tbody#checkin tr:not(.visually-hidden)").forEach(row => row.remove());
+            window.packages.clear();
         }
     });
 }

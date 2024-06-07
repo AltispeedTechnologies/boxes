@@ -31,15 +31,12 @@ function init_email_mgmt_page() {
             }
         });
 
-        $.ajax({
-            url: "/mgmt/email/update",
+        window.ajax_request({
             type: "POST",
-            contentType: "application/json",
-            headers: {
-                "X-CSRFToken": window.csrf_token
-            },
-            data: JSON.stringify(form_data),
-            success: function() {
+            url: "/mgmt/email/update",
+            payload: JSON.stringify(form_data),
+            content_type: "application/json",
+            on_success: function() {
                 $("#savingicon").hide();
                 $("#successicon").show();
                 $("#successicon").fadeOut(2000);

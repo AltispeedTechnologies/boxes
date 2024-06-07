@@ -14,7 +14,7 @@ def type_search(request):
     results = [{"id": pkgtype.id,
                 "text": pkgtype.description,
                 "default_price": pkgtype.default_price} for pkgtype in pkgtypes]
-    return JsonResponse({"results": results})
+    return JsonResponse({"success": True, "results": results})
 
 
 @require_http_methods(["GET"])

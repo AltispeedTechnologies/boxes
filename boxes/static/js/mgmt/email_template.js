@@ -32,16 +32,13 @@ function init_email_template_mgmt_page() {
     $("#template-selector").change(function() {
         var id = $(this).val();
 
-        $.ajax({
-            url: "/mgmt/email/templates/fetch",
+        window.ajax_request({
             type: "GET",
-            data: {"id": id},
-            headers: {
-                "X-CSRFToken": window.csrf_token
-            },
-            success: function(data) {
-                $("#content").summernote("code", data.content);
-                $("#email_subject").val(data.subject);
+            url: "/mgmt/email/templates/fetch",
+            payload: {"id": id},
+            on_success: function(response) {
+                $("#content").summernote("code", response.content);
+                $("#email_subject").val(response.subject);
             }
         });
     });
@@ -51,27 +48,20 @@ function init_email_template_mgmt_page() {
         var template_id = $("#template-selector").val();
         var content = $("#content").summernote("code");
         var subject = $("#email_subject").val();
+        var payload = {
+            "id": template_id,
+            "content": content,
+            "subject": subject
+        };
 
-        $.ajax({
-            url: "/mgmt/email/templates/update",
+        window.ajax_request({
             type: "POST",
-            data: {
-                "id": template_id,
-                "content": content,
-                "subject": subject
-            },
-            headers: {
-                "X-CSRFToken": window.csrf_token
-            },
-            success: function(response) {
-                window.display_error_message();
-                if (response.success) {
-                    $("#savingicon").hide();
-                    $("#successicon").show();
-                    $("#successicon").fadeOut(2000);
-                } else {
-                    window.display_error_message(response.errors);
-                }
+            url: "/mgmt/email/templates/update",
+            payload: payload,
+            on_success: function() {
+                $("#savingicon").hide();
+                $("#successicon").show();
+                $("#successicon").fadeOut(2000);
             }
         });
     });
@@ -80,28 +70,16 @@ function init_email_template_mgmt_page() {
         event.preventDefault();
         var template_name = $("#templateName").val();
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/mgmt/email/templates/add",
-            data: {name: template_name},
-            headers: {
-                "X-CSRFToken": window.csrf_token
-            },
-            success: function(response) {
-                window.display_error_message();
-
-                if (response.success) {
-                    var new_option = new Option(template_name, response.id, true, true);
-                    $("#template-selector").append(new_option).trigger("change");
-                    $("#templateName").val("");
-                    $("#email_subject").val("");
-                    $("#addTemplateModal").modal("hide");
-                } else {
-                    window.display_error_message(response.errors);
-                }
-            },
-            error: function(response) {
-                window.display_error_message(response.errors);
+            payload: {name: template_name},
+            on_success: function(response) {
+                var new_option = new Option(template_name, response.id, true, true);
+                $("#template-selector").append(new_option).trigger("change");
+                $("#templateName").val("");
+                $("#email_subject").val("");
+                $("#addTemplateModal").modal("hide");
             }
         });
     });

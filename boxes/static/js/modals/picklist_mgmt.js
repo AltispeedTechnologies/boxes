@@ -22,36 +22,29 @@ function picklist_list_page() {
             var payload = {picklist_id: new_picklist};
         }
 
-        $.ajax({
-            url: "/picklists/" + current_id + "/remove",
+        window.ajax_request({
             type: "POST",
-            headers: {
-                "X-CSRFToken": window.csrf_token
-            },
-            contentType: "application/json",
-            data: JSON.stringify(payload),
-            success: function(response) {
-                window.display_error_message();
-
-                if (response.success) {
-                    // Update the count for the row this picklist was merged into
-                    if (response.new_count) {
-                        let $tr = $("tr[data-id=\"" + new_picklist + "\"]");
-                        $tr.find("td#count").text(response.new_count);
-                    }
-
-                    // Update the queue count as well
-                    if (response.new_queue_count) {
-                        let $tr = $("tr[data-id=\"" + new_picklist + "\"]");
-                        $tr.find("td#queue_count").text(response.new_queue_count);
-                    }
-
-                    // Remove the row for the picklist we just removed
-                    let $old_tr = $("tr[data-id=\"" + current_id + "\"]");
-                    $old_tr.remove();
-                } else {
-                    window.display_error_message(response.errors);
+            url: "/picklists/" + current_id + "/remove",
+            payload: JSON.stringify(payload),
+            content_type: "application/json",
+            on_success: function(response) {
+                // Update the count for the row this picklist was merged into
+                if (response.new_count) {
+                    let $tr = $("tr[data-id=\"" + new_picklist + "\"]");
+                    $tr.find("td#count").text(response.new_count);
                 }
+
+                // Update the queue count as well
+                if (response.new_queue_count) {
+                    let $tr = $("tr[data-id=\"" + new_picklist + "\"]");
+                    $tr.find("td#queue_count").text(response.new_queue_count);
+                }
+
+                // Remove the row for the picklist we just removed
+                let $old_tr = $("tr[data-id=\"" + current_id + "\"]");
+                $old_tr.remove();
+            },
+            on_response: function() {
                 $("#removePicklistModal").modal("hide");
             }
         });
@@ -73,23 +66,16 @@ function picklist_list_page() {
         if (date !== "") { payload["date"] = date; }
         if (description !== "") { payload["description"] = description; }
 
-        $.ajax({
-            url: "/picklists/create",
+        window.ajax_request({
             type: "POST",
-            headers: {
-                "X-CSRFToken": window.csrf_token
+            url: "/picklists/create",
+            payload: JSON.stringify(payload),
+            content_type: "application/json",
+            on_success: function() {
+                window.location.reload();
             },
-            contentType: "application/json",
-            data: JSON.stringify(payload),
-            success: function(response) {
-                window.display_error_message();
+            on_response: function() {
                 $("#picklistNewModal").modal("hide");
-
-                if (response.success) {
-                    window.location.reload();
-                } else {
-                    window.display_error_message(response.errors);
-                }
             }
         });
     });

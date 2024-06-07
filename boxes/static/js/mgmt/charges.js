@@ -50,15 +50,12 @@ function init_charges_mgmt_page() {
 
         charge_rules.push({ endpoint: $("#endpoint").val() });
 
-        $.ajax({
-            url: "/mgmt/charges/update",
+        window.ajax_request({
             type: "POST",
-            contentType: "application/json",
-            headers: {
-                "X-CSRFToken": window.csrf_token
-            },
-            data: JSON.stringify(charge_rules),
-            success: function() {
+            url: "/mgmt/charges/update",
+            payload: JSON.stringify(charge_rules),
+            content_type: "application/json",
+            on_success: function() {
                 $("#savingicon").hide();
                 $("#successicon").show();
                 $("#successicon").fadeOut(2000);

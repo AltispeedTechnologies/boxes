@@ -4,34 +4,25 @@ function verify_package() {
     let picklist_id = $("#tracking_code").attr("data-picklist-id");
     let form_data = {tracking_code: $("#tracking_code").val()};
 
-    $.ajax({
+    window.ajax_request({
         type: "POST",
         url: "/picklists/" + picklist_id + "/checkout/verify",
-        headers: {
-            "X-CSRFToken": window.csrf_token
-        },
-        contentType: "application/json",
-        data: JSON.stringify(form_data),
-        success: function(response) {
+        payload: JSON.stringify(form_data),
+        content_type: "application/json",
+        on_success: function(response) {
             $("#savingicon").hide();
-            if (response.success) {
-                let package_id = response.package.id;
 
-                if (packages.has(package_id)) {
-                    window.display_error_message(["Parcel already in list"]);
-                } else {
-                    display_packages(response.package);
-                    packages.add(package_id);
-                    $("#tracking_code").val("");
-                    $("#successicon").show();
-                    $("#successicon").fadeOut(1000);
-                }
+            let package_id = response.package.id;
+
+            if (packages.has(package_id)) {
+                window.display_error_message(["Parcel already in list"]);
             } else {
-                window.display_error_message(response.errors);
+                display_packages(response.package);
+                packages.add(package_id);
+                $("#tracking_code").val("");
+                $("#successicon").show();
+                $("#successicon").fadeOut(1000);
             }
-        },
-        error: function(xhr, status, error) {
-            window.display_error_message(error);
         }
     });
 }
@@ -66,20 +57,12 @@ function init_picklist_checkout_page() {
         let packages_array = Array.from(packages);
         let payload = {"ids": packages_array};
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/packages/checkout",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: payload,
-            success: function(response) {
-                if (response.success) {
-                    window.location.reload();
-                } else {
-                    window.display_error_message(response.errors);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("An error occurred:", error);
+            payload: payload,
+            on_success: function(response) {
+                window.location.reload();
             }
         });
     });

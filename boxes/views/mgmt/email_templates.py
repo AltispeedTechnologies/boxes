@@ -21,14 +21,15 @@ def add_email_template(request):
     template_name = request.POST.get("name")
     if template_name:
         new_template = EmailTemplate.objects.create(name=template_name, subject="", content="")
-        return JsonResponse({"id": new_template.id})
+        return JsonResponse({"success": True, "id": new_template.id})
 
 
 @require_http_methods(["GET"])
 def email_template_content(request):
     template_id = request.GET.get("id")
     template = EmailTemplate.objects.get(id=template_id)
-    return JsonResponse({"content": template.content,
+    return JsonResponse({"success": True,
+                         "content": template.content,
                          "subject": template.subject})
 
 

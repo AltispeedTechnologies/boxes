@@ -6,13 +6,10 @@ function email_contents() {
 
         let sent_email_id = $(this).closest("tr").attr("data-id");
 
-        $.ajax({
-            url: "/emails/" + sent_email_id + "/contents",
+        window.ajax_request({
             type: "GET",
-            headers: {
-                "X-CSRFToken": window.csrf_token
-            },
-            success: function(response) {
+            url: "/emails/" + sent_email_id + "/contents",
+            on_success: function(response) {
                 $("#loadingstatus").hide();
                 $("#emailcontents").html(response.contents);
                 $("#showEmailModalLabel").text(response.subject);

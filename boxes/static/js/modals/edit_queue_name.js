@@ -14,21 +14,13 @@ function edit_queue_name() {
             description: new_queue_name
         };
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/queues/" + queue_id + "/update",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: JSON.stringify(payload),
-            success: function(response) {
-                if (response.success) {
-                    $("#queue_select option:selected").text(new_queue_name);
-                    $("#editQueueNameModal").modal("hide");
-                } else {
-                    console.error(response.errors);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("An error occurred:", error);
+            payload: JSON.stringify(payload),
+            on_success: function() {
+                $("#queue_select option:selected").text(new_queue_name);
+                $("#editQueueNameModal").modal("hide");
             }
         });
     });

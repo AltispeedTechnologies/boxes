@@ -52,30 +52,22 @@ function init_user_edit_page() {
             return;
         }
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/accounts/aliases/update",
-            contentType: "application/json",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: JSON.stringify(aliases),
-            success: function(response) {
-                if (response.success) {
-                    $.each(response.aliases, function(old_id, new_id) {
-                        if (old_id.startsWith("NEW_")) {
-                            $('input[data-id="' + old_id + '"]').attr("data-id", new_id);
-                        } else if (old_id.startsWith("REMOVE_")) {
-                            $('input[data-id="' + old_id + '"]').closest("div").remove();
-                        }
-                    });
-                    $("#savingiconaliases").hide();
-                    $("#successiconaliases").show();
-                    setTimeout(function() { $("#successiconaliases").fadeOut(); }, 3000);
-                } else if (response.errors) {
-                    alert("Error: " + response.errors);
-                }
-            },
-            error: function(response) {
-                alert("Error saving data");
+            payload: JSON.stringify(aliases),
+            content_type: "application/json",
+            on_success: function(response) {
+                $.each(response.aliases, function(old_id, new_id) {
+                    if (old_id.startsWith("NEW_")) {
+                        $('input[data-id="' + old_id + '"]').attr("data-id", new_id);
+                    } else if (old_id.startsWith("REMOVE_")) {
+                        $('input[data-id="' + old_id + '"]').closest("div").remove();
+                    }
+                });
+                $("#savingiconaliases").hide();
+                $("#successiconaliases").show();
+                setTimeout(function() { $("#successiconaliases").fadeOut(); }, 3000);
             }
         });
     });
@@ -128,30 +120,22 @@ function init_user_edit_page() {
             return;
         }
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/users/emails/update",
-            contentType: "application/json",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: JSON.stringify(emails),
-            success: function(response) {
-                if (response.success) {
-                    $.each(response.emails, function(old_id, new_id) {
-                        if (old_id.startsWith("NEW_")) {
-                            $('input[data-id="' + old_id + '"]').attr("data-id", new_id);
-                        } else if (old_id.startsWith("REMOVE_")) {
-                            $('input[data-id="' + old_id + '"]').closest("div").remove();
-                        }
-                    });
-                    $("#savingiconemails").hide();
-                    $("#successiconemails").show();
-                    setTimeout(function() { $("#successiconemails").fadeOut(); }, 3000);
-                } else if (response.errors) {
-                    alert("Error: " + response.errors);
-                }
-            },
-            error: function() {
-                alert("Error saving data.");
+            payload: JSON.stringify(emails),
+            content_type: "application/json",
+            on_success: function(response) {
+                $.each(response.emails, function(old_id, new_id) {
+                    if (old_id.startsWith("NEW_")) {
+                        $('input[data-id="' + old_id + '"]').attr("data-id", new_id);
+                    } else if (old_id.startsWith("REMOVE_")) {
+                        $('input[data-id="' + old_id + '"]').closest("div").remove();
+                    }
+                });
+                $("#savingiconemails").hide();
+                $("#successiconemails").show();
+                setTimeout(function() { $("#successiconemails").fadeOut(); }, 3000);
             }
         });
     });
@@ -171,63 +155,41 @@ function init_user_edit_page() {
         var payload = {};
         payload[user_id] = form_data;
 
-        $.ajax({
+        window.ajax_request({
             type: "POST",
             url: "/users/update",
-            contentType: "application/json",
-            headers: {"X-CSRFToken": window.csrf_token},
-            data: JSON.stringify(payload),
-            success: function(response) {
-                $form.find(".is-invalid").removeClass("is-invalid");
+            payload: JSON.stringify(payload),
+            content_type: "application/json",
+            on_success: function(response) {
+                if (billable != initial_billable_val) {
+                    let account_id = $("#accountnotes").attr("data-id");
+                    let acct_payload = {billable: billable};
+                    initial_billable_val = billable;
 
-                if (response.success) {
-                    window.display_error_message();
-
-                    if (billable != initial_billable_val) {
-                        let account_id = $("#accountnotes").attr("data-id");
-                        let acct_payload = {billable: billable};
-                        initial_billable_val = billable;
-
-                        $.ajax({
-                            type: "POST",
-                            url: "/accounts/" + account_id + "/update",
-                            contentType: "application/json",
-                            headers: {"X-CSRFToken": window.csrf_token},
-                            data: JSON.stringify(acct_payload),
-                            success: function(response) {
-                                if (response.success) {
-                                    window.display_error_message();
-                                    $("#savingicondetails").hide();
-                                    $("#successicondetails").show();
-                                    setTimeout(function() {
-                                        $("#successicondetails").fadeOut();
-                                    }, 3000);
-                                } else if (response.errors) {
-                                    window.display_error_message(response.errors);
-                                }
-                            },
-                        });
-                    } else {
-                        window.display_error_message();
-                        $("#savingicondetails").hide();
-                        $("#successicondetails").show();
-                        setTimeout(function() {
-                            $("#successicondetails").fadeOut();
-                        }, 3000);
-                    }
-                } else if (response.errors) {
-                    window.display_error_message(response.errors);
-                } else if (response.form_errors) {
-                    $.each(response.form_errors, function(field, errors) {
-                        if (errors.length > 0) {
-                            $form.find("#" + field).addClass("is-invalid");
-                            $form.find("#" + field).next(".invalid-feedback").text(errors[0]).show();
+                    window.ajax_request({
+                        type: "POST",
+                        url: "/accounts/" + account_id + "/update",
+                        payload: JSON.stringify(acct_payload),
+                        content_type: "application/json",
+                        on_success: function(response) {
+                            window.display_error_message();
+                            $("#savingicondetails").hide();
+                            $("#successicondetails").show();
+                            setTimeout(function() {
+                                $("#successicondetails").fadeOut();
+                            }, 3000);
                         }
                     });
+                } else {
+                    $("#savingicondetails").hide();
+                    $("#successicondetails").show();
+                    setTimeout(function() {
+                        $("#successicondetails").fadeOut();
+                    }, 3000);
                 }
             },
-            error: function() {
-                alert("Error saving data.");
+            on_response: function(response) {
+                $form.find(".is-invalid").removeClass("is-invalid");
             }
         });
     });

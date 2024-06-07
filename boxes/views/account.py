@@ -19,7 +19,7 @@ def account_search(request):
     results = [{"id": alias.account.id,
                 "text": alias.alias,
                 "billable": alias.account.billable} for alias in aliases]
-    return JsonResponse({"results": results})
+    return JsonResponse({"success": True, "results": results})
 
 
 @require_http_methods(["GET"])
