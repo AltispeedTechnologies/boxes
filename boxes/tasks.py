@@ -43,6 +43,10 @@ def send_emails():
 
             item.delete()
 
+    global_settings, _ = GlobalSettings.objects.get_or_create(id=1)
+    if not global_settings.email_sending:
+        return
+
     for account_id, templates in candidates.items():
         user_accounts = UserAccount.objects.filter(account__id=account_id)
         users = [user_account.user for user_account in user_accounts]
@@ -64,8 +68,6 @@ def send_emails():
 
             for user in users:
                 hr_name = user.first_name + " " + user.last_name
-                # FIXME
-                recipient_email = email_settings.sender_email
                 email_html = template.content
 
                 pattern = r'<span [^>]*class="custom-block[^"]*"[^>]*>([^<]+)</span>'
@@ -81,56 +83,59 @@ def send_emails():
                 email_text = re.sub(r"<br\s*/?>", "\n", email_text, flags=re.IGNORECASE)
                 email_text = unescape(email_text)
 
-                email_payload = {
-                    "Messages": [
-                        {
-                            "From": {
-                                "Email": email_settings.sender_email,
-                                "Name": email_settings.sender_name
-                            },
-                            "To": [
-                                {
-                                    "Email": recipient_email,
-                                    "Name": hr_name
-                                }
-                            ],
-                            "Subject": template.subject,
-                            "TextPart": email_text,
-                            "HTMLPart": email_html
-                        }
-                    ]
-                }
+                for recipient_email_obj in CustomUserEmail.objects.filter(user=user):
+                    recipient_email = recipient_email_obj.email
 
-                # Send the email
-                result = mailjet.send.create(data=email_payload)
+                    email_payload = {
+                        "Messages": [
+                            {
+                                "From": {
+                                    "Email": email_settings.sender_email,
+                                    "Name": email_settings.sender_name
+                                },
+                                "To": [
+                                    {
+                                        "Email": recipient_email,
+                                        "Name": hr_name
+                                    }
+                                ],
+                                "Subject": template.subject,
+                                "TextPart": email_text,
+                                "HTMLPart": email_html
+                            }
+                        ]
+                    }
 
-                # Interpret the immediate result and store it for later analyzation
-                json_result = result.json()
-                json_message = json_result["Messages"][0]
-                success = False
-                # See https://dev.mailjet.com/email/guides/send-api-v31/
-                if json_message["Status"] == "success":
-                    success = True
+                    # Send the email
+                    result = mailjet.send.create(data=email_payload)
 
-                # We are only sending one email per request, so it will always be the first item
-                # If there is no message_uuid from the response, we can assume it was also unsuccessful
-                message_uuid = None
-                if success:
-                    message_uuid = json_message["To"][0]["MessageUUID"]
+                    # Interpret the immediate result and store it for later analyzation
+                    json_result = result.json()
+                    json_message = json_result["Messages"][0]
+                    success = False
+                    # See https://dev.mailjet.com/email/guides/send-api-v31/
+                    if json_message["Status"] == "success":
+                        success = True
 
-                # Create main SentEmail object
-                sent_email = SentEmail.objects.create(account_id=account_id,
-                                                      subject=template.subject,
-                                                      email=recipient_email,
-                                                      success=success,
-                                                      message_uuid=message_uuid)
-                # Store the contents of the sent email
-                SentEmailContents.objects.create(sent_email=sent_email, html=email_html)
-                # Ensure each package can have a record of a sent email
-                for package_id in package_ids:
-                    SentEmailPackage.objects.create(sent_email=sent_email, package_id=package_id)
-                # Store the raw JSON result, in case something goes haywire
-                SentEmailResult.objects.create(sent_email=sent_email, response=json_result)
+                    # We are only sending one email per request, so it will always be the first item
+                    # If there is no message_uuid from the response, we can assume it was also unsuccessful
+                    message_uuid = None
+                    if success:
+                        message_uuid = json_message["To"][0]["MessageUUID"]
+
+                    # Create main SentEmail object
+                    sent_email = SentEmail.objects.create(account_id=account_id,
+                                                          subject=template.subject,
+                                                          email=recipient_email,
+                                                          success=success,
+                                                          message_uuid=message_uuid)
+                    # Store the contents of the sent email
+                    SentEmailContents.objects.create(sent_email=sent_email, html=email_html)
+                    # Ensure each package can have a record of a sent email
+                    for package_id in package_ids:
+                        SentEmailPackage.objects.create(sent_email=sent_email, package_id=package_id)
+                    # Store the raw JSON result, in case something goes haywire
+                    SentEmailResult.objects.create(sent_email=sent_email, response=json_result)
 
 
 @shared_task

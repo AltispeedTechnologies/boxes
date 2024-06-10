@@ -17,6 +17,7 @@ function init_email_mgmt_page() {
         $("#savingicon").show();
 
         var form_data = {
+            email_sending: $("#email-sending").is(":checked"),
             sender_name: $("#sender-name").val(),
             sender_email: $("#sender-email").val(),
             check_in_template: $("#check-in-template").val(),
