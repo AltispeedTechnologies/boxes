@@ -1,6 +1,6 @@
 import json
 from boxes.management.exception_catcher import exception_catcher
-from boxes.models import PackageLedger
+from boxes.models import PackageLedger, SentEmail
 from datetime import datetime, timedelta
 from django.db.models import Count, Case, When, IntegerField
 from django.db.models.functions import TruncDay
@@ -32,8 +32,8 @@ def report_stats_chart(request):
     # Prepare date list for x-axis
     x_data = [(starting_point + timedelta(days=i)).strftime("%m/%d/%Y") for i in range(days + 1)]
 
-    # Query database once to get all counts by day and state
-    counts = PackageLedger.objects.filter(
+    # Query PackageLedger
+    package_counts = PackageLedger.objects.filter(
         timestamp__gte=starting_point,
         timestamp__lt=today + timedelta(days=1)
     ).annotate(
@@ -43,8 +43,22 @@ def report_stats_chart(request):
         packages_out=Count(Case(When(state=2, then=1), output_field=IntegerField()))
     ).order_by("date")
 
+    # Query SentEmail
+    email_counts = SentEmail.objects.filter(
+        timestamp__gte=starting_point,
+        timestamp__lt=today + timedelta(days=1)
+    ).annotate(
+        date=TruncDay("timestamp")
+    ).values("date").annotate(
+        emails_sent=Count('id')
+    ).order_by("date")
+
     # Prepare data structures for response
-    y_data = {"Packages In": [0] * (days + 1), "Packages Out": [0] * (days + 1)}
+    y_data = {
+        "Packages In": [0] * (days + 1),
+        "Packages Out": [0] * (days + 1),
+        "Emails Sent": [0] * (days + 1)
+    }
 
     # Map counts to the correct date indices
     start_date_index = {
@@ -54,9 +68,14 @@ def report_stats_chart(request):
         )
     }
 
-    for count in counts:
+    # Combine data
+    for count in package_counts:
         index = start_date_index[count["date"].strftime("%m/%d/%Y")]
         y_data["Packages In"][index] = count["packages_in"]
         y_data["Packages Out"][index] = count["packages_out"]
+
+    for count in email_counts:
+        index = start_date_index[count["date"].strftime("%m/%d/%Y")]
+        y_data["Emails Sent"][index] = count["emails_sent"]
 
     return JsonResponse({"success": True, "x_data": x_data, "y_data": y_data})

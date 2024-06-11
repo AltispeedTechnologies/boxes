@@ -41,6 +41,7 @@ function init_reports_page() {
     window.colors = [
         "rgba(54, 162, 235, 1)",
         "rgba(255, 99, 132, 1)",
+        "rgba(245, 179, 66, 1)",
     ];
 
     var payload = {filter: "week"};
