@@ -96,4 +96,8 @@ urlpatterns = [
     path("users/new", is_staff(create_user), name="create_user"),
     path("users/update", is_staff(update_user), name="update_user"),
     path("users/emails/update", is_staff(update_user_emails), name="update_user_emails"),
+
+    # Reports
+    path("reports/", is_staff(reports), name="reports"),
+    path("reports/stats/chart", is_staff(report_stats_chart), name="report_stats_chart")
 ]
