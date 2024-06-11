@@ -17,7 +17,7 @@ def reports(request):
 
 # Chart on main reports page
 @require_http_methods(["POST"])
-#@exception_catcher()
+@exception_catcher()
 def report_stats_chart(request):
     data = json.loads(request.body)
     timeframe_filter = data.get("filter")
@@ -47,7 +47,13 @@ def report_stats_chart(request):
     y_data = {"Packages In": [0] * (days + 1), "Packages Out": [0] * (days + 1)}
 
     # Map counts to the correct date indices
-    start_date_index = {date.strftime("%m/%d/%Y"): i for i, date in enumerate((starting_point + timedelta(days=i)) for i in range(days + 1))}
+    start_date_index = {
+        date.strftime("%m/%d/%Y"): i
+        for i, date in enumerate(
+            (starting_point + timedelta(days=i)) for i in range(days + 1)
+        )
+    }
+
     for count in counts:
         index = start_date_index[count["date"].strftime("%m/%d/%Y")]
         y_data["Packages In"][index] = count["packages_in"]
