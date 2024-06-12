@@ -35,6 +35,13 @@ function init_reports_page() {
         data: {
             labels: [],
             datasets: []
+        },
+        options: {
+            plugins: {
+                legend: {
+                    position: "bottom"
+                }
+            }
         }
     });
 
