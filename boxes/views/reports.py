@@ -1,6 +1,6 @@
 import json
 from boxes.management.exception_catcher import exception_catcher
-from boxes.models import PackageLedger, SentEmail
+from boxes.models import PackageLedger, Report, SentEmail
 from datetime import datetime, timedelta
 from django.db.models import Count, Case, When, IntegerField
 from django.db.models.functions import TruncDay
@@ -12,7 +12,62 @@ from django.views.decorators.http import require_http_methods
 
 @require_http_methods(["GET"])
 def reports(request):
-    return render(request, "reports/index.html")
+    reports = Report.objects.values("id", "name")
+
+    return render(request, "reports/index.html", {"reports": reports})
+
+
+def clean_config(config):
+    # Ensure the top-level keys are present
+    for main_key in ["fields", "sort_by"]:
+        if main_key not in config:
+            return False
+
+    # Enforce data types for the top-level keys
+    if not type(config["fields"]) is list:
+        return False
+    elif not type(config["sort_by"]) is str:
+        return False
+
+    # Only allow specific values in fields
+    allowed_fields = ["account", "carrier", "check_in_time", "check_out_time", "checked_in_by", "checked_out_by",
+                      "comment", "inside", "package_type", "price", "status", "tracking_code"]
+    for field in config["fields"]:
+        if field not in allowed_fields:
+            return False
+
+    # We should only sort by a known field
+    if config["sort_by"] not in allowed_fields:
+        return False
+
+    return True
+
+
+@require_http_methods(["POST"])
+@exception_catcher()
+def report_new(request):
+    data = json.loads(request.body)
+    name = data.get("name", None)
+    config = data.get("config", None)
+
+    # The UI prevents this all from happening, just safeguards
+    if not name or not config:
+        raise ValueError
+    elif not clean_config(config):
+        raise ValueError
+    elif len(name) > 64:
+        raise ValueError
+    elif Report.objects.filter(name=name).count() > 0:
+        return JsonResponse({"success": False,
+                             "form_errors": {"reportname": ["Name already exists"]}})
+
+    Report.objects.create(name=name, config=config)
+
+
+@require_http_methods(["POST"])
+@exception_catcher()
+def report_remove(request, pk):
+    Report.objects.filter(pk=pk).delete()
 
 
 # Chart on main reports page

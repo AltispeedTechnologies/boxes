@@ -1,0 +1,88 @@
+{% block content %}
+<div class="modal fade" id="newReportModal" tabindex="-1" aria-labelledby="newReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newReportModalLabel">Create New Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container">
+                <div class="input-group mb-4">
+                    <span class="input-group-text">Report Name</span>
+                    <input class="form-control" type="text" id="reportname" maxlength="64">
+                    <div class="invalid-feedback"></div>
+                </div>
+
+                <h6>Select fields to display:</h6>
+                <div id="display_fields">
+                    <div class="btn-group mb-1" role="group">
+                        <input type="checkbox" class="btn-check" id="account" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="account">Account</label>
+
+                        <input type="checkbox" class="btn-check" id="carrier" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="carrier">Carrier</label>
+
+                        <input type="checkbox" class="btn-check" id="check_in_time" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="check_in_time">Check In Time</label>
+
+                        <input type="checkbox" class="btn-check" id="check_out_time" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="check_out_time">Check Out Time</label>
+
+                        <input type="checkbox" class="btn-check" id="checked_in_by" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="checked_in_by">Checked In By</label>
+
+                        <input type="checkbox" class="btn-check" id="checked_out_by" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="checked_out_by">Checked Out By</label>
+                    </div>
+                    <div class="btn-group" role="group">
+                        <input type="checkbox" class="btn-check" id="comment" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="comment">Comment</label>
+
+                        <input type="checkbox" class="btn-check" id="inside" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="inside">Inside</label>
+
+                        <input type="checkbox" class="btn-check" id="package_type" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="package_type">Package Type</label>
+
+                        <input type="checkbox" class="btn-check" id="price" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="price">Price</label>
+
+                        <input type="checkbox" class="btn-check" id="status" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="status">Status</label>
+
+                        <input type="checkbox" class="btn-check" id="tracking_code" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="tracking_code">Tracking Code</label>
+                    </div>
+                </div>
+
+                <h6 class="my-2">Sort by field:</h6>
+                <select id="sort_by_field">
+                    <option value="account">Account</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="removeReportModal" tabindex="-1" aria-labelledby="removeReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="removeReportModalLabel">Remove Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container">
+                <p>Are you sure you would like to remove this report?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Remove</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

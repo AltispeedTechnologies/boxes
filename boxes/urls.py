@@ -99,5 +99,7 @@ urlpatterns = [
 
     # Reports
     path("reports/", is_staff(reports), name="reports"),
+    path("reports/new", is_staff(report_new), name="report_new"),
+    path("reports/<int:pk>/remove", is_staff(report_remove), name="report_remove"),
     path("reports/stats/chart", is_staff(report_stats_chart), name="report_stats_chart")
 ]

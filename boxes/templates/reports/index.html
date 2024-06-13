@@ -3,7 +3,7 @@
 <div class="bg-body shadow rounded p-3" id="reportspage">
     <div class="container mb-4">
         <div class="row bg-primary bg-gradient rounded mb-3">
-            <h2 class="text-center text-white py-2">Reports</h2>
+            <h2 class="text-center text-white py-2">Reports and Data</h2>
         </div>
     </div>
 
@@ -18,8 +18,54 @@
     </div>
 
     <canvas width="100%" height="25%" id="mainchart"></canvas>
+
+    <hr />
+
+    <h2 class="text-center">Reports</h2>
+
+    <div class="d-flex justify-content-end">
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newReportModal">
+            <i class="fas fa-plus"></i> Add
+        </button>
+    </div>
+
+    {% if reports %}
+    <div class="table-responsive mt-3">
+        <table class="table table-hover table-bordered">
+            <thead class="thead-dark align-top">
+                <tr>
+                    <th>Report Name</th>
+                    <th class="text-nowrap" style="width: 1%;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="reports">
+                {% for report in reports %}
+                <tr data-id="{{ report.id }}">
+                    <td>{{ report.name }}</td>
+                    <td class="text-nowrap" style="width: 1%;">
+                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#removeReportModal">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr class="visually-hidden">
+                    <td></td>
+                    <td class="text-nowrap" style="width: 1%;">
+                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#removeReportModal">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <h6 class="text-center">No reports found.</h6>
+    {% endif %}
 </div>
 
+{% include "reports/modals.html" %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% load static %}
 <script src="{% static 'js/reports.js' %}"></script>

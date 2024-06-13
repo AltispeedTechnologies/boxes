@@ -192,9 +192,11 @@ window.ajax_request = function({ type, url, payload = null, content_type = "appl
         processData: process_data,
         success: function(response) {
             window.display_error_message();
+            $(".is-invalid").removeClass("is-invalid");
+            $(".invalid-feedback").text("").hide();
 
             if (on_response) {
-                on_response();
+                on_response(response);
             }
 
             if (response.success) {
@@ -202,8 +204,8 @@ window.ajax_request = function({ type, url, payload = null, content_type = "appl
             } else if (response.form_errors) {
                 $.each(response.form_errors, function(field, errors) {
                     if (errors.length > 0) {
-                        $form.find("#" + field).addClass("is-invalid");
-                        $form.find("#" + field).next(".invalid-feedback").text(errors[0]).show();
+                        $("#" + field).addClass("is-invalid");
+                        $("#" + field).next(".invalid-feedback").text(errors[0]).show();
                     }
                 });
             } else {
