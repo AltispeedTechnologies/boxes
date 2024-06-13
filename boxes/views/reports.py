@@ -1,4 +1,5 @@
 import json
+import re
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import PackageLedger, Report, SentEmail
 from datetime import datetime, timedelta
@@ -19,7 +20,7 @@ def reports(request):
 
 def clean_config(config):
     # Ensure the top-level keys are present
-    for main_key in ["fields", "sort_by"]:
+    for main_key in ["fields", "sort_by", "filter"]:
         if main_key not in config:
             return False
 
@@ -39,6 +40,60 @@ def clean_config(config):
     # We should only sort by a known field
     if config["sort_by"] not in allowed_fields:
         return False
+
+    # Ensure a strict format is followed for the filter
+    allowed_filter_types = ["all", "date_range", "relative_date_range", "time_period"]
+    if "type" not in config["filter"].keys():
+        return False
+    elif config["filter"]["type"] not in allowed_filter_types:
+        return False
+
+    match config["filter"]["type"]:
+        case "all":
+            # There should only be the type key, any other keys are not allowed
+            if len(config["filter"].keys()) != 1:
+                return False
+        case "date_range":
+            # There should only be a type, start, and end - enforce this
+            if len(config["filter"].keys()) != 3:
+                return False
+            elif "start" not in config["filter"].keys() or "end" not in config["filter"].keys():
+                return False
+
+            # MM/DD/YYYY
+            pattern = r"^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/(20[0-9][0-9])$"
+            # Ensure both dates passed match the above format
+            if not re.match(pattern, config["filter"]["start"]) or not re.match(pattern, config["filter"]["end"]):
+                return False
+
+            # Ensure the start time is never greater than the end time
+            start_date = datetime.strptime(config["filter"]["start"], "%m/%d/%Y").date()
+            end_date = datetime.strptime(config["filter"]["end"], "%m/%d/%Y").date()
+            if start_date > end_date:
+                return False
+        case "relative_date_range":
+            # There should only be a type, start, and end - enforce this
+            if len(config["filter"].keys()) != 3:
+                return False
+            elif "start" not in config["filter"].keys() or "end" not in config["filter"].keys():
+                return False
+
+            # Both items must be ints
+            if not isinstance(config["filter"]["start"], int) or not isinstance(config["filter"]["end"], int):
+                return False
+            # End must be greater than the start
+            elif config["filter"]["start"] <= config["filter"]["end"]:
+                return False
+        case "time_period":
+            # There should only be a type and frequency - enforce this
+            if len(config["filter"].keys()) != 2:
+                return False
+            elif "frequency" not in config["filter"].keys():
+                return False
+
+            # Frequency must be one of: day, week, month, year
+            if config["filter"]["frequency"] not in ["day", "week", "month", "year"]:
+                return False
 
     return True
 
