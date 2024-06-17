@@ -273,8 +273,32 @@ function init_modal(modal_name) {
         toggle_row_arrows(modal_name);
     });
 
-    // Hook up changes to the report name to enablement of the createbox
-    $modal.find("#reportname").off("input").on("input", function() {toggle_create_button();});
+    // Ensure there is a report name and that it is unique
+    $modal.find("#reportname").off("input").on("input", window.debounce(function() {
+        toggle_create_button();
+
+        let name = $(this).val();
+        if (name !== "") {
+            let payload = JSON.stringify({"name": name});
+
+            window.ajax_request({
+                type: "POST",
+                url: "/reports/name",
+                payload: payload,
+                content_type: "application/json",
+                on_success: function(response) {
+                    if (!response.unique) {
+                        // Show an error on the screen
+                        $modal.find("#reportname").addClass("is-invalid");
+                        $modal.find("#reportname").next(".invalid-feedback").text("Duplicate report name").show();
+
+                        // Manually disable the create button
+                        $modal.find(".btn-primary").attr("disabled", true);
+                    }
+                }
+            });
+        }
+    }, 500));
 
     // Initialize the date pickers
     $modal.find("#select_date_range").find(".form-control").datepicker({
@@ -302,6 +326,7 @@ function init_modal(modal_name) {
         }
     });
 
+    // Specific submission actions
     if (modal_name === "#newReportModal") {
         $("#newReportModal .btn-primary").off("click").on("click", function() {
             const [payload, name] = prepare_json_payload(modal_name);

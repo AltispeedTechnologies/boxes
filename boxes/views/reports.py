@@ -18,6 +18,19 @@ def reports(request):
     return render(request, "reports/index.html", {"reports": reports})
 
 
+@require_http_methods(["POST"])
+@exception_catcher()
+def report_name_search(request):
+    print(request)
+    data = json.loads(request.body)
+    name = data.get("name", None)
+    if name:
+        is_unique = Report.objects.filter(name=name).count() == 0
+    else:
+        is_unique = False
+    return JsonResponse({"success": True, "unique": is_unique})
+
+
 def clean_config(config):
     # Ensure the top-level keys are present
     for main_key in ["fields", "sort_by", "filter"]:
