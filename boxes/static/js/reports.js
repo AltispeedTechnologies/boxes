@@ -99,6 +99,34 @@ function toggle_row_arrows() {
     $(".move-down").last().prop("disabled", true);
 }
 
+function clear_create_modal() {
+    var $new_modal = $("#newReportModal");
+
+    // Clear the report name
+    $new_modal.find("#reportname").val("");
+
+    // Deselect all fields
+    $new_modal.find("#display_fields input[type=\"checkbox\"]:checked").prop("checked", false);
+
+    // Remove all dropdown items
+    $new_modal.find("#sort_by_field").find("option").remove();
+    $new_modal.find("#sort_by_field").trigger("change");
+
+    // Remove all ordering options
+    $new_modal.find("tbody#field_order").find("tr:not(.visually-hidden)").remove();
+
+    // Ensure default of All for dates is set
+    $new_modal.find("input[name=\"filter_by_date\"]:checked").prop("checked", false);    
+    $new_modal.find("input[name=\"filter_by_date\"][id=\"all_entries\"]").prop("checked", true);
+
+    // Hide all subselection divs
+    $new_modal.find("div.filter_subselection").hide();
+
+    // Clear all subselection divs
+    $new_modal.find("div.filter_subselection").find("input").val("");
+    $new_modal.find("div.filter_subselection").find("input:checked").prop("checked", false);
+}
+
 function update_chart(payload) {
     $("#loadingicon").show();
 
@@ -282,6 +310,9 @@ function init_reports_page() {
                     .attr("data-id", response.id);
                 new_row.find("td:nth-child(1)").text(name);
                 $("tbody#reports").find(".visually-hidden").before(new_row);
+
+                // Clear the create modal
+                clear_create_modal();
             },
             on_response: function() {
                 // Hide the modal
