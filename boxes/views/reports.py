@@ -116,7 +116,8 @@ def report_new(request):
         return JsonResponse({"success": False,
                              "form_errors": {"reportname": ["Name already exists"]}})
 
-    Report.objects.create(name=name, config=config)
+    new_report = Report.objects.create(name=name, config=config)
+    return JsonResponse({"success": True, "id": new_report.id})
 
 
 @require_http_methods(["POST"])
