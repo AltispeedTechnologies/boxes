@@ -5,6 +5,7 @@ module.exports = {
         ecmaVersion: "latest",
         sourceType: "script",
         globals: {
+            "Chart": false,
             ...globals.browser,
             ...globals.jquery,
             ...globals.amd,

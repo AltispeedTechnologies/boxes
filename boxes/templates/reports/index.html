@@ -24,9 +24,9 @@
     <h2 class="text-center">Reports</h2>
 
     <div class="d-flex justify-content-end">
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newReportModal">
+        <a class="btn btn-success" role="button" href="/reports/new">
             <i class="fas fa-plus"></i> Add
-        </button>
+        </a>
     </div>
 
     {% if reports %}
@@ -43,20 +43,15 @@
                 <tr data-id="{{ report.id }}">
                     <td>{{ report.name }}</td>
                     <td class="text-nowrap" style="width: 1%;">
+                        <a class="btn btn-primary" role="button" href="/reports/{{ report.id }}/edit">
+                            <i class="fas fa-edit"></i>
+                        </a>
                         <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#removeReportModal">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>
                 </tr>
                 {% endfor %}
-                <tr class="visually-hidden">
-                    <td></td>
-                    <td class="text-nowrap" style="width: 1%;">
-                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#removeReportModal">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </td>
-                </tr>
             </tbody>
         </table>
     </div>
@@ -68,5 +63,5 @@
 {% include "reports/modals.html" %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% load static %}
-<script src="{% static 'js/reports.js' %}"></script>
+<script src="{% static 'js/reports/index.js' %}"></script>
 {% endblock %}

@@ -100,7 +100,10 @@ urlpatterns = [
     # Reports
     path("reports/", is_staff(reports), name="reports"),
     path("reports/name", is_staff(report_name_search), name="report_name_search"),
-    path("reports/new", is_staff(report_new), name="report_new"),
+    path("reports/new", is_staff(report_details), name="report_new"),
+    path("reports/new/submit", is_staff(report_new_submit), name="report_new_submit"),
+    path("reports/<int:pk>/edit", is_staff(report_details), name="report_details"),
     path("reports/<int:pk>/remove", is_staff(report_remove), name="report_remove"),
+    path("reports/<int:pk>/update", is_staff(report_update), name="report_update"),
     path("reports/stats/chart", is_staff(report_stats_chart), name="report_stats_chart")
 ]

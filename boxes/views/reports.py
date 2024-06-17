@@ -18,6 +18,18 @@ def reports(request):
     return render(request, "reports/index.html", {"reports": reports})
 
 
+@require_http_methods(["GET"])
+@exception_catcher()
+def report_details(request, pk=None):
+    if pk:
+        report = Report.objects.filter(pk=pk).first()
+        return render(request, "reports/details.html", {"report_config": report.config,
+                                                        "report_name": report.name,
+                                                        "report_id": report.id})
+    else:
+        return render(request, "reports/details.html")
+
+
 @require_http_methods(["POST"])
 @exception_catcher()
 def report_name_search(request):
@@ -95,7 +107,7 @@ def clean_config(config):
             if not isinstance(config["filter"]["start"], int) or not isinstance(config["filter"]["end"], int):
                 return False
             # End must be greater than the start
-            elif config["filter"]["start"] <= config["filter"]["end"]:
+            elif config["filter"]["end"] <= config["filter"]["start"]:
                 return False
         case "time_period":
             # There should only be a type and frequency - enforce this
@@ -113,7 +125,7 @@ def clean_config(config):
 
 @require_http_methods(["POST"])
 @exception_catcher()
-def report_new(request):
+def report_new_submit(request):
     data = json.loads(request.body)
     name = data.get("name", None)
     config = data.get("config", None)
@@ -129,8 +141,25 @@ def report_new(request):
         return JsonResponse({"success": False,
                              "form_errors": {"reportname": ["Name already exists"]}})
 
-    new_report = Report.objects.create(name=name, config=config)
-    return JsonResponse({"success": True, "id": new_report.id})
+    Report.objects.create(name=name, config=config)
+
+
+@require_http_methods(["POST"])
+@exception_catcher()
+def report_update(request, pk):
+    data = json.loads(request.body)
+    name = data.get("name", None)
+    config = data.get("config", None)
+
+    # The UI prevents this all from happening, just safeguards
+    if not name or not config:
+        raise ValueError
+    elif not clean_config(config):
+        raise ValueError
+    elif len(name) > 64:
+        raise ValueError
+
+    Report.objects.filter(pk=pk).update(name=name, config=config)
 
 
 @require_http_methods(["POST"])
