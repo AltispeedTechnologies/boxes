@@ -7,6 +7,7 @@ from celery import shared_task
 from collections import defaultdict
 from datetime import timedelta
 from decimal import Decimal
+from django.core.exceptions import MultipleObjectsReturned
 from django.db import transaction
 from django.db.models import Count, F, Sum, Q
 from django.db.models.functions import Coalesce
@@ -143,26 +144,51 @@ def age_picklists():
     today = timezone.now().date()
     future_date = today + timedelta(days=14)
 
-    # Ensure Picklist entries exist for today through 14 days from now
-    for single_date in (today + timedelta(n) for n in range((future_date - today).days + 1)):
-        Picklist.objects.get_or_create(date=single_date)
+    with transaction.atomic():
+        # Ensure Picklist entries exist for today through 14 days from now
+        for single_date in (today + timedelta(n) for n in range((future_date - today).days + 1)):
+            try:
+                Picklist.objects.get_or_create(date=single_date)
+            # Multiple entries are fine, ignore the exception
+            except MultipleObjectsReturned:
+                continue
 
-    # Remove Picklist entries older than today with no corresponding PackagePicklist entries
-    Picklist.objects.filter(date__lt=today, packagepicklist__isnull=True).delete()
+        # Remove empty picklists with no queue
+        Picklist.objects.filter(date__lt=today, packagepicklist__isnull=True, picklistqueue__isnull=True).delete()
 
-    # Identify Picklist entries older than a week that have corresponding PackagePicklist entries
-    week_old_date = today - timedelta(days=7)
-    picklists_older_than_week_with_packages = Picklist.objects.filter(
-        date__lt=week_old_date
-    ).annotate(
-        package_count=Count("packagepicklist")
-    ).filter(package_count__gt=0).values_list("id", flat=True)
+        # Identify Picklist entries older than a week that have corresponding PackagePicklist entries
+        week_old_date = today - timedelta(days=7)
+        picklists_to_remove = Picklist.objects.filter(
+            date__lt=week_old_date
+        ).values_list("id", flat=True)
 
-    # First, delete related PackagePicklist entries in bulk
-    PackagePicklist.objects.filter(picklist_id__in=picklists_older_than_week_with_packages).delete()
+        # Some picklists still have implicit PackageQueue entries; exclude those from the final deletion
+        except_these_picklists = []
 
-    # Then, delete the Picklist entries
-    Picklist.objects.filter(id__in=picklists_older_than_week_with_packages).delete()
+        # Delete related PackagePicklist and PackageQueue entries
+        package_picklists = PackagePicklist.objects.filter(picklist_id__in=picklists_to_remove)
+        for package_picklist in package_picklists:
+            picklist_id = package_picklist.picklist_id
+            if picklist_id not in except_these_picklists:
+                except_these_picklists.append(picklist_id)
+
+        picklist_queues = PicklistQueue.objects.filter(picklist_id__in=picklists_to_remove)
+        for picklist_queue in picklist_queues:
+            package_queue = PackageQueue.objects.filter(queue_id=picklist_queue.queue_id)
+            if package_queue.count() > 0:
+                picklist_id = picklist_queue.picklist_id
+                if picklist_id not in except_these_picklists:
+                    except_these_picklists.append(picklist_queue.picklist_id)
+            else:
+                package_queue.delete()
+                picklist_queue.delete()
+                Queue.objects.filter(pk=picklist_queue.queue_id).delete()
+
+        # Filter out the Picklists with queue entries
+        picklists_to_remove = [i for i in picklists_to_remove if i not in except_these_picklists]
+
+        # Delete the Picklist entries
+        Picklist.objects.filter(id__in=picklists_to_remove).delete()
 
 
 @shared_task
