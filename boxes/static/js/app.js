@@ -27,9 +27,6 @@ window.get_cookie = function(name) {
     // Returns null if no cookies match the name, otherwise returns the value
     return cookie_value;
 }
-/// Instead of calling window.get_cookie for every request needing the CSRF
-/// token, allow async calls to use this variable
-window.csrf_token = window.get_cookie("csrftoken");
 
 /// Given a unique identifier to a select2 box, ensure the height and width is
 /// consistent
@@ -81,7 +78,7 @@ window.initialize_async_select2 = function(field_name, search_url, dropdown_pare
             dataType: "json",
             delay: 250,
             beforeSend: function(xhr) {
-                xhr.setRequestHeader("X-CSRFToken", window.csrf_token);
+                xhr.setRequestHeader("X-CSRFToken", window.get_cookie("csrftoken"));
             },
             data: function(params) {
                 return {
@@ -173,7 +170,7 @@ window.picklist_data = async function() {
         type: "GET",
         url: "/picklists/query",
         headers: {
-            "X-CSRFToken": window.csrf_token
+            "X-CSRFToken": window.get_cookie("csrftoken")
         }
     });
     return response.results;
@@ -185,7 +182,7 @@ window.ajax_request = function({ type, url, payload = null, content_type = "appl
         type: type,
         url: url,
         headers: {
-            "X-CSRFToken": window.csrf_token
+            "X-CSRFToken": window.get_cookie("csrftoken")
         },
         data: payload,
         contentType: content_type,

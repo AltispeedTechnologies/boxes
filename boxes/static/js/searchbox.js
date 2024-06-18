@@ -21,7 +21,7 @@ function init_searchbox_page() {
                 dataType: "json",
                 delay: 250,
                 beforeSend: function(xhr) {
-                    xhr.setRequestHeader("X-CSRFToken", window.csrf_token);
+                    xhr.setRequestHeader("X-CSRFToken", window.get_cookie("csrftoken"));
                 },
                 data: function (params) {
                     return {
