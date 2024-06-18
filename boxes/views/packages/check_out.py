@@ -27,8 +27,9 @@ def check_out(request):
         account=F("account__name")
     ).filter(id__in=package_ids)
 
-    return render(request, "packages/check_out.html", {"packages": packages,
-                                                       "package_ids": package_ids})
+    return render(request, "check_out/index.html", {"packages": packages,
+                                                    "package_ids": package_ids,
+                                                    "check_out_button": True})
 
 
 @require_http_methods(["POST"])

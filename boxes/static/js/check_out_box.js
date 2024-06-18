@@ -8,6 +8,10 @@ function verify_package() {
         form_data["picklist_id"] = picklist_id;
     }
 
+    if (window.queued_packages === undefined) {
+        window.queued_packages = new Set();
+    }
+
     window.ajax_request({
         type: "POST",
         url: "/packages/checkout/verify",
@@ -19,15 +23,29 @@ function verify_package() {
             if (window.queued_packages.has(package_id)) {
                 window.display_error_message(["Parcel already in list"]);
             } else {
-                display_packages(response.package);
                 window.queued_packages.add(package_id);
                 $("#successicon").show();
                 $("#successicon").fadeOut(1000);
+                $(document).trigger("checkoutPackageValid", [response.package]);
             }
         },
-        on_response: function() {
+        on_response: function(response) {
+            console.log(response);
             $("#tracking_code").val("");
             $("#savingicon").hide();
         }
     });
+}
+
+function setup_checkout_box() {
+    $("#tracking_code").off("keydown").on("keydown", function(event) {
+        if (event.keyCode === 13) {  // Enter key
+            event.preventDefault();
+            verify_package();
+        }
+    });
+}
+
+if ($("input#tracking_code").length !== 0) {
+    setup_checkout_box();
 }

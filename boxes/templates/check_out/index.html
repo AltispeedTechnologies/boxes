@@ -8,7 +8,12 @@
     </div>
 
     {% include "_messages.html" %}
+    {% include "check_out/searchbox.html" %}
 
-    {% include "_check_out_table.html" %}
+    {% include "check_out/table.html" %}
 </div>
+
+<script>
+    window.queued_packages = new Set({{ package_ids|safe }});
+</script>
 {% endblock %}

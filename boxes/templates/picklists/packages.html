@@ -3,13 +3,22 @@
 {% block content %}
 <div class="bg-body shadow rounded p-3">
     {% include "picklists/_picklistbox.html" %}
+    <br />
 
     {% include "_messages.html" %}
-    {% include "packages/_bulk_actions.html" %}
-    <br /><br />
 
     {% if page_obj %}
+    {% include "check_out/searchbox.html" %}
+    {% include "packages/_bulk_actions.html" %}
+    <br /><br />
     {% include "packages/_table.html" %}
+
+    <!-- All other JS on this page is self-contained; simply define the reload logic here -->
+    <script>
+    $(document).off("checkoutPackageValid").on("checkoutPackageValid", function(event, pkg) {
+        window.location.reload();
+    });
+    </script>
     {% else %}
     <div class="row bg-warning bg-gradient rounded mb-3">
         <h5 class="text-center text-white py-2">No parcels in picklist</h5>

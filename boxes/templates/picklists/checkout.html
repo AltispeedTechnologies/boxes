@@ -6,6 +6,21 @@
     <br />
     {% include "_messages.html" %}
 
-    {% include "_check_out_table.html" %}
+    <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-primary"
+                data-bs-target="#checkOutModal"
+                data-bs-toggle="modal">
+            Check Out All Packages
+        </button>
+    </div>
+
+    {% include "check_out/table.html" %}
 </div>
+
+{% include "modals/check_out.html" %}
+<script>
+    window.queued_packages = new Set({{ package_ids|safe }});
+</script>
+{% load static %}
+<script src="{% static 'js/check_out.js' %}"></script>
 {% endblock %}

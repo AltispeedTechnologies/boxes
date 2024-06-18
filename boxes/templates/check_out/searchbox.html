@@ -1,0 +1,33 @@
+{% block content %}
+<div class="container mb-2">
+    <div class="row align-items-center">
+        <div class="col-auto">
+            <h6 class="mb-0">Scan Parcel for Checkout:</h6>
+        </div>
+        <div class="col">
+            <div class="position-relative">
+                <input type="text" class="form-control" id="tracking_code" maxlength="30"
+                       data-picklist-id="{{ picklist_id }}">
+                <div id="savingicon" class="text-warning position-absolute bottom-0 end-0 me-1 p-2" style="display: none;">
+                    <i class="fas fa-spinner fa-spin text-warning"></i>
+                </div>
+                <div id="successicon" class="text-success position-absolute bottom-0 end-0 me-1 p-2" style="display: none;">
+                    <i id="successicon" class="fas fa-check-circle text-success"></i>
+                </div>
+            </div>
+        </div>
+        {% if check_out_button %}
+        <div class="col-auto">
+            <button class="btn btn-primary"
+                    data-bs-target="#checkOutModal"
+                    data-bs-toggle="modal">
+                Check Out All Packages
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% load static %}
+<script src="{% static 'js/check_out_box.js' %}"></script>
+{% endblock %}
