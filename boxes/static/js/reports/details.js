@@ -218,6 +218,9 @@ function init_report_details_page() {
 
     // If we are editing an existing report, load the data and appropriately set up the UI
     if ($("#report_config").length === 1) {
+        // Set the page header appropriately
+        $("#pageheader").text("Edit Report");
+
         let config = JSON.parse($("#report_config").text());
 
         // Select the fields in order
