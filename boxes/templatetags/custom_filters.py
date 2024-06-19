@@ -10,8 +10,9 @@ def get_item(dictionary, key):
     item = dictionary.get(key)
     if item is None:
         item = ""
-
-    if isinstance(item, datetime):
+    elif key == "price":
+        item = "$" + str(item)
+    elif isinstance(item, datetime):
         item = item.isoformat()
 
     return item

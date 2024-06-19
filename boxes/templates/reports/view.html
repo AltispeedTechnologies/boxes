@@ -9,6 +9,7 @@
 
     {% include "_messages.html" %}
 
+    {% include "reports/_paginate.html" %}
     <div class="table-responsive mt-3">
         <table class="table table-hover table-bordered">
             <thead class="thead-dark align-top">
@@ -20,7 +21,7 @@
             </thead>
             <tbody>
                 {% load custom_filters %}
-                {% for line in report %}
+                {% for line in page_obj %}
                 <tr>
                     {% for key, _ in report_headers.items %}
                     <td {% if line|is_timestamp:key %}

@@ -3,7 +3,9 @@ import re
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import Package, PackageLedger, Report, SentEmail
 from datetime import datetime, timedelta
-from django.db.models import Count, Case, CharField, F, IntegerField, Max, Q, Value, When
+from django.core.paginator import Paginator
+from django.db.models import (Count, Case, CharField, DateTimeField, F, IntegerField, Max, OuterRef, Q, Subquery,
+                              Value, When)
 from django.db.models.functions import Concat, TruncDay
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -38,6 +40,28 @@ def report_view(request, pk):
     # Define the base query - this will get more specific
     query = Package.objects.all()
     combined_filters = Q()
+
+    # Subqueries for filters
+    latest_check_in = PackageLedger.objects.filter(
+        package=OuterRef("pk"),
+        state=1
+    ).order_by("-timestamp").values("timestamp")[:1]
+    latest_check_out = PackageLedger.objects.filter(
+        package=OuterRef("pk"),
+        state=2
+    ).order_by("-timestamp").values("timestamp")[:1]
+    latest_checked_in_by = PackageLedger.objects.filter(
+        package=OuterRef("pk"),
+        state=1
+    ).order_by("-timestamp").annotate(
+        full_name=Concat("user__first_name", Value(" "), "user__last_name", output_field=CharField())
+    ).values("full_name")[:1]
+    latest_checked_out_by = PackageLedger.objects.filter(
+        package=OuterRef("pk"),
+        state=2
+    ).order_by("-timestamp").annotate(
+        full_name=Concat("user__first_name", Value(" "), "user__last_name", output_field=CharField())
+    ).values("full_name")[:1]
 
     # Filter by a specific state
     match config["state"]:
@@ -83,43 +107,21 @@ def report_view(request, pk):
     field_annotations = {
         "account_name": F("account__name"),
         "carrier_name": F("carrier__name"),
-        "check_in_time": Max(Case(
-            When(packageledger__state=1, then="packageledger__timestamp")
-        )),
-        "check_out_time": Max(Case(
-            When(packageledger__state=2, then="packageledger__timestamp")
-        )),
-        "checked_in_by": Concat(
-            Case(
-                When(packageledger__state=1, then=F("packageledger__user__first_name")),
-                default=Value(""),
-                output_field=CharField()
-            ),
-            Value(" "),
-            Case(
-                When(packageledger__state=1, then=F("packageledger__user__last_name")),
-                default=Value(""),
-                output_field=CharField()
-            ),
-            output_field=CharField()
-        ),
-        "checked_out_by": Concat(
-            Case(
-                When(packageledger__state=2, then=F("packageledger__user__first_name")),
-                default=Value(""),
-                output_field=CharField()
-            ),
-            Value(" "),
-            Case(
-                When(packageledger__state=2, then=F("packageledger__user__last_name")),
-                default=Value(""),
-                output_field=CharField()
-            ),
-            output_field=CharField()
-        ),
+        "check_in_time": Subquery(latest_check_in, output_field=DateTimeField()),
+        "check_out_time": Subquery(latest_check_out, output_field=DateTimeField()),
+        "checked_in_by": Subquery(latest_checked_in_by, output_field=CharField()),
+        "checked_out_by": Subquery(latest_checked_out_by, output_field=CharField()),
         "package_type_desc": F("package_type__description"),
-        "status": F("current_state")
+        "status": Max(Case(
+            When(current_state=0, then=Value("Received")),
+            When(current_state=1, then=Value("Checked in")),
+            When(current_state=2, then=Value("Checked out")),
+            When(current_state=3, then=Value("Mis-placed")),
+            default=Value("Unknown"),
+            output_field=CharField(),
+        ))
     }
+
     # Annotate queryset
     fields_to_include = {f: field_annotations[f] for f in config["fields"] if f in field_annotations}
     query = query.annotate(**fields_to_include)
@@ -150,9 +152,16 @@ def report_view(request, pk):
     }
     report_headers = {f: column_headers[f] for f in fields_to_include}
 
+    # Pagination
+    page_number = request.GET.get("page", "1")
+    per_page = request.GET.get("per_page", "10")
+
+    paginator = Paginator(query, per_page)
+    page_obj = paginator.get_page(page_number)
+
     return render(request, "reports/view.html", {"report_name": report.name,
                                                  "report_headers": report_headers,
-                                                 "report": query})
+                                                 "page_obj": page_obj})
 
 
 @require_http_methods(["POST"])
