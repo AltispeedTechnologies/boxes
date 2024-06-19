@@ -33,7 +33,6 @@ def report_details(request, pk=None):
 @require_http_methods(["POST"])
 @exception_catcher()
 def report_name_search(request):
-    print(request)
     data = json.loads(request.body)
     name = data.get("name", None)
     if name:
@@ -45,7 +44,7 @@ def report_name_search(request):
 
 def clean_config(config):
     # Ensure the top-level keys are present
-    for main_key in ["fields", "sort_by", "filter"]:
+    for main_key in ["fields", "sort_by", "filter", "state"]:
         if main_key not in config:
             return False
 
@@ -53,6 +52,10 @@ def clean_config(config):
     if not type(config["fields"]) is list:
         return False
     elif not type(config["sort_by"]) is str:
+        return False
+    elif not type(config["filter"]) is dict:
+        return False
+    elif not type(config["state"]) is str:
         return False
 
     # Only allow specific values in fields
@@ -119,6 +122,11 @@ def clean_config(config):
             # Frequency must be one of: day, week, month, year
             if config["filter"]["frequency"] not in ["day", "week", "month", "year"]:
                 return False
+
+    # The state should match one of three options
+    allowed_states = ["all", "in", "out"]
+    if config["state"] not in allowed_states:
+        return False
 
     return True
 

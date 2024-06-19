@@ -79,7 +79,19 @@
         </div>
     </div>
 
-    <h6 class="mb-3">Filter by date:</h6>
+    <h6 class="mb-2">Filter by status:</h6>
+    <div class="btn-group mb-2" role="group">
+        <input type="radio" class="btn-check" name="filter_by_status" id="all_status" autocomplete="off" checked>
+        <label class="btn btn-outline-primary" for="all_status">All</label>
+
+        <input type="radio" class="btn-check" name="filter_by_status" id="checked_in" autocomplete="off">
+        <label class="btn btn-outline-primary" for="checked_in">Checked In</label>
+
+        <input type="radio" class="btn-check" name="filter_by_status" id="checked_out" autocomplete="off">
+        <label class="btn btn-outline-primary" for="checked_out">Checked Out</label>
+    </div>
+
+    <h6 class="mb-2 mt-3">Filter by date:</h6>
     <div class="btn-group mb-2" role="group">
         <input type="radio" class="btn-check" name="filter_by_date" id="all_entries" autocomplete="off" checked>
         <label class="btn btn-outline-primary" for="all_entries">All</label>

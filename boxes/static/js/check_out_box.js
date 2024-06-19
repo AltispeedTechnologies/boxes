@@ -30,7 +30,6 @@ function verify_package() {
             }
         },
         on_response: function(response) {
-            console.log(response);
             $("#tracking_code").val("");
             $("#savingicon").hide();
         }

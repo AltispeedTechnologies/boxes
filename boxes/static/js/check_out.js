@@ -1,6 +1,5 @@
 function init_checkout_page() {
     $(document).off("checkoutPackageValid").on("checkoutPackageValid", function(event, pkg) {
-        console.log(pkg);
         let new_row = $(".visually-hidden")
             .clone()
             .removeClass("visually-hidden")

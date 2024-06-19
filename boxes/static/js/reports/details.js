@@ -63,6 +63,15 @@ function prepare_json_payload() {
         break;
     }
 
+    let filter_by_status = $("input[name=\"filter_by_status\"]:checked").attr("id");
+    if (filter_by_status === "all_status") {
+        config["state"] = "all";
+    } else if (filter_by_status === "checked_in") {
+        config["state"] = "in";
+    } else if (filter_by_status === "checked_out") {
+        config["state"] = "out";
+    }
+
     // Create the final payload
     let payload = {
         "name": name,
@@ -235,6 +244,18 @@ function init_report_details_page() {
             break;
         case "time_period":
             $("input[name=\"time_period\"][id=\"time_period_" + config["filter"]["frequency"] + "\"]").click();
+            break;
+        }
+
+        switch(config["state"]) {
+        case "all":
+            $("input[name=\"filter_by_status\"][id=\"all_status\"]").click();
+            break;
+        case "in":
+            $("input[name=\"filter_by_status\"][id=\"checked_in\"]").click();
+            break;
+        case "out":
+            $("input[name=\"filter_by_status\"][id=\"checked_out\"]").click();
             break;
         }
     }
