@@ -1,10 +1,10 @@
 import json
 import re
 from boxes.management.exception_catcher import exception_catcher
-from boxes.models import PackageLedger, Report, SentEmail
+from boxes.models import Package, PackageLedger, Report, SentEmail
 from datetime import datetime, timedelta
-from django.db.models import Count, Case, When, IntegerField
-from django.db.models.functions import TruncDay
+from django.db.models import Count, Case, CharField, F, IntegerField, Max, Q, Value, When
+from django.db.models.functions import Concat, TruncDay
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
@@ -28,6 +28,131 @@ def report_details(request, pk=None):
                                                         "report_id": report.id})
     else:
         return render(request, "reports/details.html")
+
+
+@require_http_methods(["GET"])
+def report_view(request, pk):
+    report = Report.objects.filter(pk=pk).first()
+    config = report.config
+
+    # Define the base query - this will get more specific
+    query = Package.objects.all()
+    combined_filters = Q()
+
+    # Filter by a specific state
+    match config["state"]:
+        case "in":
+            combined_filters &= Q(packageledger__state=1)
+        case "out":
+            combined_filters &= Q(packageledger__state=2)
+
+    # Filter by a specific date range if applicable
+    match config["filter"]["type"]:
+        case "date_range":
+            end = datetime.strptime(config["filter"]["end"], "%m/%d/%Y")
+            end = timezone.make_aware(end)
+            start = datetime.strptime(config["filter"]["start"], "%m/%d/%Y")
+            start = timezone.make_aware(start)
+            combined_filters &= Q(packageledger__timestamp__gte=start, packageledger__timestamp__lte=end)
+        case "relative_date_range":
+            now = timezone.now()
+            end = now - timedelta(days=config["filter"]["end"])
+            start = now - timedelta(days=config["filter"]["start"])
+            combined_filters &= Q(packageledger__timestamp__gte=end, packageledger__timestamp__lte=start)
+        case "time_period":
+            today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+            match config["filter"]["frequency"]:
+                case "day":
+                    combined_filters &= Q(packageledger__timestamp__gte=today)
+                case "week":
+                    days_since_sun = (today.weekday() + 1) % 7
+                    this_week = today - timedelta(days=days_since_sun)
+                    combined_filters &= Q(packageledger__timestamp__gte=this_week)
+                case "month":
+                    this_month = today.replace(day=1)
+                    combined_filters &= Q(packageledger__timestamp__gte=this_month)
+                case "year":
+                    this_year = today.replace(month=1, day=1)
+                    combined_filters &= Q(packageledger__timestamp__gte=this_year)
+
+    # Apply the combined filters
+    query = query.filter(combined_filters)
+
+    # Only get the values selected
+    field_annotations = {
+        "account_name": F("account__name"),
+        "carrier_name": F("carrier__name"),
+        "check_in_time": Max(Case(
+            When(packageledger__state=1, then="packageledger__timestamp")
+        )),
+        "check_out_time": Max(Case(
+            When(packageledger__state=2, then="packageledger__timestamp")
+        )),
+        "checked_in_by": Concat(
+            Case(
+                When(packageledger__state=1, then=F("packageledger__user__first_name")),
+                default=Value(""),
+                output_field=CharField()
+            ),
+            Value(" "),
+            Case(
+                When(packageledger__state=1, then=F("packageledger__user__last_name")),
+                default=Value(""),
+                output_field=CharField()
+            ),
+            output_field=CharField()
+        ),
+        "checked_out_by": Concat(
+            Case(
+                When(packageledger__state=2, then=F("packageledger__user__first_name")),
+                default=Value(""),
+                output_field=CharField()
+            ),
+            Value(" "),
+            Case(
+                When(packageledger__state=2, then=F("packageledger__user__last_name")),
+                default=Value(""),
+                output_field=CharField()
+            ),
+            output_field=CharField()
+        ),
+        "package_type_desc": F("package_type__description"),
+        "status": F("current_state")
+    }
+    # Annotate queryset
+    fields_to_include = {f: field_annotations[f] for f in config["fields"] if f in field_annotations}
+    query = query.annotate(**fields_to_include)
+
+    # Include all necessary values, including the annotations
+    allowed_fields = ["account_name", "carrier_name", "check_in_time", "check_out_time", "checked_in_by",
+                      "checked_out_by", "comments", "inside", "package_type_desc", "price", "status", "tracking_code"]
+    fields_to_include = [f for f in config["fields"] if f in allowed_fields]
+    query = query.values(*fields_to_include)
+
+    # Sort by a specific key
+    query = query.order_by(config["sort_by"])
+
+    # Set the column headers appropriately
+    column_headers = {
+        "account_name": "Account",
+        "carrier_name": "Carrier",
+        "check_in_time": "Check In Time",
+        "check_out_time": "Check Out Time",
+        "checked_in_by": "Checked In By",
+        "checked_out_by": "Checked Out By",
+        "comments": "Comments",
+        "inside": "Inside",
+        "package_type_desc": "Type",
+        "price": "Price",
+        "status": "Status",
+        "tracking_code": "Tracking Code"
+    }
+    report_headers = {f: column_headers[f] for f in fields_to_include}
+
+    return render(request, "reports/view.html", {"report_name": report.name,
+                                                 "report_headers": report_headers,
+                                                 "report": query})
 
 
 @require_http_methods(["POST"])
@@ -59,8 +184,8 @@ def clean_config(config):
         return False
 
     # Only allow specific values in fields
-    allowed_fields = ["account", "carrier", "check_in_time", "check_out_time", "checked_in_by", "checked_out_by",
-                      "comment", "inside", "package_type", "price", "status", "tracking_code"]
+    allowed_fields = ["account_name", "carrier_name", "check_in_time", "check_out_time", "checked_in_by",
+                      "checked_out_by", "comments", "inside", "package_type_desc", "price", "status", "tracking_code"]
     for field in config["fields"]:
         if field not in allowed_fields:
             return False

@@ -43,6 +43,9 @@
                 <tr data-id="{{ report.id }}">
                     <td>{{ report.name }}</td>
                     <td class="text-nowrap" style="width: 1%;">
+                        <a class="btn btn-info" role="button" href="/reports/{{ report.id }}/view">
+                            <i class="fa-solid fa-spinner"></i>
+                        </a>
                         <a class="btn btn-primary" role="button" href="/reports/{{ report.id }}/edit">
                             <i class="fas fa-edit"></i>
                         </a>
