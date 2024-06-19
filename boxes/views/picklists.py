@@ -190,6 +190,44 @@ def picklist_show(request, pk=None):
 
     picklist_title = picklist.date if picklist.date else picklist.description
 
+    return render(request, "picklists/packages.html", {"page_obj": page_obj,
+                                                       "picklists": True,
+                                                       "view_type": "packages",
+                                                       "picklist_data": _picklist_data(exclude=picklist.id),
+                                                       "picklist_title": picklist_title,
+                                                       "picklist_id": picklist.id})
+
+
+@require_http_methods(["GET"])
+def picklist_show_table(request, pk=None):
+    picklist = get_object_or_404(Picklist, pk=pk)
+    picklist_title = picklist.date if picklist.date else picklist.description
+
+    package_ids = PackagePicklist.objects.filter(picklist_id=picklist.id).values_list("package_id", flat=True)
+
+    packages = _get_packages(id__in=package_ids)
+
+    page_number = request.GET.get("page")
+    page_obj = packages.get_page(page_number)
+
+    return render(request, "packages/_table.html", {"page_obj": page_obj,
+                                                    "picklist_data": _picklist_data(exclude=picklist.id),
+                                                    "picklist_title": picklist_title})
+
+
+@require_http_methods(["GET"])
+def picklist_show(request, pk=None):
+    picklist = get_object_or_404(Picklist, pk=pk)
+
+    package_ids = PackagePicklist.objects.filter(picklist_id=picklist.id).values_list("package_id", flat=True)
+
+    packages = _get_packages(id__in=package_ids)
+
+    page_number = request.GET.get("page")
+    page_obj = packages.get_page(page_number)
+
+    picklist_title = picklist.date if picklist.date else picklist.description
+
     return render(request, "picklists/packages.html", {"search_url": reverse("search_packages"),
                                                        "page_obj": page_obj,
                                                        "picklists": True,

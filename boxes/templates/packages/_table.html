@@ -1,4 +1,5 @@
 {% block content %}
+    <turbo-frame id="package-table">
     {% if page_obj %}
         {% include "packages/_paginate.html" %}
 
@@ -74,8 +75,8 @@
                             </button>
                             <button type="button" class="btn btn-primary" data-bs-toggle="modal" 
                                     data-bs-target="#editModal">
-                                <i class="fas fa-edit"></i>
-                            </button>
+                                    <i class="fas fa-edit"></i>
+                                </button>
                             {% if package.current_state == 1 %}
                                 <button type="button" class="btn btn-success"
                                         data-bs-toggle="modal" data-bs-target="#checkOutModal">
@@ -124,4 +125,5 @@
     <script src="{% static 'js/table_select.js' %}"></script>
 
     {% include "modals/row.html" %}
+    </turbo-frame>
 {% endblock %}

@@ -79,6 +79,7 @@ urlpatterns = [
     path("picklists/", is_staff(picklist_list), name="picklists"),
     path("picklists/<int:pk>/checkout", is_staff(picklist_check_out), name="picklist_check_out"),
     path("picklists/<int:pk>/packages", is_staff(picklist_show), name="picklist_show"),
+    path("picklists/<int:pk>/packages/table", is_staff(picklist_show_table), name="picklist_show_table"),
     path("picklists/<int:pk>/remove", is_staff(remove_picklist), name="remove_picklist"),
     path("picklists/create", is_staff(create_picklist), name="create_picklist"),
     path("picklists/modify", is_staff(modify_package_picklist), name="modify_package_picklist"),

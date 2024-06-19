@@ -224,10 +224,17 @@ window.ajax_request = function({ type, url, payload = null, content_type = "appl
 };
 
 /// Functionality to run once the content has fully loaded
-function init_page() {
+function init_page(event) {
+    var context = document;
+    if (event && event.type === "turbo:before-render") {
+        var context = event.detail.newBody;
+    } else if (event && event.type === "turbo:before-frame-render") {
+        var context = event.detail.newFrame;
+    }
+
     // Timestamps are stored in the database as UTC, this does the conversion
     // client-side to the current browser time
-    $(".timestamp").each(function() {
+    $(context).find(".timestamp").each(function() {
         var iso_timestamp = $(this).data("timestamp");
         if (iso_timestamp !== "") {
             var local_time = new Date(iso_timestamp).toLocaleString();
@@ -236,9 +243,18 @@ function init_page() {
     });
 
     // Set up tooltips for each HTML element that has data-bs-tooltip="yes"
-    var tooltip_trigger_list = [].slice.call(document.querySelectorAll('[data-bs-tooltip="yes"]'));
+    var tooltip_trigger_list = [].slice.call(context.querySelectorAll('[data-bs-tooltip="yes"]'));
     var tooltip_list = tooltip_trigger_list.map(function (tooltip_trigger_el) {
         return new bootstrap.Tooltip(tooltip_trigger_el)
     })
 }
-document.addEventListener("turbo:load", init_page);
+
+$(document).on({
+    "turbo:load": init_page,
+    "turbo:before-render": function(event) {
+        init_page(event);
+    },
+    "turbo:before-frame-render": function(event) {
+        init_page(event);
+    }
+});
