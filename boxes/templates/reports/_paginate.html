@@ -3,38 +3,38 @@
     <!-- Pagination with integrated items per page selection -->
     <ul class="pagination mb-0">
         {% if page_obj.has_previous %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&per_page={{ request.GET.per_page }}">Previous</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&per_page={{ request.GET.per_page|default:10 }}">Previous</a></li>
         {% else %}
         <li class="page-item disabled"><span class="page-link">Previous</span></li>
         {% endif %}
 
         <!-- Display the very first page -->
-        <li class="page-item {% if page_obj.number == 1 %}active{% endif %}"><a class="page-link" href="?page=1&per_page={{ request.GET.per_page }}">1</a></li>
+        <li class="page-item {% if page_obj.number == 1 %}active{% endif %}"><a class="page-link" href="?page=1&per_page={{ request.GET.per_page|default:10 }}">1</a></li>
 
         <!-- Ellipsis for jumping back -->
         {% if page_obj.number > 5 %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.number|add:'-5' }}&per_page={{ request.GET.per_page }}">...</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.number|add:'-5' }}&per_page={{ request.GET.per_page|default:10 }}">...</a></li>
         {% endif %}
 
         <!-- Display pages around current page (e.g., 5 before to 5 after) -->
         {% for num in page_obj.paginator.page_range %}
             {% if num > page_obj.number|add:'-6' and num < page_obj.number|add:'6' and num > 1 and num < page_obj.paginator.num_pages %}
-                <li class="page-item {% if page_obj.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}&per_page={{ request.GET.per_page }}">{{ num }}</a></li>
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}&per_page={{ request.GET.per_page|default:10 }}">{{ num }}</a></li>
             {% endif %}
         {% endfor %}
 
         <!-- Ellipsis for jumping ahead -->
         {% if page_obj.number < page_obj.paginator.num_pages|add:'-5' %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.number|add:'5' }}&per_page={{ request.GET.per_page }}">...</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.number|add:'5' }}&per_page={{ request.GET.per_page|default:10 }}">...</a></li>
         {% endif %}
 
         <!-- Display the very last page -->
         {% if page_obj.paginator.num_pages > 1 %}
-        <li class="page-item {% if page_obj.number == page_obj.paginator.num_pages %}active{% endif %}"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&per_page={{ request.GET.per_page }}">{{ page_obj.paginator.num_pages }}</a></li>
+        <li class="page-item {% if page_obj.number == page_obj.paginator.num_pages %}active{% endif %}"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&per_page={{ request.GET.per_page|default:10 }}">{{ page_obj.paginator.num_pages }}</a></li>
         {% endif %}
 
         {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&per_page={{ request.GET.per_page }}">Next</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&per_page={{ request.GET.per_page|default:10 }}">Next</a></li>
         {% else %}
         <li class="page-item disabled"><span class="page-link">Next</span></li>
         {% endif %}
@@ -44,10 +44,10 @@
     <!-- Items Per Page Dropdown -->
     <div class="input-group" style="width: 170px;">
         <select class="form-select form-select-sm ms-2" style="height: 38px;" onchange="location = this.value;">
-            <option value="?page={{ page_obj.number }}&per_page=10" {% if request.GET.per_page == '10' %}selected{% endif %}>10</option>
-            <option value="?page={{ page_obj.number }}&per_page=25" {% if request.GET.per_page == '25' %}selected{% endif %}>25</option>
-            <option value="?page={{ page_obj.number }}&per_page=50" {% if request.GET.per_page == '50' %}selected{% endif %}>50</option>
-            <option value="?page={{ page_obj.number }}&per_page=100" {% if request.GET.per_page == '100' %}selected{% endif %}>100</option>
+            <option value="?page={{ page_obj.number }}&per_page=10" {% if request.GET.per_page|default:10 == '10' %}selected{% endif %}>10</option>
+            <option value="?page={{ page_obj.number }}&per_page=25" {% if request.GET.per_page|default:10 == '25' %}selected{% endif %}>25</option>
+            <option value="?page={{ page_obj.number }}&per_page=50" {% if request.GET.per_page|default:10 == '50' %}selected{% endif %}>50</option>
+            <option value="?page={{ page_obj.number }}&per_page=100" {% if request.GET.per_page|default:10 == '100' %}selected{% endif %}>100</option>
         </select>
         <span class="input-group-text">per page</span>
     </div>

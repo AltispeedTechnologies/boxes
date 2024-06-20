@@ -153,8 +153,8 @@ def report_view(request, pk):
     report_headers = {f: column_headers[f] for f in fields_to_include}
 
     # Pagination
-    page_number = request.GET.get("page", "1")
-    per_page = request.GET.get("per_page", "10")
+    page_number = request.GET.get("page", 1)
+    per_page = request.GET.get("per_page", 10)
 
     paginator = Paginator(query, per_page)
     page_obj = paginator.get_page(page_number)
