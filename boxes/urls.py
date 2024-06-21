@@ -5,6 +5,7 @@ from django.urls import include, path
 from boxes.views import *
 from boxes.views.mgmt import *
 from boxes.views.packages import *
+from boxes.views.reports import *
 
 
 def is_staff(view_func):
@@ -104,6 +105,8 @@ urlpatterns = [
     path("reports/new", is_staff(report_details), name="report_new"),
     path("reports/new/submit", is_staff(report_new_submit), name="report_new_submit"),
     path("reports/<int:pk>/edit", is_staff(report_details), name="report_details"),
+    path("reports/<int:pk>/pdf", is_staff(report_generate_pdf), name="report_generate_pdf"),
+    path("reports/<int:pk>/pdf/view", is_staff(report_view_pdf), name="report_view_pdf"),
     path("reports/<int:pk>/remove", is_staff(report_remove), name="report_remove"),
     path("reports/<int:pk>/update", is_staff(report_update), name="report_update"),
     path("reports/<int:pk>/view", is_staff(report_view), name="report_view"),

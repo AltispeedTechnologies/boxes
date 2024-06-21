@@ -1,39 +1,15 @@
 import json
 import re
-from boxes.management.exception_catcher import exception_catcher
 from boxes.models import Package, PackageLedger, Report, SentEmail
 from datetime import datetime, timedelta
 from django.core.paginator import Paginator
 from django.db.models import (Count, Case, CharField, DateTimeField, F, IntegerField, Max, OuterRef, Q, Subquery,
                               Value, When)
 from django.db.models.functions import Concat, TruncDay
-from django.http import JsonResponse
-from django.shortcuts import render
 from django.utils import timezone
-from django.views.decorators.http import require_http_methods
 
 
-@require_http_methods(["GET"])
-def reports(request):
-    reports = Report.objects.values("id", "name")
-
-    return render(request, "reports/index.html", {"reports": reports})
-
-
-@require_http_methods(["GET"])
-@exception_catcher()
-def report_details(request, pk=None):
-    if pk:
-        report = Report.objects.filter(pk=pk).first()
-        return render(request, "reports/details.html", {"report_config": report.config,
-                                                        "report_name": report.name,
-                                                        "report_id": report.id})
-    else:
-        return render(request, "reports/details.html")
-
-
-@require_http_methods(["GET"])
-def report_view(request, pk):
+def generate_full_report(pk):
     report = Report.objects.filter(pk=pk).first()
     config = report.config
 
@@ -152,28 +128,7 @@ def report_view(request, pk):
     }
     report_headers = {f: column_headers[f] for f in fields_to_include}
 
-    # Pagination
-    page_number = request.GET.get("page", 1)
-    per_page = request.GET.get("per_page", 10)
-
-    paginator = Paginator(query, per_page)
-    page_obj = paginator.get_page(page_number)
-
-    return render(request, "reports/view.html", {"report_name": report.name,
-                                                 "report_headers": report_headers,
-                                                 "page_obj": page_obj})
-
-
-@require_http_methods(["POST"])
-@exception_catcher()
-def report_name_search(request):
-    data = json.loads(request.body)
-    name = data.get("name", None)
-    if name:
-        is_unique = Report.objects.filter(name=name).count() == 0
-    else:
-        is_unique = False
-    return JsonResponse({"success": True, "unique": is_unique})
+    return report.name, report_headers, query
 
 
 def clean_config(config):
@@ -264,57 +219,8 @@ def clean_config(config):
 
     return True
 
-
-@require_http_methods(["POST"])
-@exception_catcher()
-def report_new_submit(request):
-    data = json.loads(request.body)
-    name = data.get("name", None)
-    config = data.get("config", None)
-
-    # The UI prevents this all from happening, just safeguards
-    if not name or not config:
-        raise ValueError
-    elif not clean_config(config):
-        raise ValueError
-    elif len(name) > 64:
-        raise ValueError
-    elif Report.objects.filter(name=name).count() > 0:
-        return JsonResponse({"success": False,
-                             "form_errors": {"reportname": ["Name already exists"]}})
-
-    Report.objects.create(name=name, config=config)
-
-
-@require_http_methods(["POST"])
-@exception_catcher()
-def report_update(request, pk):
-    data = json.loads(request.body)
-    name = data.get("name", None)
-    config = data.get("config", None)
-
-    # The UI prevents this all from happening, just safeguards
-    if not name or not config:
-        raise ValueError
-    elif not clean_config(config):
-        raise ValueError
-    elif len(name) > 64:
-        raise ValueError
-
-    Report.objects.filter(pk=pk).update(name=name, config=config)
-
-
-@require_http_methods(["POST"])
-@exception_catcher()
-def report_remove(request, pk):
-    Report.objects.filter(pk=pk).delete()
-
-
-# Chart on main reports page
-@require_http_methods(["POST"])
-@exception_catcher()
-def report_stats_chart(request):
-    data = json.loads(request.body)
+def report_chart_generate(data):
+    data = json.loads(data)
     timeframe_filter = data.get("filter")
     if timeframe_filter == "week":
         days = 7
@@ -373,4 +279,4 @@ def report_stats_chart(request):
         index = start_date_index[count["date"].strftime("%m/%d/%Y")]
         y_data["Emails Sent"][index] = count["emails_sent"]
 
-    return JsonResponse({"success": True, "x_data": x_data, "y_data": y_data})
+    return {"success": True, "x_data": x_data, "y_data": y_data}

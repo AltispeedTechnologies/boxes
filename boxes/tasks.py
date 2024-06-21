@@ -1,21 +1,27 @@
 import os
 import json
+import pytz
 import random
 import re
 from boxes.models import *
+from boxes.backend import reports
 from celery import shared_task
 from collections import defaultdict
-from datetime import timedelta
+from datetime import datetime, timedelta
 from decimal import Decimal
+from django.conf import settings
+from django.core.cache import cache
 from django.core.exceptions import MultipleObjectsReturned
 from django.db import transaction
 from django.db.models import Count, F, Sum, Q
 from django.db.models.functions import Coalesce
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from faker import Faker
 from html import unescape
 from mailjet_rest import Client
+from weasyprint import HTML
 
 
 @shared_task
@@ -501,3 +507,76 @@ def populate_seed_data():
     # Start the other tasks
     age_picklists.delay()
     age_charges.delay()
+
+
+@shared_task
+def generate_report_pdf(pk):
+    # Fetch the result for this report or create one
+    result, _ = ReportResult.objects.get_or_create(report_id=pk)
+    # We are now in progress/queued
+    result.status = 1
+    result.save()
+
+    # Generating reports is extremely expensive; only generate one at a time
+    acquire_lock = cache.add("generate_report_pdf_lock", "true", (60 * 60))
+
+    if not acquire_lock:
+        # Task is currently running, so we queue this instance for later execution
+        queued_tasks = cache.get("queued_report_tasks", [])
+        queued_tasks.append(pk)
+        cache.set("queued_report_tasks", queued_tasks, timeout=None)
+        return
+
+    try:
+        _, report_headers, query = reports.generate_full_report(pk)
+
+        # Grab the current timestamp, this will be used both in the report and when storing the result
+        timestamp = timezone.now()
+        current_tz = pytz.timezone("America/Chicago")
+        hr_timestamp = timestamp.astimezone(current_tz).strftime("%m/%d/%Y %I:%M:%S %p")
+
+        html_table = render_to_string("reports/_view_table.html", {"report_headers": report_headers,
+                                                                   "page_obj": query,
+                                                                   "timestamp": hr_timestamp,
+                                                                   "rendering_pdf": True})
+
+        pdf = HTML(string=html_table).write_pdf()
+
+        # Craft the new file path
+        filename = f'report_{timestamp.strftime("%Y%m%d%H%M%S")}.pdf'
+        file_path = os.path.join(settings.SECURE_ROOT, filename)
+
+        # Ensure the final directory exists
+        if not os.path.exists(os.path.dirname(file_path)):
+            os.makedirs(os.path.dirname(file_path))
+
+        # Write the PDF to disk
+        with open(file_path, "wb") as f:
+            f.write(pdf)
+
+        # Remove the old PDF
+        try:
+            if result.pdf_path:
+                old_path = os.path.join(settings.SECURE_ROOT, result.pdf_path)
+                os.remove(old_path)
+        except OSError:
+            pass
+
+        # Confirm it passed, and set database values accordingly
+        result.status = 2
+        result.pdf_path = filename
+        result.last_success = timestamp
+        result.save()
+    #except:
+    #    result.status = 3
+    #    result.save()
+    finally:
+        # Release the lock
+        cache.delete("generate_report_pdf_lock")
+
+        # Get the next item in the queue and start the report generation (if it exists)
+        queued_tasks = cache.get("queued_report_tasks", [])
+        if queued_tasks:
+            next_pk = queued_tasks.pop(0)
+            cache.set("queued_report_tasks", queued_tasks, timeout=None)
+            generate_report_pdf.delay(next_pk)

@@ -279,6 +279,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, "public/static")
 # Example: "http://example.com/static/", "http://static.example.com/"
 STATIC_URL = "/static/"
 
+# Custom path, for non-public files we'd like to serve
+SECURE_ROOT = os.path.join(BASE_DIR, ".secure_storage")
+
 # List of upload handler classes to be applied in order.
 FILE_UPLOAD_HANDLERS = [
     "django.core.files.uploadhandler.MemoryFileUploadHandler",
@@ -529,7 +532,8 @@ SESSION_SERIALIZER = "django.contrib.sessions.serializers.JSONSerializer"
 # The cache backends to use.
 CACHES = {
     "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": "/var/tmp/django_cache",
     }
 }
 CACHE_MIDDLEWARE_KEY_PREFIX = ""

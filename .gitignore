@@ -1,6 +1,7 @@
 # Custom
 
 /public/
+/.secure_storage/
 
 # Not needed; we're basically pure JS but need a linter
 node_modules/
