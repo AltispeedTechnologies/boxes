@@ -118,7 +118,7 @@ vine==5.1.0
     #   kombu
 wcwidth==0.2.13
     # via prompt-toolkit
-weasyprint==62.2
+weasyprint==62.3
     # via -r requirements.in
 webencodings==0.5.1
     # via
