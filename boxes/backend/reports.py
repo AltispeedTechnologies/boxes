@@ -219,6 +219,7 @@ def clean_config(config):
 
     return True
 
+
 def report_chart_generate(data):
     data = json.loads(data)
     timeframe_filter = data.get("filter")

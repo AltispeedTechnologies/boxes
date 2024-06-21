@@ -5,6 +5,7 @@ class Report(models.Model):
     name = models.CharField(max_length=64, unique=True)
     config = models.JSONField()
 
+
 class ReportResult(models.Model):
     report = models.OneToOneField(Report, on_delete=models.RESTRICT)
     pdf_path = models.CharField(max_length=512, blank=True, null=True)

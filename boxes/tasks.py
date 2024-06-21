@@ -567,9 +567,6 @@ def generate_report_pdf(pk):
         result.pdf_path = filename
         result.last_success = timestamp
         result.save()
-    #except:
-    #    result.status = 3
-    #    result.save()
     finally:
         # Release the lock
         cache.delete("generate_report_pdf_lock")
