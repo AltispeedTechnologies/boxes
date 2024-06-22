@@ -517,6 +517,10 @@ def generate_report_pdf(pk):
     result.status = 1
     result.save()
 
+    # Get the logo image path
+    globalsettings = GlobalSettings.objects.first()
+    logo_path = globalsettings.login_image.path
+
     # Generating reports is extremely expensive; only generate one at a time
     acquire_lock = cache.add("generate_report_pdf_lock", "true", (60 * 60))
 
@@ -528,7 +532,7 @@ def generate_report_pdf(pk):
         return
 
     try:
-        _, report_headers, query = reports.generate_full_report(pk)
+        report_name, report_headers, query = reports.generate_full_report(pk)
 
         # Grab the current timestamp, this will be used both in the report and when storing the result
         timestamp = timezone.now()
@@ -536,9 +540,11 @@ def generate_report_pdf(pk):
         hr_timestamp = timestamp.astimezone(current_tz).strftime("%m/%d/%Y %I:%M:%S %p")
 
         html_table = render_to_string("reports/_view_table.html", {"report_headers": report_headers,
+                                                                   "report_name": report_name,
                                                                    "page_obj": query,
                                                                    "timestamp": hr_timestamp,
-                                                                   "rendering_pdf": True})
+                                                                   "rendering_pdf": True,
+                                                                   "logo_path": f"file://{logo_path}"})
 
         pdf = HTML(string=html_table).write_pdf()
 

@@ -1,5 +1,5 @@
 import os
-from boxes.models import Report, ReportResult
+from boxes.models import GlobalSettings, Report, ReportResult
 from boxes.tasks import generate_report_pdf
 from boxes.backend import reports as reports_backend
 from django.conf import settings

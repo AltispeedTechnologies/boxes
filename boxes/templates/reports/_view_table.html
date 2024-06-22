@@ -1,4 +1,15 @@
 {% block content %}
+{% if rendering_pdf %}
+<div id="page-logo">
+    <img src="{{ logo_path }}" alt="Header Image">
+</div>
+
+<div id="page-title">
+    <h1>Mike's Parcel</h1>
+    <h2>{{ report_name }}</h2>
+</div>
+{% endif %}
+
 <div class="table-responsive mt-3">
     <table class="table table-hover table-bordered">
         <thead class="thead-dark align-top">
@@ -35,21 +46,48 @@
 {% if rendering_pdf %}
 <style>
     @page {
+        margin-top: 25mm;
+        margin-bottom: 25mm;
+
+        /* Landscape mode must be used when there are more than 10 headers */
+        {% if report_headers|length > 10 %}
+        size: A4 landscape;
+        {% endif %}
+
+        /* Logo */
+        @top-left {
+            content: element(page-logo);
+        }
+
+        /* Title */
+        @top-center {
+            content: element(page-title);
+        }
+
+        /* Page numbers */
         @top-right {
             content: "Page " counter(page) "/" counter(pages);
         }
 
+        /* Timestamp */
         @bottom-right {
-            content: "Generated at {{ timestamp }}";
+            content: "Generated: {{ timestamp }}";
         }
     }
-
-    {% if report_headers|length > 10 %}
-    /* Landscape mode must be used when there are more than 10 headers */
-    @page {
-        size: A4 landscape;
+    @page :first {
+        margin-top: 25mm;
+        margin-bottom: 25mm;
     }
-    {% endif %}
+
+    #page-logo {
+        position: running(page-logo);
+    }
+
+    #page-title {
+        vertical-align: middle;
+        text-align: center;
+        position: running(page-title);
+    }
 
     /* Set a consistent font and font size */
     body {
