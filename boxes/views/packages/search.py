@@ -13,8 +13,11 @@ def all_packages(request):
 @require_http_methods(["GET"])
 def search_packages(request):
     req_filter = request.GET.get("filter").strip()
-    if req_filter not in ["tracking_code", ""]:
+    if req_filter not in ["tracking_code", "customer", ""]:
         return
+
+    if req_filter == "":
+        req_filter = "customer"
 
     packages = _search_packages_helper(request)
     page_number = request.GET.get("page")
