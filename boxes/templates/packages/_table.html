@@ -47,12 +47,12 @@
                             {% endif %}
                         </td>
                         <td data-type="account" data-id="{{ package.account_id }}">
-                            <a href="/accounts/{{ package.account_id }}/packages">
+                            <a href="/accounts/{{ package.account_id }}/packages" data-bypass-frame="true" data-turbo-prefetch="true">
                                 {{ package.account__name }}
                             </a>
                         </td>
                         <td data-type="tracking_code">
-                            <a href="/packages/{{ package.id }}">
+                            <a href="/packages/{{ package.id }}" data-bypass-frame="true" data-turbo-prefetch="true">
                                 {{ package.tracking_code }}
                             </a>
                         </td>

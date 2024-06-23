@@ -248,12 +248,14 @@ function init_page(event) {
         return new bootstrap.Tooltip(tooltip_trigger_el)
     })
 
+    // Specific links are within a Turbo Frame but have a response not containing the current Turbo Frame
+    // Allow an override for this, so Turbo Drive can kick in
+    $("a[data-bypass-frame]").off("click").on("click", function(event) {
+        event.preventDefault();
+        var url = $(this).attr("href");
+        Turbo.visit(url);
+    });
 }
-
-$(document).off("turbo:visit").on("turbo:visit", function() {
-    // Set the last visited URL
-    sessionStorage.setItem("last_visited_url", window.location.href);
-});
 
 $(document).on({
     "turbo:load": init_page,
@@ -263,4 +265,9 @@ $(document).on({
     "turbo:before-frame-render": function(event) {
         init_page(event);
     }
+});
+
+$(document).off("turbo:visit").on("turbo:visit", function() {
+    // Set the last visited URL
+    sessionStorage.setItem("last_visited_url", window.location.href);
 });
