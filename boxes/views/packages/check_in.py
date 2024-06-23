@@ -45,15 +45,12 @@ def create_package(request):
         package.account = Account.objects.get(id=form.cleaned_data["account_id"])
         package.package_type = PackageType.objects.get(id=form.cleaned_data["package_type_id"])
 
-        try:
-            package.save()
-            PackageQueue.objects.create(package=package, queue_id=queue_id)
-            if return_tracking_code:
-                return JsonResponse({"success": True, "id": package.id, "tracking_code": package.tracking_code})
-            else:
-                return JsonResponse({"success": True, "id": package.id})
-        except Exception as e:
-            return JsonResponse({"success": False, "errors": str(e)})
+        package.save()
+        PackageQueue.objects.create(package=package, queue_id=queue_id)
+        if return_tracking_code:
+            return JsonResponse({"success": True, "id": package.id, "tracking_code": package.tracking_code})
+        else:
+            return JsonResponse({"success": True, "id": package.id})
     else:
         return JsonResponse({"success": False, "form_errors": form.errors})
 
