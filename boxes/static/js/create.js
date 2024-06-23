@@ -3,6 +3,7 @@ function request_create_package(form_data, hr_fields) {
         type: "POST",
         url: "/packages/checkin/create",
         payload: form_data,
+        form_parent: "#checkinpage",
         on_success: function(response) {
             window.packages.add(response.id);
             form_data.package_id = response.id;

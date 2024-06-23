@@ -177,7 +177,7 @@ window.picklist_data = async function() {
 };
 
 // Generic ajax request wrapper, for deduplication
-window.ajax_request = function({ type, url, payload = null, content_type = "application/x-www-form-urlencoded; charset=UTF-8", process_data = true, on_success, on_response }) {
+window.ajax_request = function({ type, url, payload = null, content_type = "application/x-www-form-urlencoded; charset=UTF-8", process_data = true, form_parent = null, on_success, on_response }) {
     $.ajax({
         type: type,
         url: url,
@@ -199,10 +199,18 @@ window.ajax_request = function({ type, url, payload = null, content_type = "appl
             if (response.success) {
                 on_success(response);
             } else if (response.form_errors) {
+                console.log(response.form_errors);
                 $.each(response.form_errors, function(field, errors) {
                     if (errors.length > 0) {
-                        $("#" + field).addClass("is-invalid");
-                        $("#" + field).next(".invalid-feedback").text(errors[0]).show();
+                        console.log(field);
+                        if (form_parent) {
+                            var selector = "input[name=\"" + field + "\"], select[name=\"" + field + "\"]";
+                            $(form_parent).find(selector).addClass("is-invalid");
+                            $(form_parent).find("div.invalid-feedback[name=\"" + field + "\"]").text(errors[0]).show();
+                        } else {
+                            $("#" + field).addClass("is-invalid");
+                            $("#" + field).next(".invalid-feedback").text(errors[0]).show();
+                        }
                     }
                 });
             } else {

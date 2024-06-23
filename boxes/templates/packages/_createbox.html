@@ -4,7 +4,7 @@
         <div class="col-md-10">
             <strong><label for="{{ form.tracking_code.id_for_label }}">Tracking code:</label></strong>
             {{ form.tracking_code }}
-            <div class="invalid-feedback"></div>
+            <div class="invalid-feedback" name="tracking_code"></div>
         </div>
         <div class="col-md-2">
             <strong><label for="{{ form.price.id_for_label }}">Price (USD):</label></strong>
@@ -15,16 +15,16 @@
                     {% endfor %}
                     <option value="0.00">No charge</option>
                 </select>
-                <div class="invalid-feedback"></div>
+                <div class="invalid-feedback" name="price"></div>
             </div>
         </div>
     </div>
-    <div class="row my-2">
+    <div class="row mt-2 mb-4">
         <div class="col">
             <strong><label for="{{ form.carrier_id.id_for_label }}">Carrier:</label></strong>
             <div class="d-flex align-items-center position-relative">
-                <select name="id_carrier_id" class="form-control select2 mr-2" id="id_carrier_id"></select>
-                <div class="invalid-feedback"></div>
+                <select name="carrier_id" class="form-control select2 mr-2" id="id_carrier_id"></select>
+                <div class="invalid-feedback" name="carrier_id" style="position: absolute; left: 0; bottom: -25px; width: 100%;"></div>
                 <button id="toggle_carrier_lock_btn" class="btn btn-primary" data-lock-state="carrier_is_locked">
                     <i id="lock_icon" class="fas fa-lock"></i>
                 </button>
@@ -34,7 +34,7 @@
             <strong><label for="id_account_id">Customer:</label></strong>
             <div class="d-flex align-items-center position-relative">
                 <select name="account_id" class="form-control select2 mr-2" id="id_account_id"></select>
-                <div class="invalid-feedback" style="position: absolute; left: 0; bottom: -25px; width: 100%;"></div>
+                <div class="invalid-feedback" name="account_id" style="position: absolute; left: 0; bottom: -25px; width: 100%;"></div>
                 <button id="toggle_acct_lock_btn" class="btn btn-primary" data-lock-state="acct_is_locked">
                     <i id="lock_icon" class="fas fa-lock"></i>
                 </button>
@@ -46,8 +46,8 @@
         <div class="col">
             <strong><label for="{{ form.package_type_id.id_for_label }}">Type:</label></strong>
             <div class="d-flex align-items-center position-relative">
-                <select name="type_id" class="form-control select2 mr-2" id="id_package_type_id"></select>
-                <div class="invalid-feedback"></div>
+                <select name="package_type_id" class="form-control select2 mr-2" id="id_package_type_id"></select>
+                <div class="invalid-feedback" name="package_type_id" style="position: absolute; left: 0; bottom: -25px; width: 100%;"></div>
                 <button id="toggle_type_lock_btn" class="btn btn-primary" data-lock-state="type_is_locked">
                     <i id="lock_icon" class="fas fa-lock"></i>
                 </button>
