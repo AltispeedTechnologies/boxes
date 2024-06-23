@@ -1,12 +1,15 @@
+import csv
+import io
 import os
 from boxes.models import GlobalSettings, Report, ReportResult
 from boxes.tasks import generate_report_pdf
 from boxes.backend import reports as reports_backend
 from django.conf import settings
 from django.core.paginator import Paginator
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
+from django.utils import timezone
 
 
 @require_http_methods(["GET"])
@@ -55,4 +58,26 @@ def report_view_pdf(request, pk):
 
     response = FileResponse(open(file_path, "rb"), content_type="application/pdf")
     response["Content-Disposition"] = "inline; filename={}".format(os.path.basename(file_path))
+    return response
+
+
+@require_http_methods(["GET"])
+def report_view_csv(request, pk):
+    # Generate the report
+    report_name, report_headers, query = reports_backend.generate_full_report(pk)
+
+    # Create a buffer to hold the CSV and assign a writer to it
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+
+    # Write the header
+    writer.writerow(report_headers.values())
+    for line in query:
+        writer.writerow([line[header] for header in report_headers])
+
+    # Seek to the start of the stream
+    buffer.seek(0)
+
+    response = HttpResponse(buffer, content_type="text/csv")
+    response["Content-Disposition"] = "attachment; filename=report_{}.csv".format(timezone.now().strftime("%Y%m%d%H%M%S"))
     return response

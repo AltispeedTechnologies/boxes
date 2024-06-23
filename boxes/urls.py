@@ -104,6 +104,7 @@ urlpatterns = [
     path("reports/name", is_staff(report_name_search), name="report_name_search"),
     path("reports/new", is_staff(report_details), name="report_new"),
     path("reports/new/submit", is_staff(report_new_submit), name="report_new_submit"),
+    path("reports/<int:pk>/csv", is_staff(report_view_csv), name="report_generate_csv"),
     path("reports/<int:pk>/edit", is_staff(report_details), name="report_details"),
     path("reports/<int:pk>/pdf", is_staff(report_generate_pdf), name="report_generate_pdf"),
     path("reports/<int:pk>/pdf/view", is_staff(report_view_pdf), name="report_view_pdf"),
