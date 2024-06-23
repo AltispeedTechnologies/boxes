@@ -74,16 +74,16 @@ function setup_actions() {
     $("#editModal .btn-primary").off("click").on("click", function() {
         var $tr = $("tr[data-row-id=\"" + row_id + "\"]");
 
-        var tracking_code = $("#editModal").find("#tracking_code").val();
-        var price = $("#editModal").find("#price").val();
-        var comments = $("#editModal").find("#comments").val();
-        var inside = $("#editModal").find("#id_inside").prop("checked");
-        var account_id = $("#editModal").find("#id_account_id").val();
-        var carrier_id = $("#editModal").find("#id_carrier_id").val();
-        var package_type_id = $("#editModal").find("#id_package_type_id").val();
-        var carrier = $("#editModal").find("#id_carrier_id").find(":selected").text();
-        var account = $("#editModal").find("#id_account_id").find(":selected").text();
-        var package_type = $("#editModal").find("#id_package_type_id").find(":selected").text();
+        var tracking_code = $("#editModal").find("#edit_tracking_code").val();
+        var price = $("#editModal").find("#edit_price").val();
+        var comments = $("#editModal").find("#edit_comments").val();
+        var inside = $("#editModal").find("#edit_inside").prop("checked");
+        var account_id = $("#editModal").find("#edit_account_id").val();
+        var carrier_id = $("#editModal").find("#edit_carrier_id").val();
+        var package_type_id = $("#editModal").find("#edit_package_type_id").val();
+        var carrier = $("#editModal").find("#edit_carrier_id").find(":selected").text();
+        var account = $("#editModal").find("#edit_account_id").find(":selected").text();
+        var package_type = $("#editModal").find("#edit_package_type_id").find(":selected").text();
 
         // Prepare data for POST request
         var post_data = {
@@ -198,20 +198,20 @@ function init_edit_modal(event) {
         }
     });
 
-    $("#tracking_code").val(package_data.tracking_code);
-    $("#editModal").find("#price").val(package_data.price.replace("$", ""));
-    $("#comments").val(package_data.comments);
-    $("#editModal").find("#id_inside").prop("checked", package_data.inside === "True");
+    $("#editModal").find("#edit_tracking_code").val(package_data.tracking_code);
+    $("#editModal").find("#edit_price").val(package_data.price.replace("$", ""));
+    $("#editModal").find("#edit_comments").val(package_data.comments);
+    $("#editModal").find("#edit_inside").prop("checked", package_data.inside === "True");
 
-    window.initialize_async_select2("account", "/accounts/search", "#editModal");
-    window.initialize_async_select2("carrier", "/carriers/search", "#editModal");
-    window.initialize_async_select2("package_type", "/types/search", "#editModal");
+    window.initialize_async_select2("edit_account_id", "/accounts/search", "#editModal");
+    window.initialize_async_select2("edit_carrier_id", "/carriers/search", "#editModal");
+    window.initialize_async_select2("edit_package_type_id", "/types/search", "#editModal");
 
     // Preload options into the various dropdowns
     /// account
     var acct_option = new Option(package_data.account, package_data.account_id, true, true);
-    $("#editModal").find("#id_account_id").append(acct_option).trigger("change");
-    $("#editModal").find("#id_account_id").trigger({
+    $("#editModal").find("#edit_account_id").append(acct_option).trigger("change");
+    $("#editModal").find("#edit_account_id").trigger({
         type: "select2:select",
         params: {
             data: { id: package_data.account_id, text: package_data.account }
@@ -220,8 +220,8 @@ function init_edit_modal(event) {
 
     /// carrier
     var carrier_option = new Option(package_data.carrier, package_data.carrier_id, true, true);
-    $("#editModal").find("#id_carrier_id").append(carrier_option).trigger("change");
-    $("#editModal").find("#id_carrier_id").trigger({
+    $("#editModal").find("#edit_carrier_id").append(carrier_option).trigger("change");
+    $("#editModal").find("#edit_carrier_id").trigger({
         type: "select2:select",
         params: {
             data: { id: package_data.carrier_id, text: package_data.carrier }
@@ -230,8 +230,8 @@ function init_edit_modal(event) {
 
     /// type
     var type_option = new Option(package_data.package_type, package_data.package_type_id, true, true);
-    $("#editModal").find("#id_package_type_id").append(type_option).trigger("change");
-    $("#editModal").find("#id_package_type_id").trigger({
+    $("#editModal").find("#edit_package_type_id").append(type_option).trigger("change");
+    $("#editModal").find("#edit_package_type_id").trigger({
         type: "select2:select",
         params: {
             data: { id: package_data.package_type_id, text: package_data.package_type }

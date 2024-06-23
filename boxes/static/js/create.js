@@ -30,18 +30,18 @@ function request_create_package(form_data, hr_fields) {
 function handle_create_package() {
     let selected_queue = localStorage.getItem("selected_queue");
 
-    let tracking_code = $("#id_tracking_code").val();
-    let price = $("#price").val();
-    let carrier_id = $("#id_carrier_id").val();
-    let account_id = $("#id_account_id").val();
-    let package_type_id = $("#id_package_type_id").val();
-    let inside = $("#id_inside").prop("checked");
-    let comments = $("#id_comments").val();
+    let tracking_code = $("#create_tracking_code").val();
+    let price = $("#create_price").val();
+    let carrier_id = $("#create_carrier_id").val();
+    let account_id = $("#create_account_id").val();
+    let package_type_id = $("#create_package_type_id").val();
+    let inside = $("#create_inside").prop("checked");
+    let comments = $("#create_comments").val();
 
     let hr_fields = {
-        carrier: $("#id_carrier_id").find(":selected").text(),
-        account: $("#id_account_id").find(":selected").text(),
-        package_type: $("#id_package_type_id").find(":selected").text()
+        carrier: $("#create_carrier_id").find(":selected").text(),
+        account: $("#create_account_id").find(":selected").text(),
+        package_type: $("#create_package_type_id").find(":selected").text()
     };
 
     let form_data = {
@@ -72,24 +72,24 @@ function handle_create_package() {
 }
 
 function reset_form_fields() {
-    $("#id_tracking_code").val("");
-    $("#id_inside").prop("checked", false);
+    $("#create_tracking_code").val("");
+    $("#create_inside").prop("checked", false);
     if (!window.locks["acct_is_locked"]) {
-        $("#id_account_id").val(null).trigger("change");
+        $("#create_account_id").val(null).trigger("change");
         window.billable = true;
     }
 
     if (!window.locks["carrier_is_locked"]) {
-        $("#id_carrier_id").val(null).trigger("change");
+        $("#create_carrier_id").val(null).trigger("change");
     }
 
     if (!window.locks["type_is_locked"]) {
-        $("#id_package_type_id").val(null).trigger("change");
+        $("#create_package_type_id").val(null).trigger("change");
         window.default_price = null;
     }
 
     if (!window.locks["acct_is_locked"] && !window.locks["type_is_locked"]) {
-        $("#price").val(null).trigger("change");
+        $("#create_price").val(null).trigger("change");
     }
 }
 
@@ -190,9 +190,9 @@ function init_create_page() {
         load_queue($("#queue_select").val());
     }
 
-    window.initialize_async_select2("account", "/accounts/search");
-    window.initialize_async_select2("carrier", "/carriers/search");
-    window.initialize_async_select2("package_type", "/types/search");
+    window.initialize_async_select2("create_account_id", "/accounts/search");
+    window.initialize_async_select2("create_carrier_id", "/carriers/search");
+    window.initialize_async_select2("create_package_type_id", "/types/search");
 
     $("#toggle_acct_lock_btn, #toggle_type_lock_btn, #toggle_carrier_lock_btn").off("click").on("click", function() {
         var lock_state_key = $(this).data("lock-state");
@@ -205,7 +205,7 @@ function init_create_page() {
         $(this).attr("id") === "checkinbtn" ? handle_checkin() : handle_create_package();
     });
 
-    $("#id_tracking_code").off("keydown").on("keydown", function(event) {
+    $("#create_tracking_code").off("keydown").on("keydown", function(event) {
         if (event.keyCode === 13) {  // Enter key
             event.preventDefault();
             handle_create_package();
@@ -218,22 +218,22 @@ function init_create_page() {
         load_queue(selected_queue);
     });
 
-    $("#price").select2();
-    window.select2properheight("#price");
+    $("#create_price").select2();
+    window.select2properheight("#create_price");
 
-    $("#id_package_type_id").off("select2:select").on("select2:select", function(event) {
+    $("#create_package_type_id").off("select2:select").on("select2:select", function(event) {
         window.default_price = event.params.data.default_price;
         if (window.billable) {
-            $("#price").val(window.default_price).trigger("change");
+            $("#create_price").val(window.default_price).trigger("change");
         }
     });
 
-    $("#id_account_id").off("select2:select").on("select2:select", function(event) {
+    $("#create_account_id").off("select2:select").on("select2:select", function(event) {
         window.billable = event.params.data.billable;
         if (window.billable && window.default_price) {
-            $("#price").val(window.default_price).trigger("change");
+            $("#create_price").val(window.default_price).trigger("change");
         } else if (!window.billable) {
-            $("#price").val("0.00").trigger("change");
+            $("#create_price").val("0.00").trigger("change");
         }
     });
 }

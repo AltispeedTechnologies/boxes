@@ -89,14 +89,14 @@ function setup_bulk_actions() {
 
     // Handle the bulk edit modal logic
     $('[data-bs-target="#bulkEditModal"]').off("click").on("click", function() {
-        $("#bulkEditModal").find("#price").val("6.00");
-        window.initialize_async_select2("carrier", "/carriers/search", "#bulkEditModal");
+        $("#bulkEditModal").find("#bulkedit_price").val("6.00");
+        window.initialize_async_select2("bulkedit_carrier_id", "/carriers/search", "#bulkEditModal");
     });
 
     $("#bulkEditModal .btn-primary").off("click").on("click", function() {
-        let price = $("#bulkEditModal").find("#price").val();
-        let carrier_id = $("#bulkEditModal").find("#id_bulk_carrier_id").val();
-        let carrier = $("#bulkEditModal").find("#id_bulk_carrier_id option:selected").text();
+        let price = $("#bulkEditModal").find("#bulkedit_price").val();
+        let carrier_id = $("#bulkEditModal").find("#bulkedit_carrier_id").val();
+        let carrier = $("#bulkEditModal").find("#bulkedit_carrier_id option:selected").text();
         if (typeof window.no_ledger === "undefined") { window.no_ledger = false; }
 
         var payload = {

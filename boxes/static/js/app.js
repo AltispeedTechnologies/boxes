@@ -67,10 +67,7 @@ window.select2properheight = function(select2_name) {
 //// search_url: URL to submit async requests to
 //// dropdown_parent_selector (optional): parent modal for the dropdown
 window.initialize_async_select2 = function(field_name, search_url, dropdown_parent_selector) {
-    // Equal to s/_/ /g - determines the best human-readable name for the placeholder
-    hr_field_name = field_name.replace(/bulk_|_/g, function(match) {
-        return match === "_" ? " " : "";
-    });
+    var hr_field_name = field_name.split("_")[1];
 
     var select2_options = {
         ajax: {
@@ -101,12 +98,12 @@ window.initialize_async_select2 = function(field_name, search_url, dropdown_pare
     // If this select box will be in a modal, ensure dropdownParent is set
     if (dropdown_parent_selector) {
         select2_options.dropdownParent = $(dropdown_parent_selector);
-        $(dropdown_parent_selector).find("#id_" + field_name + "_id").select2(select2_options);
+        $(dropdown_parent_selector).find("#" + field_name).select2(select2_options);
     } else {
-        $("#id_" + field_name + "_id").select2(select2_options);
+        $("#" + field_name).select2(select2_options);
     }
 
-    window.select2properheight("#id_" + field_name + "_id");
+    window.select2properheight("#" + field_name);
 }
 
 /// Display a custom error message on the screen
