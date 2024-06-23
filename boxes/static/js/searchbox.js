@@ -47,6 +47,11 @@ function init_searchbox_page() {
             $("#customer_select").append(new_option).trigger("change");
         }
     }
+
+    $("#customer_select").off("select2:select").on("select2:select", function() {
+        var customer_id = $("#customer_select").val();
+        window.location.href = "/accounts/" + customer_id + "/packages";
+    });
     
     $("#filter_select").off("change").on("change", function() {
         var filter = $(this).val();
