@@ -14,7 +14,7 @@ function change_selected_filter(filter) {
 function init_searchbox_page() {
     change_selected_filter(window.filter);
 
-    if ($("#customer_select").data("select2") === undefined) {
+    if ($("#customer_select").length === 0 || $("#customer_select").data("select2") === undefined) {
         $("#customer_select").select2({
             ajax: {
                 url: "/accounts/search",

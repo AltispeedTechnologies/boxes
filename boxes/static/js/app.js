@@ -251,10 +251,17 @@ function init_page(event) {
     // Specific links are within a Turbo Frame but have a response not containing the current Turbo Frame
     // Allow an override for this, so Turbo Drive can kick in
     $(document).off("click", "a[data-bypass-frame]").on("click", "a[data-bypass-frame]", function(event) {
-        console.log("clicking");
         event.preventDefault();
         var url = $(this).attr("href");
         Turbo.visit(url);
+    });
+
+    $(document).on("click", "turbo-frame#package-table a", function(event) {
+        // Prevent the default action
+        event.preventDefault();
+
+        // Navigate using Turbo with action "advance" to update the history stack
+        Turbo.visit($(this).attr("href"), { action: "advance" });
     });
 }
 
