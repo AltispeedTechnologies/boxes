@@ -5,7 +5,7 @@ function request_create_package(form_data, hr_fields) {
         payload: form_data,
         on_success: function(response) {
             window.packages.add(response.id);
-            form_data.id = response.id;
+            form_data.package_id = response.id;
             form_data.carrier = hr_fields.carrier;
             form_data.account = hr_fields.account;
             form_data.package_type = hr_fields.package_type;
