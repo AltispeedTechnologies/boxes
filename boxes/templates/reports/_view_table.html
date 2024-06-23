@@ -6,6 +6,7 @@
 
 <div id="page-title">
     <h1>Mike's Parcel</h1>
+    <br />
     <h2>{{ report_name }}</h2>
 </div>
 {% endif %}
@@ -48,10 +49,11 @@
     @page {
         margin-top: 25mm;
         margin-bottom: 25mm;
-
         /* Landscape mode must be used when there are more than 10 headers */
         {% if report_headers|length > 10 %}
         size: A4 landscape;
+        {% else %}
+        size: A4;
         {% endif %}
 
         /* Logo */
@@ -60,23 +62,24 @@
         }
 
         /* Title */
-        @top-center {
+        @top-right {
             content: element(page-title);
         }
 
         /* Page numbers */
-        @top-right {
+        @bottom-right {
             content: "Page " counter(page) "/" counter(pages);
         }
 
         /* Timestamp */
-        @bottom-right {
+        @bottom-left {
             content: "Generated: {{ timestamp }}";
         }
     }
-    @page :first {
-        margin-top: 25mm;
-        margin-bottom: 25mm;
+
+    body, h1, h2 {
+        margin: 0;
+        padding: 0;
     }
 
     #page-logo {
