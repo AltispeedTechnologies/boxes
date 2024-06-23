@@ -264,6 +264,7 @@ function init_report_details_page() {
     }
 
     $("#submitconfig").off("click").on("click", function() {
+        $("#savingicon").show();
         const payload = prepare_json_payload();
 
         let report_id = $(this).attr("data-report-id");
@@ -278,7 +279,12 @@ function init_report_details_page() {
             payload: JSON.stringify(payload),
             content_type: "application/json",
             on_success: function() {
-                window.location.href = "/reports/";
+                var last_visited_url = sessionStorage.getItem("last_visited_url");
+                if (last_visited_url) {
+                    window.location.href = last_visited_url;
+                } else {
+                    window.location.href = "/reports/";
+                }
             }
         });
     });

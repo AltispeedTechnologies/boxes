@@ -247,7 +247,13 @@ function init_page(event) {
     var tooltip_list = tooltip_trigger_list.map(function (tooltip_trigger_el) {
         return new bootstrap.Tooltip(tooltip_trigger_el)
     })
+
 }
+
+$(document).off("turbo:visit").on("turbo:visit", function() {
+    // Set the last visited URL
+    sessionStorage.setItem("last_visited_url", window.location.href);
+});
 
 $(document).on({
     "turbo:load": init_page,
