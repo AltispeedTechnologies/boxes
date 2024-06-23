@@ -54,5 +54,5 @@ def report_view_pdf(request, pk):
         raise Http404("Report not found")
 
     response = FileResponse(open(file_path, "rb"), content_type="application/pdf")
-    response["Content-Disposition"] = "inline; filename='{}'".format(os.path.basename(file_path))
+    response["Content-Disposition"] = "inline; filename={}".format(os.path.basename(file_path))
     return response
