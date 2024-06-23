@@ -79,5 +79,6 @@ def report_view_csv(request, pk):
     buffer.seek(0)
 
     response = HttpResponse(buffer, content_type="text/csv")
-    response["Content-Disposition"] = "attachment; filename=report_{}.csv".format(timezone.now().strftime("%Y%m%d%H%M%S"))
+    timestamp = timezone.now().strftime("%Y%m%d%H%M%S")
+    response["Content-Disposition"] = f"attachment; filename=report_{timestamp}.csv"
     return response
