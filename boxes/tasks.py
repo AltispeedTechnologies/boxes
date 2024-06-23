@@ -541,6 +541,7 @@ def generate_report_pdf(pk):
 
         html_table = render_to_string("reports/_view_table.html", {"report_headers": report_headers,
                                                                    "report_name": report_name,
+                                                                   "business_name": globalsettings.name.
                                                                    "page_obj": query,
                                                                    "timestamp": hr_timestamp,
                                                                    "rendering_pdf": True,
