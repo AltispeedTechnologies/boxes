@@ -46,7 +46,7 @@
         <div class="col">
             <strong><label for="{{ form.package_type_id.id_for_label }}">Type:</label></strong>
             <div class="d-flex align-items-center position-relative">
-                {% include "dropdowns/type.html" %}
+                <select name="type_id" class="form-control select2 mr-2" id="id_package_type_id"></select>
                 <div class="invalid-feedback"></div>
                 <button id="toggle_type_lock_btn" class="btn btn-primary" data-lock-state="type_is_locked">
                     <i id="lock_icon" class="fas fa-lock"></i>
