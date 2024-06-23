@@ -475,19 +475,19 @@ CELERY_BROKER_URL = f'amqp://{BROKER_USER}:{BROKER_PASSWORD}@{BROKER_HOST}/{BROK
 CELERY_RESULT_BACKEND = "rpc://"
 CELERY_BEAT_SCHEDULE = {
     "send_emails": {
-        "task": "boxes.tasks.send_emails",
+        "task": "boxes.tasks.emails.send_emails",
         "schedule": crontab(minute="*/10"),
     },
     "age_picklists": {
-        "task": "boxes.tasks.age_picklists",
+        "task": "boxes.tasks.maintenance.age_picklists",
         "schedule": crontab(hour=3, minute=0),
     },
     "age_charges": {
-        "task": "boxes.tasks.age_charges",
+        "task": "boxes.tasks.charges.age_charges",
         "schedule": crontab(minute=1),
     },
     "total_accounts": {
-        "task": "boxes.tasks.total_accounts",
+        "task": "boxes.tasks.maintenance.total_accounts",
         "schedule": crontab(minute=2),
     },
 }

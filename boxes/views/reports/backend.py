@@ -2,7 +2,7 @@ import json
 from boxes.backend import reports as reports_backend
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import Report, ReportResult
-from boxes.tasks import generate_report_pdf
+from boxes.tasks.pdf import generate_report_pdf
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
