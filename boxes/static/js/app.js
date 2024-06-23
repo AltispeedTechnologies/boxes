@@ -250,7 +250,8 @@ function init_page(event) {
 
     // Specific links are within a Turbo Frame but have a response not containing the current Turbo Frame
     // Allow an override for this, so Turbo Drive can kick in
-    $("a[data-bypass-frame]").off("click").on("click", function(event) {
+    $(document).off("click", "a[data-bypass-frame]").on("click", "a[data-bypass-frame]", function(event) {
+        console.log("clicking");
         event.preventDefault();
         var url = $(this).attr("href");
         Turbo.visit(url);
