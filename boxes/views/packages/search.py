@@ -6,7 +6,8 @@ from django.views.decorators.http import require_http_methods
 
 @require_http_methods(["GET"])
 def all_packages(request):
-    return render(request, "packages/index.html", {"search_url": reverse("search_packages")})
+    return render(request, "packages/index.html", {"search_url": reverse("search_packages"),
+                                                   "filter": "customer"})
 
 
 @require_http_methods(["GET"])
@@ -24,6 +25,6 @@ def search_packages(request):
 
     return render(request, "packages/search.html", {"page_obj": page_obj,
                                                     "query": request.GET.get("q", ""),
-                                                    "filter": request.GET.get("filter", ""),
+                                                    "filter": req_filter,
                                                     "selected": selected,
                                                     "account_packages": True})
