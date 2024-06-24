@@ -9,7 +9,7 @@
     {% if page_obj %}
         <h4>Emails Sent (last 180 days)</h4>
 
-        {% include "accounts/_paginate.html" %}
+        {% include "_paginate.html" %}
         {% include "_email_table.html" %}
     {% endif %}
 </div>

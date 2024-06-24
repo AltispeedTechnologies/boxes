@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container bg-body shadow rounded p-3 col-md-10" id="accountmgmt">
+    <div class="row bg-primary bg-gradient rounded mb-3">
+        <h2 class="text-center text-white py-2">Accounts</h2>
+    </div>
+
+    {% include "_messages.html" %}
+    {% include "_paginate.html" %}
+
+    <div class="table-responsive mt-3">
+        <table class="table table-bordered">
+            <thead class="thead-dark align-top">
+                <tr>
+                    <th>Name</th>
+                    <th>Balance</th>
+                    <th>Phone Number<br />Mobile Number</th>
+                    <th class="text-nowrap" style="width: 1%;"></th>
+                </tr>
+            </thead>
+            <tbody id="accounts">
+                {% for account in page_obj %}
+                    <tr data-id="{{ account.id }}">
+                        <td>
+                            {{ account.name }}
+                        </td>
+                        <td>
+                            {{ account.hr_balance }}
+                        </td>
+                        <td>
+                            {{ account.phone_number|default:"" }}<br />
+                            {{ account.mobile_number|default:"" }}
+                        </td>
+                        <td class="text-nowrap" style="width: 1%;">
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

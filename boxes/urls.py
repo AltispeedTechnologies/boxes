@@ -22,6 +22,7 @@ urlpatterns = [
     path("logout/", sign_out, name="logout"),
 
     # Management dropdown
+    path("mgmt/accounts", is_staff(account_mgmt), name="account_mgmt"),
     path("mgmt/charges", is_staff(charge_settings), name="charge_settings"),
     path("mgmt/charges/update", is_staff(save_charge_settings), name="save_charge_settings"),
     path("mgmt/email/configure", is_staff(email_settings), name="email_settings"),
