@@ -12,7 +12,11 @@ class ReportResult(models.Model):
     last_success = models.DateTimeField(null=True)
 
     # 0: Not generated ever
-    # 1: In Progress or Queued
-    # 2: Completed Successfully
-    # 3: Failed
+    # 1: Queued
+    # 2: In Progress
+    # 3: Completed Successfully
+    # 4: Failed
     status = models.IntegerField(default=0)
+
+    # Progress bar value
+    progress = models.IntegerField(default=0)

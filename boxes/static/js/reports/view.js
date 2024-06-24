@@ -2,21 +2,31 @@ function update_ui(current_status) {
     switch (current_status) {
     case 0:
         $(".generating").hide();
+        $(".queued").hide();
         $("#generatepdf").prop("disabled", false);
         $("#viewpdf").toggleClass("disabled", true);
         break;
     case 1:
-        $(".generating").show();
+        $(".queued").show();
+        $(".generating").hide();
         $("#generatepdf").prop("disabled", true);
         $("#viewpdf").toggleClass("disabled", true);
         break;
     case 2:
-        $(".generating").hide();
-        $("#generatepdf").prop("disabled", false);
-        $("#viewpdf").toggleClass("disabled", false);
+        $(".queued").hide();
+        $(".generating").show();
+        $("#generatepdf").prop("disabled", true);
+        $("#viewpdf").toggleClass("disabled", true);
         break;
     case 3:
         $(".generating").hide();
+        $(".queued").hide();
+        $("#generatepdf").prop("disabled", false);
+        $("#viewpdf").toggleClass("disabled", false);
+        break;
+    case 4:
+        $(".generating").hide();
+        $(".queued").hide();
         $("#generatepdf").prop("disabled", false);
         $("#viewpdf").toggleClass("disabled", true);
         break;
@@ -36,16 +46,25 @@ function init_report_view_page() {
                 // Update the UI, if anything changes
                 update_ui(response.current_status);
 
-                if (response.current_status !== 1) {
+                // Update the progress bar
+                let progress = response.current_progress;
+                $("#pdfprogress .progress-bar")
+                    .css("width", progress + "%")
+                    .attr("aria-valuenow", progress)
+                    .text(progress + "%");
+
+                if (response.current_status === 1 || response.current_status === 2) {
+                    // Poll every 10 seconds
+                    if (!window.report_polling_status) {
+                        window.report_polling_status = setInterval(poll_report_status, 10000);
+                    }
+                } else {
                     clearInterval(window.report_polling_status);
                 }
             }
         });
     }
-    // Poll every 30 seconds
     poll_report_status();
-    clearInterval(window.report_polling_status);
-    window.report_polling_status = setInterval(poll_report_status, 30000);
 
     // When clicking Generate PDF, send the appropriate requests
     $("#generatepdf").off("click").on("click", function() {
@@ -55,9 +74,7 @@ function init_report_view_page() {
             type: "POST",
             url: "/reports/" + report_id + "/pdf",
             on_success: function() {
-                // Poll every 30 seconds
-                clearInterval(window.report_polling_status);
-                window.report_polling_status = setInterval(poll_report_status, 30000);
+                poll_report_status();
             }
         });
     });

@@ -1,5 +1,7 @@
+import logging
 import os
 import pytz
+import sys
 from boxes.models import GlobalSettings, ReportResult
 from boxes.backend import reports
 from celery import shared_task
@@ -9,6 +11,21 @@ from django.db.models.functions import Coalesce
 from django.template.loader import render_to_string
 from django.utils import timezone
 from weasyprint import HTML
+
+
+# Handler for setting the progress level
+class PDFLoggingHandler(logging.Handler):
+    def __init__(self, result, level=logging.NOTSET):
+        super().__init__(level)
+        self.result = result
+
+    def emit(self, record):
+        if record.getMessage().startswith("Step"):
+            step_number = int(record.getMessage().split(" ")[1])
+            new_progress = round(((step_number + 1) / 9) * 100)
+            if self.result.progress != new_progress:
+                self.result.progress = new_progress
+                self.result.save()
 
 
 # Returns the rendered HTML table given a report ID
@@ -60,12 +77,6 @@ def _gen_and_save_pdf(pk):
 
 @shared_task
 def generate_report_pdf(pk):
-    # Fetch the result for this report or create one
-    result, _ = ReportResult.objects.get_or_create(report_id=pk)
-    # We are now in progress/queued
-    result.status = 1
-    result.save()
-
     # Generating reports is extremely expensive; only generate one at a time
     acquire_lock = cache.add("generate_report_pdf_lock", "true", (60 * 60))
 
@@ -76,6 +87,18 @@ def generate_report_pdf(pk):
         cache.set("queued_report_tasks", queued_tasks, timeout=None)
         return
     try:
+        # Fetch the result for this report or create one
+        result, _ = ReportResult.objects.get_or_create(report_id=pk)
+        # We are now in progress
+        result.status = 2
+        result.progress = 11
+        result.save()
+
+        logger = logging.getLogger("weasyprint.progress")
+        logger.setLevel(logging.DEBUG)
+        handler = PDFLoggingHandler(result=result)
+        logger.addHandler(handler)
+
         # Generate the PDF accordingly
         filename, timestamp = _gen_and_save_pdf(pk)
 
@@ -88,7 +111,8 @@ def generate_report_pdf(pk):
             pass
 
         # Confirm it passed, and set database values accordingly
-        result.status = 2
+        result.status = 3
+        result.progress = 0
         result.pdf_path = filename
         result.last_success = timestamp
         result.save()

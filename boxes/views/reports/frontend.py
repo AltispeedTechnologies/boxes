@@ -2,7 +2,6 @@ import csv
 import io
 import os
 from boxes.models import GlobalSettings, Report, ReportResult
-from boxes.tasks import generate_report_pdf
 from boxes.backend import reports as reports_backend
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -53,7 +52,7 @@ def report_view_pdf(request, pk):
     filename = result.pdf_path
     file_path = os.path.join(settings.SECURE_ROOT, filename)
 
-    if result.status != 2 or not file_path or not os.path.exists(file_path):
+    if result.status != 3 or not file_path or not os.path.exists(file_path):
         raise Http404("Report not found")
 
     response = FileResponse(open(file_path, "rb"), content_type="application/pdf")

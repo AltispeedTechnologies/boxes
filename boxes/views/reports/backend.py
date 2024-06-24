@@ -76,10 +76,16 @@ def report_stats_chart(request):
 
 def report_generate_pdf(request, pk):
     if request.method == "POST":
+        # Fetch the result for this report or create one
+        result, _ = ReportResult.objects.get_or_create(report_id=pk)
+        # Mark as being in the queue
+        result.status = 1
+        result.save()
+
         generate_report_pdf.delay(pk)
 
         return JsonResponse({"success": True})
     elif request.method == "GET":
         result, _ = ReportResult.objects.get_or_create(report_id=pk)
 
-        return JsonResponse({"success": True, "current_status": result.status})
+        return JsonResponse({"success": True, "current_status": result.status, "current_progress": result.progress})

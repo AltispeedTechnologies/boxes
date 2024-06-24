@@ -15,9 +15,12 @@
             </a>
         </div>
         <div class="col">
+            <div class="progress mb-2 generating" id="pdfprogress" style="display: none;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 10%" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
             <div class="d-flex justify-content-end">
                 <div class="me-2 align-self-center">
-                    <i class="fas fa-spinner fa-spin text-danger generating" style="display: none;"></i>
+                    <i class="fas fa-spinner fa-spin text-danger generating queued" style="display: none;"></i>
                 </div>
                 <button class="btn btn-danger" id="generatepdf">
                     <i class="fa-solid fa-file-pdf"></i> Generate PDF
@@ -28,7 +31,8 @@
                     <i class="fa-solid fa-file-pdf"></i> View PDF
                 </a>
             </div>
-            <div class="d-flex flex-column align-items-end mt-2">
+            <div class="d-flex flex-column align-items-end my-2">
+                <small class="queued" style="display: none;">This report is queued for generation, please wait.</small>
                 <small class="generating" style="display: none;">This may take several minutes or more.</small>
                 <small class="generating" style="display: none;">You can navigate away from this page.</small>
             </div>
