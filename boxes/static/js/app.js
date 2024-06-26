@@ -260,14 +260,6 @@ function init_page(event) {
         var url = $(this).attr("href");
         Turbo.visit(url);
     });
-
-    $(document).on("click", "turbo-frame#package-table a", function(event) {
-        // Prevent the default action
-        event.preventDefault();
-
-        // Navigate using Turbo with action "advance" to update the history stack
-        Turbo.visit($(this).attr("href"), { action: "advance" });
-    });
 }
 
 $(document).on({

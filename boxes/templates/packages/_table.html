@@ -1,5 +1,4 @@
 {% block content %}
-    <turbo-frame id="package-table">
     {% if page_obj %}
         {% include "packages/_paginate.html" %}
 
@@ -125,5 +124,4 @@
     <script src="{% static 'js/table_select.js' %}"></script>
 
     {% include "modals/row.html" %}
-    </turbo-frame>
 {% endblock %}
