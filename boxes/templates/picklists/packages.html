@@ -16,7 +16,7 @@
     <!-- All other JS on this page is self-contained; simply define the reload logic here -->
     <script>
     $(document).off("checkoutPackageValid").on("checkoutPackageValid", function(event, pkg) {
-        $("#package-table").attr("src", "/picklists/{{ picklist_id }}/packages/table");
+        window.location.reload();
     });
     </script>
     {% else %}
