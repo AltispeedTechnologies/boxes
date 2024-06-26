@@ -162,16 +162,43 @@ window.format_price_input = function(input_element) {
 }
 
 // Grab picklist data appropriately
-window.picklist_data = async function() {
-    const response = await $.ajax({
-        type: "GET",
-        url: "/picklists/query",
-        headers: {
-            "X-CSRFToken": window.get_cookie("csrftoken")
+window.picklist_data = (function() {
+    let last_fetch = 0;
+    let cache = null;
+    let fetch_promise = null;
+
+    return async function() {
+        const now = Date.now();
+        
+        // If there's a fetch in progress, return the existing promise
+        if (fetch_promise) {
+            return fetch_promise;
         }
-    });
-    return response.results;
-};
+        
+        // Use cache if the last fetch was less than 1000 milliseconds ago and cache is available
+        if (last_fetch > 0 && (now - last_fetch) < 1000 && cache !== null) {
+            return cache;
+        }
+
+        fetch_promise = $.ajax({
+            type: "GET",
+            url: "/picklists/query",
+            headers: {
+                "X-CSRFToken": window.get_cookie("csrftoken")
+            }
+        }).then(response => {
+            cache = response.results;
+            last_fetch = Date.now();
+            fetch_promise = null;
+            return cache;
+        }).catch(error => {
+            fetch_promise = null;
+            throw error;
+        });
+
+        return fetch_promise;
+    };
+})();
 
 // Generic ajax request wrapper, for deduplication
 window.ajax_request = function({ type, url, payload = null, content_type = "application/x-www-form-urlencoded; charset=UTF-8", process_data = true, form_parent = null, on_success, on_response }) {
