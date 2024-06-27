@@ -226,10 +226,8 @@ window.ajax_request = function({ type, url, payload = null, content_type = "appl
             if (response.success) {
                 on_success(response);
             } else if (response.form_errors) {
-                console.log(response.form_errors);
                 $.each(response.form_errors, function(field, errors) {
                     if (errors.length > 0) {
-                        console.log(field);
                         if (form_parent) {
                             var selector = "input[name=\"" + field + "\"], select[name=\"" + field + "\"]";
                             $(form_parent).find(selector).addClass("is-invalid");
@@ -261,7 +259,6 @@ window.ajax_request = function({ type, url, payload = null, content_type = "appl
 /// Keep track of JS files, given Turbo and its caching
 window.manage_init_func = function(identifying_element, namespace, init_func) {
     $(document).on(`turbo:load.${namespace}`, function() {
-        console.log(`Init ${namespace}`);
         if ($(identifying_element).length !== 0) {
             init_func();
         }
@@ -269,7 +266,6 @@ window.manage_init_func = function(identifying_element, namespace, init_func) {
 
     $(document).on(`turbo:before-render.${namespace}`, function(event) {
         if (!$(event.detail.newBody).find(identifying_element).length) {
-            console.log(`No more ${namespace}`);
             $(document).off(`turbo:load.${namespace}`);
             $(document).off(`turbo:before-render.${namespace}`);
 
