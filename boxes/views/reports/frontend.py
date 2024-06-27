@@ -43,7 +43,8 @@ def report_view(request, pk):
     return render(request, "reports/view.html", {"report_name": report_name,
                                                  "report_headers": report_headers,
                                                  "report_id": pk,
-                                                 "page_obj": page_obj})
+                                                 "page_obj": page_obj,
+                                                 "per_page": per_page})
 
 
 @require_http_methods(["GET"])

@@ -62,9 +62,11 @@ def account_ledger(request, pk):
 @require_http_methods(["GET"])
 def account_packages(request, pk):
     account = Account.objects.filter(id=pk).select_related("accountbalance").first()
-    packages = _get_packages(account__id=account.id)
 
-    page_number = request.GET.get("page")
+    page_number = request.GET.get("page", 1)
+    per_page = request.GET.get("per_page", 10)
+
+    packages = _get_packages(per_page=per_page, account__id=account.id)
     page_obj = packages.get_page(page_number)
 
     return render(request, "accounts/packages.html", {"account": account,

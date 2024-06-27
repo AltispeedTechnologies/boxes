@@ -2,7 +2,7 @@ import json
 import re
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import *
-from .common import _get_packages, _search_packages_helper
+from .common import _get_packages
 from datetime import datetime
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -183,9 +183,10 @@ def picklist_show(request, pk=None):
 
     package_ids = PackagePicklist.objects.filter(picklist_id=picklist.id).values_list("package_id", flat=True)
 
-    packages = _get_packages(id__in=package_ids)
+    page_number = request.GET.get("page", 1)
+    per_page = request.GET.get("per_page", 10)
 
-    page_number = request.GET.get("page")
+    packages = _get_packages(per_page=per_page, id__in=package_ids)
     page_obj = packages.get_page(page_number)
 
     picklist_title = picklist.date if picklist.date else picklist.description
@@ -205,9 +206,10 @@ def picklist_show_table(request, pk=None):
 
     package_ids = PackagePicklist.objects.filter(picklist_id=picklist.id).values_list("package_id", flat=True)
 
-    packages = _get_packages(id__in=package_ids)
+    page_number = request.GET.get("page", 1)
+    per_page = request.GET.get("per_page", 10)
 
-    page_number = request.GET.get("page")
+    packages = _get_packages(per_page=per_page, id__in=package_ids)
     page_obj = packages.get_page(page_number)
 
     return render(request, "packages/_table.html", {"page_obj": page_obj,
@@ -221,9 +223,10 @@ def picklist_show(request, pk=None):
 
     package_ids = PackagePicklist.objects.filter(picklist_id=picklist.id).values_list("package_id", flat=True)
 
-    packages = _get_packages(id__in=package_ids)
+    page_number = request.GET.get("page", 1)
+    per_page = request.GET.get("per_page", 10)
 
-    page_number = request.GET.get("page")
+    packages = _get_packages(per_page=per_page, id__in=package_ids)
     page_obj = packages.get_page(page_number)
 
     picklist_title = picklist.date if picklist.date else picklist.description

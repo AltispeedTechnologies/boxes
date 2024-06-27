@@ -19,8 +19,11 @@ def search_packages(request):
     if req_filter == "":
         req_filter = "customer"
 
-    packages = _search_packages_helper(request)
-    page_number = request.GET.get("page")
+    page_number = request.GET.get("page", 1)
+    per_page = request.GET.get("per_page", 10)
+    query = request.GET.get("q", "").strip()
+
+    packages = _search_packages_helper(query, per_page)
     page_obj = packages.get_page(page_number)
 
     selected_ids = request.GET.get("selected_ids", "")

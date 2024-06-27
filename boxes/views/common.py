@@ -6,8 +6,6 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from html_sanitizer import Sanitizer
 
-PACKAGES_PER_PAGE = 10
-
 ALLOWED_TAGS = [
     "a", "abbr", "b", "blockquote", "code", "del", "div", "em",
     "h1", "h2", "h3", "h4", "h5", "h6", "hr", "i", "img", "li",
@@ -45,7 +43,7 @@ def _clean_html(html):
     return sanitizer.sanitize(html)
 
 
-def _get_packages(**kwargs):
+def _get_packages(per_page, **kwargs):
     # Organized by size of expected data, manually
     # Revisit this section after we have data to test with scale
     packages = Package.objects.select_related(
@@ -76,14 +74,14 @@ def _get_packages(**kwargs):
         "check_out_time"
     ).filter(**kwargs).order_by("current_state", "-check_in_time")
 
-    paginator = Paginator(packages, PACKAGES_PER_PAGE)
+    paginator = Paginator(packages, per_page)
 
     return paginator
 
 
-def _search_packages_helper(request, **kwargs):
-    query = request.GET.get("q", "").strip()
-    packages = _get_packages(tracking_code__icontains=query,
+def _search_packages_helper(query, per_page, **kwargs):
+    packages = _get_packages(per_page=per_page,
+                             tracking_code__icontains=query,
                              current_state=1,
                              **kwargs)
 
