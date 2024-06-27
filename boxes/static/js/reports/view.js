@@ -80,6 +80,4 @@ function init_report_view_page() {
     });
 }
 
-if ($("div#reportviewpage").length !== 0) {
-    init_report_view_page();
-}
+window.manage_init_func("div#reportviewpage", "view", init_report_view_page);

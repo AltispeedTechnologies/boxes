@@ -19,6 +19,4 @@ function init_account_page() {
     }, 500));
 }
 
-if ($("#accountnotes").length !== 0) {
-    init_account_page();
-}
+window.manage_init_func("textarea#accountnotes", "account", init_account_page);

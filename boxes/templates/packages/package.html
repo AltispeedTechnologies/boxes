@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/modals/email_contents.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 {% include "_messages.html" %}
 

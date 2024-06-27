@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/searchbox.js' %}"></script>
+<script src="{% static 'js/bulk_actions.js' %}"></script>
+<script src="{% static 'js/table_select.js' %}"></script>
+<script src="{% static 'js/modals/row.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="bg-body shadow rounded p-3">
     <div class="row bg-primary bg-gradient rounded mb-3">

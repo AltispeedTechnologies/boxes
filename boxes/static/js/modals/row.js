@@ -269,3 +269,4 @@ function row_modals() {
 if ($("#editModal").length !== 0) {
     row_modals();
 }
+window.manage_init_func("#editModal", "row", row_modals);

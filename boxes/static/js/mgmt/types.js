@@ -92,6 +92,4 @@ function init_types_mgmt_page() {
     });
 }
 
-if ($("div#typesmgmt").length !== 0) {
-    init_types_mgmt_page();
-}
+window.manage_init_func("div#typesmgmt", "types", init_types_mgmt_page);

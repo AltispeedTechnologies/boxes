@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/bulk_actions.js' %}"></script>
+<script src="{% static 'js/table_select.js' %}"></script>
+<script src="{% static 'js/modals/row.js' %}"></script>
+<script src="{% static 'js/account.js' %}"></script>
+{% endblock %}
+
 {% block content %}
     <div class="bg-body shadow rounded p-3">
         {% include "accounts/_accountbox.html" %}

@@ -85,6 +85,4 @@ function init_email_template_mgmt_page() {
     });
 }
 
-if ($("div#emailtemplatemgmt").length !== 0) {
-    init_email_template_mgmt_page();
-}
+window.manage_init_func("div#emailtemplatemgmt", "email_template", init_email_template_mgmt_page);

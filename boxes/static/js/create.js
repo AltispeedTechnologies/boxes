@@ -238,6 +238,4 @@ function init_create_page() {
     });
 }
 
-if ($("#checkinpage").length !== 0) {
-    init_create_page();
-}
+window.manage_init_func("div#checkinpage", "create", init_create_page);

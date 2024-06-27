@@ -67,8 +67,6 @@
                         </td>
                         <td data-type="comments" class="mutableData">{{ package.comments|default:"" }}</td>
                         <td>
-                            {% load cache %}
-                            {% cache 1200 button_group package.in_picklist package.current_state picklist_title package.picklist_id %}
                             <button class="btn btn-warning" data-bs-target="#print">
                                 <i class="fas fa-print"></i>
                             </button>
@@ -105,7 +103,6 @@
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             {% endif %}
-                            {% endcache %}
                         </td>
                     </tr>
                     {% endfor %}
@@ -119,9 +116,6 @@
     <script>
         window.selected_packages = new Set({{ selected|safe }});
     </script>
-
-    {% load static %}
-    <script src="{% static 'js/table_select.js' %}"></script>
 
     {% include "modals/row.html" %}
 {% endblock %}

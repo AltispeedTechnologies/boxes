@@ -1,4 +1,10 @@
 {% extends "base.html" %}
+
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/account.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="bg-body shadow rounded p-3" id="accountedit">
     {% include "accounts/_accountbox.html" %}

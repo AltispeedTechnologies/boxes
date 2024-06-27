@@ -1,4 +1,11 @@
 {% extends "base.html" %}
+
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/check_out.js' %}"></script>
+<script src="{% static 'js/check_out_box.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="bg-body shadow rounded p-3" id="checkoutpage">
     <div class="container mb-4">

@@ -46,6 +46,4 @@ function init_email_mgmt_page() {
     });
 }
 
-if ($("div#emailmgmt").length !== 0) {
-    init_email_mgmt_page();
-}
+window.manage_init_func("div#emailmgmt", "email", init_email_mgmt_page);

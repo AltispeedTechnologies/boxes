@@ -1,4 +1,10 @@
 {% extends "base.html" %}
+
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/check_out.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="bg-body shadow rounded p-3" id="picklistcheckout">
     {% include "picklists/_picklistbox.html" %}
@@ -21,6 +27,4 @@
 <script>
     window.queued_packages = new Set({{ package_ids|safe }});
 </script>
-{% load static %}
-<script src="{% static 'js/check_out.js' %}"></script>
 {% endblock %}

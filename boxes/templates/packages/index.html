@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/searchbox.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="bg-body shadow rounded p-3">
     <div class="row bg-primary bg-gradient rounded mb-3">

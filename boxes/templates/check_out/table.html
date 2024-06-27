@@ -1,6 +1,6 @@
 {% block content %}
 
-<div class="table-responsive mt-3">
+<div class="table-responsive mt-3" id="checkouttable">
     <table class="table table-bordered">
         <thead class="thead-dark">
             <tr>
@@ -39,6 +39,4 @@
 </div>
 
 {% include "modals/check_out.html" %}
-{% load static %}
-<script src="{% static 'js/check_out.js' %}"></script>
 {% endblock %}

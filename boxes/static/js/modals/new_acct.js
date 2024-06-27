@@ -27,6 +27,4 @@ function new_acct() {
     });
 }
 
-if ($("#createNewCustomerModal").length !== 0) {
-    new_acct();
-}
+window.manage_init_func("#createNewCustomerModal", "new_acct", new_acct);

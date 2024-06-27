@@ -18,6 +18,4 @@ function email_contents() {
     });
 }
 
-if ($("#showEmailModal").length !== 0) {
-    email_contents();
-}
+window.manage_init_func("#showEmailModal", "email_contents", email_contents);

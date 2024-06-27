@@ -27,11 +27,9 @@
         {% endif %}
     </div>
 </div>
-{% load static %}
 <script>
     window.account_id = "{{ account.id }}";
     window.account_name = "{{ account.name }}";
     window.filter = "{{ filter }}";
 </script>
-<script src="{% static 'js/searchbox.js' %}"></script>
 {% endblock content %}

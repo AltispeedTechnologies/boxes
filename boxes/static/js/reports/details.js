@@ -290,6 +290,4 @@ function init_report_details_page() {
     });
 }
 
-if ($("div#reportdetailspage").length !== 0) {
-    init_report_details_page();
-}
+window.manage_init_func("div#reportdetailspage", "details", init_report_details_page);

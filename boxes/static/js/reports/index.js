@@ -98,6 +98,4 @@ function init_reports_page() {
     });
 }
 
-if ($("div#reportspage").length !== 0) {
-    init_reports_page();
-}
+window.manage_init_func("div#reportspage", "index", init_reports_page);

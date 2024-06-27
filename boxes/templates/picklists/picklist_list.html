@@ -1,9 +1,14 @@
 {% extends "base.html" %}
-{% block content %}
+{% block javascript %}
 <!-- We don't use jQuery UI for much else, so just include it directly in here -->
 <link href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css" rel="stylesheet">
 <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.min.js"></script>
 
+{% load static %}
+<script src="{% static 'js/modals/picklist_mgmt.js' %}"></script>
+{% endblock %}
+
+{% block content %}
 <div class="container bg-body shadow rounded p-3 col-md-8 text-center" id="picklistlist">
     <div class="row bg-primary bg-gradient rounded mb-3">
         <h2 class="text-center text-white py-2">Picklists</h2>
@@ -89,6 +94,5 @@
         </div>
     </div>
 </div>
-{% load static %}
 {% include "modals/picklist_mgmt.html" %}
 {% endblock %}

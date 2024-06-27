@@ -1,5 +1,8 @@
 // Global Utility Functions
 
+/// Show Turbo view transition all the time
+Turbo.setProgressBarDelay(50)
+
 /// Used for actions (both bulk and single) to avoid duplicate queries
 /// See the picklistQuery handler for more details
 window.picklist_total_functions = 0;
@@ -255,6 +258,29 @@ window.ajax_request = function({ type, url, payload = null, content_type = "appl
     });
 };
 
+/// Keep track of JS files, given Turbo and its caching
+window.manage_init_func = function(identifying_element, namespace, init_func) {
+    $(document).on(`turbo:load.${namespace}`, function() {
+        console.log(`Init ${namespace}`);
+        if ($(identifying_element).length !== 0) {
+            init_func();
+        }
+    });
+
+    $(document).on(`turbo:before-render.${namespace}`, function(event) {
+        if (!$(event.detail.newBody).find(identifying_element).length) {
+            console.log(`No more ${namespace}`);
+            $(document).off(`turbo:load.${namespace}`);
+            $(document).off(`turbo:before-render.${namespace}`);
+
+            const regex = new RegExp(`${namespace}(\\.[a-z0-9]{8,})?\\.js`);
+            $("script").filter(function() {
+                return regex.test(this.src);
+            }).remove();
+        }
+    });
+};
+
 /// Functionality to run once the content has fully loaded
 function init_page(event) {
     var context = document;
@@ -292,9 +318,6 @@ function init_page(event) {
 $(document).on({
     "turbo:load": init_page,
     "turbo:before-render": function(event) {
-        init_page(event);
-    },
-    "turbo:before-frame-render": function(event) {
         init_page(event);
     }
 });

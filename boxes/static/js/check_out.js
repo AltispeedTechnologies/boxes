@@ -33,6 +33,4 @@ function init_checkout_page() {
     });
 }
 
-if ($("div#checkoutpage").length !== 0 || $("div#picklistcheckout").length !== 0) {
-    init_checkout_page();
-}
+window.manage_init_func("div#checkouttable", "check_out", init_checkout_page);

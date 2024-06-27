@@ -116,6 +116,4 @@ function picklist_list_page() {
     });
 }
 
-if ($("div#picklistlist").length !== 0) {
-    picklist_list_page();
-}
+window.manage_init_func("div#picklistlist", "picklist_mgmt", picklist_list_page);

@@ -45,6 +45,4 @@ function setup_checkout_box() {
     });
 }
 
-if ($("input#tracking_code").length !== 0) {
-    setup_checkout_box();
-}
+window.manage_init_func("input#tracking_code", "check_out_box", setup_checkout_box);

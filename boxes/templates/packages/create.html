@@ -1,5 +1,15 @@
 {% extends "base.html" %}
 
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/bulk_actions.js' %}"></script>
+<script src="{% static 'js/create.js' %}"></script>
+<script src="{% static 'js/table_select.js' %}"></script>
+<script src="{% static 'js/modals/edit_queue_name.js' %}"></script>
+<script src="{% static 'js/modals/new_acct.js' %}"></script>
+<script src="{% static 'js/modals/row.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="bg-body shadow rounded p-3" id="checkinpage">
     <div class="row bg-primary bg-gradient rounded mb-3">
@@ -65,9 +75,6 @@
     </div>
 </div>
 
-{% load static %}
-<script src="{% static 'js/create.js' %}"></script>
-<script src="{% static 'js/table_select.js' %}"></script>
 <script>
     // This exists so ledger entries are not created if the price changes
     window.no_ledger = true;

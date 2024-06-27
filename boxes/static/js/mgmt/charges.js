@@ -64,6 +64,4 @@ function init_charges_mgmt_page() {
     });
 }
 
-if ($("div#chargesmgmt").length !== 0) {
-    init_charges_mgmt_page();
-}
+window.manage_init_func("div#chargesmgmt", "charges", init_charges_mgmt_page);

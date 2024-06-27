@@ -195,6 +195,4 @@ function init_user_edit_page() {
     });
 }
 
-if ($("#accountedit").length !== 0) {
-    init_user_edit_page();
-}
+window.manage_init_func("div#accountedit", "user_edit", init_user_edit_page);
