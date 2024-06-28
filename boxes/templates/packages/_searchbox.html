@@ -21,11 +21,6 @@
             <button class="btn btn-primary" id="showallbtn" data-search="{{ search_url }}">Show All Parcels</button>
         </div>
     </form>
-    <div class="position-absolute end-0 w-25">
-        {% if page_obj %}
-        {% include "packages/_bulk_actions.html" %}
-        {% endif %}
-    </div>
 </div>
 <script>
     window.account_id = "{{ account.id }}";
