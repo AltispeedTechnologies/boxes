@@ -49,8 +49,10 @@ def account_ledger(request, pk):
         "package__tracking_code"
     ).filter(account_id=pk).order_by("-timestamp")
 
-    paginator = Paginator(ledger, 15)
-    page_number = request.GET.get("page")
+    page_number = request.GET.get("page", 1)
+    per_page = request.GET.get("per_page", 10)
+
+    paginator = Paginator(ledger, per_page)
     page_obj = paginator.get_page(page_number)
 
     return render(request, "accounts/account.html", {"account": account,
@@ -101,8 +103,10 @@ def account_emails(request, pk):
         ]
         email.tracking_codes = tracking_codes
 
-    page_number = request.GET.get("page")
-    paginator = Paginator(emails, 15)
+    page_number = request.GET.get("page", 1)
+    per_page = request.GET.get("per_page", 10)
+
+    paginator = Paginator(emails, per_page)
     page_obj = paginator.get_page(page_number)
 
     return render(request, "accounts/emails.html", {"account": account,

@@ -53,6 +53,7 @@ def email_logs(request):
 
     page_number = request.GET.get("page", 1)
     per_page = request.GET.get("per_page", 10)
+
     paginator = Paginator(emails, per_page)
     page_obj = paginator.get_page(page_number)
 

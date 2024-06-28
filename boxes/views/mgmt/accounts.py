@@ -23,7 +23,9 @@ def account_mgmt(request):
     ).order_by("name")
 
     page_number = request.GET.get("page", 1)
-    paginator = Paginator(accounts, 10)
+    per_page = request.GET.get("per_page", 10)
+
+    paginator = Paginator(accounts, per_page)
     page_obj = paginator.get_page(page_number)
 
     return render(request, "mgmt/accounts.html", {"page_obj": page_obj})
