@@ -80,4 +80,4 @@ function init_report_chart() {
     });
 }
 
-window.manage_init_func("div#reportdata", "chart", init_report_chart);
+window.manage_init_func("div#reportdata", "report_chart", init_report_chart);
