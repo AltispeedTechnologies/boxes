@@ -9,6 +9,30 @@ from django.db.models.functions import Concat, TruncDay
 from django.utils import timezone
 
 
+def _datetime_from_period(period):
+    today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    new_period = None
+
+    match period:
+        case "day" | "T":
+            new_period = today
+        case "week" | "W":
+            days_since_sun = (today.weekday() + 1) % 7
+            new_period = today - timedelta(days=days_since_sun)
+        case "month" | "M":
+            new_period = today.replace(day=1)
+        case "Q":
+            current_quarter = (today.month - 1) // 3 + 1
+            start_month = 3 * (current_quarter - 1) + 1
+            new_period = today.replace(month=start_month, day=1)
+        case "year" | "Y":
+            new_period = today.replace(month=1, day=1)
+
+    days = (today - new_period).days
+
+    return today, new_period, days
+
+
 def generate_full_report(pk):
     report = Report.objects.filter(pk=pk).first()
     config = report.config
@@ -60,21 +84,8 @@ def generate_full_report(pk):
             start = now - timedelta(days=config["filter"]["start"])
             combined_filters &= Q(packageledger__timestamp__gte=end, packageledger__timestamp__lte=start)
         case "time_period":
-            today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-
-            match config["filter"]["frequency"]:
-                case "day":
-                    combined_filters &= Q(packageledger__timestamp__gte=today)
-                case "week":
-                    days_since_sun = (today.weekday() + 1) % 7
-                    this_week = today - timedelta(days=days_since_sun)
-                    combined_filters &= Q(packageledger__timestamp__gte=this_week)
-                case "month":
-                    this_month = today.replace(day=1)
-                    combined_filters &= Q(packageledger__timestamp__gte=this_month)
-                case "year":
-                    this_year = today.replace(month=1, day=1)
-                    combined_filters &= Q(packageledger__timestamp__gte=this_year)
+            _, this_period, _ = _datetime_from_period(config["filter"]["frequency"])
+            combined_filters &= Q(packageledger__timestamp__gte=this_period)
 
     # Apply the combined filters
     query = query.filter(combined_filters)
@@ -222,13 +233,7 @@ def clean_config(config):
 
 def report_chart_generate(data):
     timeframe_filter = data.get("filter")
-    if timeframe_filter == "week":
-        days = 7
-    elif timeframe_filter == "month":
-        days = 30
-
-    today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    starting_point = today - timedelta(days=days)
+    today, starting_point, days = _datetime_from_period(timeframe_filter)
 
     # Prepare date list for x-axis
     x_data = [(starting_point + timedelta(days=i)).strftime("%m/%d/%Y") for i in range(days + 1)]
@@ -251,7 +256,7 @@ def report_chart_generate(data):
     ).annotate(
         date=TruncDay("timestamp")
     ).values("date").annotate(
-        emails_sent=Count('id')
+        emails_sent=Count("id")
     ).order_by("date")
 
     # Prepare data structures for response

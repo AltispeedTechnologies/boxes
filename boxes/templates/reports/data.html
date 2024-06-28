@@ -24,18 +24,20 @@
         </nav>
     </div>
 
-    <div class="d-flex justify-content-end my-3">
+    <div class="d-flex justify-content-end my-3" id="chart_toggle">
         <div class="me-2 align-self-center">
             <i id="loadingicon" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
         </div>
-        <button class="btn btn-primary" id="weekbtn">Week</button>
-        <button class="btn btn-light" id="monthbtn">Month</button>
+        <button class="btn btn-light" value="T">Today</button>
+        <button class="btn btn-primary" value="W">This Week</button>
+        <button class="btn btn-light" value="M">This Month</button>
+        <button class="btn btn-light" value="Q">This Quarter</button>
+        <button class="btn btn-light" value="Y">This Year</button>
     </div>
 
     <canvas width="100%" height="25%" id="mainchart"></canvas>
 </div>
 <script>
-    window.initial_x_data = JSON.parse('{{ x_data|safe }}');
-    window.initial_y_data = JSON.parse('{{ y_data|safe }}');
+    window.initial_chart_data = JSON.parse('{{ chart_data|safe }}');
 </script>
 {% endblock %}

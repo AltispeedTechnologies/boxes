@@ -1,7 +1,7 @@
 import json
 from boxes.backend import reports as reports_backend
 from boxes.management.exception_catcher import exception_catcher
-from boxes.models import Report, ReportResult
+from boxes.models import Chart, Report, ReportResult
 from boxes.tasks.pdf import generate_report_pdf
 from django.core.paginator import Paginator
 from django.http import JsonResponse
@@ -70,9 +70,11 @@ def report_remove(request, pk):
 @exception_catcher()
 def report_stats_chart(request):
     data = json.loads(request.body)
-    x_data, y_data = reports_backend.report_chart_generate(data)
+    freq = data.get("filter")
+    chart = Chart.objects.filter(frequency=freq).first()
+    chart_data = json.dumps(chart.chart_data)
 
-    return JsonResponse({"success": True, "x_data": x_data, "y_data": y_data})
+    return JsonResponse({"success": True, "chart_data": chart_data})
 
 
 def report_generate_pdf(request, pk):

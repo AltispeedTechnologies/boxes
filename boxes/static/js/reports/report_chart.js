@@ -1,10 +1,12 @@
 function toggle_disabled_chart_buttons(disabled) {
-    $("#weekbtn").attr("disabled", disabled);
-    $("#monthbtn").attr("disabled", disabled);
+    $("#chart_toggle").find("button").attr("disabled", disabled);
 }
 
-function update_chart(payload) {
+function update_chart(current_value) {
     $("#loadingicon").show();
+    toggle_disabled_chart_buttons(true);
+
+    var payload = {filter: current_value};
 
     window.ajax_request({
         type: "POST",
@@ -12,13 +14,14 @@ function update_chart(payload) {
         content_type: "application/json",
         payload: JSON.stringify(payload),
         on_success: function(response) {
-            window.mainchart.data.labels = response.x_data;
-            window.mainchart.data.datasets = Object.keys(response.y_data).map((key, index) => ({
+            let chart_data = JSON.parse(response.chart_data);
+            window.mainchart.data.labels = chart_data["x_data"];
+            window.mainchart.data.datasets = Object.keys(chart_data["y_data"]).map((key, index) => ({
                 fill: false,
                 label: key,
                 backgroundColor: window.colors[index % window.colors.length],
                 borderColor: window.colors[index % window.colors.length],
-                data: response.y_data[key]
+                data: chart_data["y_data"][key]
             }));
 
             window.mainchart.update();
@@ -41,13 +44,13 @@ function init_report_chart() {
     window.mainchart = new Chart("mainchart", {
         type: "line",
         data: {
-            labels: window.initial_x_data,
-            datasets: Object.keys(window.initial_y_data).map((key, index) => ({
+            labels: window.initial_chart_data["x_data"],
+            datasets: Object.keys(window.initial_chart_data["y_data"]).map((key, index) => ({
                 fill: false,
                 label: key,
                 backgroundColor: window.colors[index % window.colors.length],
                 borderColor: window.colors[index % window.colors.length],
-                data: window.initial_y_data[key]
+                data: window.initial_chart_data["y_data"][key]
             }))
         },
         options: {
@@ -60,23 +63,20 @@ function init_report_chart() {
     });
 
     // Toggle button for the chart
-    $("#weekbtn").off("click").on("click", function() {
-        var payload = {filter: "week"};
-        update_chart(payload);
+    $("#chart_toggle").find("button").off("click").on("click", function() {
+        // Current value for filter
+        let current_value = $(this).val();
 
-        toggle_disabled_chart_buttons(true);
-        $("#weekbtn").addClass("btn-primary").removeClass("btn-light");
-        $("#monthbtn").addClass("btn-light").removeClass("btn-primary");
-    });
+        // Deselect non-current buttons
+        $("#chart_toggle").find("button").filter(function() {
+            return $(this).val() !== current_value;
+        }).addClass("btn-light").removeClass("btn-primary");
 
-    // Toggle button for the chart
-    $("#monthbtn").off("click").on("click", function() {
-        var payload = {filter: "month"};
-        update_chart(payload);
+        // Make current button the selected one
+        $(this).addClass("btn-primary").removeClass("btn-light");
 
-        toggle_disabled_chart_buttons(true);
-        $("#weekbtn").addClass("btn-light").removeClass("btn-primary");
-        $("#monthbtn").addClass("btn-primary").removeClass("btn-light");
+        // Update the chart to match the current filter
+        update_chart(current_value);
     });
 }
 

@@ -2,7 +2,7 @@ import csv
 import io
 import json
 import os
-from boxes.models import GlobalSettings, Report, ReportResult
+from boxes.models import Chart, GlobalSettings, Report, ReportResult
 from boxes.backend import reports as reports_backend
 from django.conf import settings
 from django.core.paginator import Paginator
@@ -15,11 +15,11 @@ from django.utils import timezone
 @require_http_methods(["GET"])
 def report_data(request):
     # The initial filter value is week, get that data
-    data = {"filter": "week"}
-    x_data, y_data = reports_backend.report_chart_generate(data)
+    chart = Chart.objects.filter(frequency="W").first()
+    chart_data = json.dumps(chart.chart_data)
 
-    return render(request, "reports/data.html", {"x_data": json.dumps(x_data),
-                                                 "y_data": json.dumps(y_data)})
+    return render(request, "reports/data.html", {"chart_data": chart_data,
+                                                 "last_updated": chart.last_updated})
 
 
 @require_http_methods(["GET"])

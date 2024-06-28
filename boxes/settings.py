@@ -478,6 +478,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "boxes.tasks.emails.send_emails",
         "schedule": crontab(minute="*/10"),
     },
+    "regenerate_report_data": {
+        "task": "boxes.tasks.maintenance.regenerate_report_data",
+        "schedule": crontab(minute="*/30"),
+    },
     "age_picklists": {
         "task": "boxes.tasks.maintenance.age_picklists",
         "schedule": crontab(hour=3, minute=0),

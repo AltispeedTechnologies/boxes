@@ -1,6 +1,9 @@
 import random
+from boxes.backend import reports as reports_backend
 from boxes.backend.account import create_user_from_account
-from boxes.models import Account, Package, PackageLedger, PackagePicklist, PackageQueue, Picklist, PicklistQueue, Queue
+from boxes.models import (Account, Chart, Package, PackageLedger, PackagePicklist, PackageQueue, Picklist,
+                          PicklistQueue, Queue)
+from boxes.models.chart import CHART_FREQUENCIES
 from boxes.tasks.charges import age_charges
 from celery import shared_task
 from datetime import timedelta
@@ -129,3 +132,20 @@ def populate_seed_data():
     # Start the other tasks
     age_picklists.delay()
     age_charges.delay()
+
+
+@shared_task
+def regenerate_report_data():
+    with transaction.atomic():
+        for freq, _ in CHART_FREQUENCIES:
+            # Grab the chart data
+            x_data, y_data = reports_backend.report_chart_generate({"filter": freq})
+
+            chart, created = Chart.objects.update_or_create(
+                frequency=freq,
+                defaults={
+                    "total_data": {},
+                    "chart_data": {"x_data": x_data, "y_data": y_data},
+                    "last_updated": timezone.now()
+                }
+            )
