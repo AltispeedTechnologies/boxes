@@ -1,5 +1,6 @@
 import csv
 import io
+import json
 import os
 from boxes.models import GlobalSettings, Report, ReportResult
 from boxes.backend import reports as reports_backend
@@ -12,10 +13,20 @@ from django.utils import timezone
 
 
 @require_http_methods(["GET"])
-def reports(request):
+def report_data(request):
+    # The initial filter value is week, get that data
+    data = {"filter": "week"}
+    x_data, y_data = reports_backend.report_chart_generate(data)
+
+    return render(request, "reports/data.html", {"x_data": json.dumps(x_data),
+                                                 "y_data": json.dumps(y_data)})
+
+
+@require_http_methods(["GET"])
+def report_list(request):
     reports = Report.objects.values("id", "name")
 
-    return render(request, "reports/index.html", {"reports": reports})
+    return render(request, "reports/list.html", {"reports": reports})
 
 
 @require_http_methods(["GET"])

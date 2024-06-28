@@ -101,7 +101,8 @@ urlpatterns = [
     path("users/emails/update", is_staff(update_user_emails), name="update_user_emails"),
 
     # Reports
-    path("reports/", is_staff(reports), name="reports"),
+    path("reports/data", is_staff(report_data), name="report_data"),
+    path("reports/list", is_staff(report_list), name="report_list"),
     path("reports/name", is_staff(report_name_search), name="report_name_search"),
     path("reports/new", is_staff(report_details), name="report_new"),
     path("reports/new/submit", is_staff(report_new_submit), name="report_new_submit"),

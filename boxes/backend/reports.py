@@ -221,7 +221,6 @@ def clean_config(config):
 
 
 def report_chart_generate(data):
-    data = json.loads(data)
     timeframe_filter = data.get("filter")
     if timeframe_filter == "week":
         days = 7
@@ -280,4 +279,4 @@ def report_chart_generate(data):
         index = start_date_index[count["date"].strftime("%m/%d/%Y")]
         y_data["Emails Sent"][index] = count["emails_sent"]
 
-    return {"success": True, "x_data": x_data, "y_data": y_data}
+    return x_data, y_data

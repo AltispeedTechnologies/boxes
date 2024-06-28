@@ -69,9 +69,10 @@ def report_remove(request, pk):
 @require_http_methods(["POST"])
 @exception_catcher()
 def report_stats_chart(request):
-    response = reports_backend.report_chart_generate(request.body)
+    data = json.loads(request.body)
+    x_data, y_data = reports_backend.report_chart_generate(data)
 
-    return JsonResponse(response)
+    return JsonResponse({"success": True, "x_data": x_data, "y_data": y_data})
 
 
 def report_generate_pdf(request, pk):

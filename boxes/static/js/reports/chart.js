@@ -29,13 +29,26 @@ function update_chart(payload) {
     });
 }
 
-function init_reports_page() {
+function init_report_chart() {
+    // Chart colors
+    window.colors = [
+        "rgba(54, 162, 235, 1)",
+        "rgba(255, 99, 132, 1)",
+        "rgba(245, 179, 66, 1)",
+    ];
+
     // Initialize the chart
     window.mainchart = new Chart("mainchart", {
         type: "line",
         data: {
-            labels: [],
-            datasets: []
+            labels: window.initial_x_data,
+            datasets: Object.keys(window.initial_y_data).map((key, index) => ({
+                fill: false,
+                label: key,
+                backgroundColor: window.colors[index % window.colors.length],
+                borderColor: window.colors[index % window.colors.length],
+                data: window.initial_y_data[key]
+            }))
         },
         options: {
             plugins: {
@@ -45,17 +58,6 @@ function init_reports_page() {
             }
         }
     });
-
-    // Chart colors
-    window.colors = [
-        "rgba(54, 162, 235, 1)",
-        "rgba(255, 99, 132, 1)",
-        "rgba(245, 179, 66, 1)",
-    ];
-
-    // Grab the data and update the chart
-    var payload = {filter: "week"};
-    update_chart(payload);
 
     // Toggle button for the chart
     $("#weekbtn").off("click").on("click", function() {
@@ -76,26 +78,6 @@ function init_reports_page() {
         $("#weekbtn").addClass("btn-light").removeClass("btn-primary");
         $("#monthbtn").addClass("btn-primary").removeClass("btn-light");
     });
-
-    // Store the row ID for deletion
-    let current_id = 0;
-
-    // Set the ID to be removed
-    $(document).on("click", "[data-bs-target=\"#removeReportModal\"]", function() {
-        current_id = $(this).closest("tr").attr("data-id");
-    });
-
-    // When confirmed, remove the report and hide the modal
-    $("#removeReportModal .btn-primary").off("click").on("click", function() {
-        window.ajax_request({
-            type: "POST",
-            url: "/reports/" + current_id + "/remove",
-            on_success: function() {
-                $("tr[data-id=\"" + current_id + "\"]").remove();
-                $("#removeReportModal").modal("hide");
-            }
-        });
-    });
 }
 
-window.manage_init_func("div#reportspage", "index", init_reports_page);
+window.manage_init_func("div#reportdata", "chart", init_report_chart);
