@@ -3,10 +3,6 @@
 /// Show Turbo view transition all the time
 Turbo.setProgressBarDelay(50)
 
-/// Used for actions (both bulk and single) to avoid duplicate queries
-/// See the picklistQuery handler for more details
-window.picklist_total_functions = 0;
-
 /// Generic cookie function, currently only used for CSRF tokens
 window.get_cookie = function(name) {
     var cookie_value = null;
