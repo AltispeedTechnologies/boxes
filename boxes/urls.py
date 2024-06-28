@@ -13,8 +13,8 @@ def is_staff(view_func):
 
 
 urlpatterns = [
-    path("", index, name="home"),
-    path("admin/", admin.site.urls),
+    path("", is_staff(index), name="home"),
+    path("admin/", is_staff(admin.site.urls)),
 
     # User authentication
     path("register/", register, name="register"),

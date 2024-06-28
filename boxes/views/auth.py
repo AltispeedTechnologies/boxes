@@ -53,7 +53,6 @@ def sign_in(request):
         if check_password(password, user.password):
             if user.is_active:
                 login(request, user)
-                messages.success(request, f"Hi {username.title()}, welcome back!")
                 success = reverse_lazy("home")
                 return redirect(success)
             else:
