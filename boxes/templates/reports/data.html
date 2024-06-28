@@ -36,6 +36,11 @@
     </div>
 
     <canvas width="100%" height="25%" id="mainchart"></canvas>
+    <div class="d-flex justify-content-end">
+        <small class="text-muted">
+            <strong>Last updated:</strong> <span class="timestamp" id="last_updated" data-timestamp="{{ last_updated.isoformat }}"></span>
+        </small>
+    </div>
 </div>
 <script>
     window.initial_chart_data = JSON.parse('{{ chart_data|safe }}');

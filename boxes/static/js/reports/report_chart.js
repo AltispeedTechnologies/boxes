@@ -14,6 +14,7 @@ function update_chart(current_value) {
         content_type: "application/json",
         payload: JSON.stringify(payload),
         on_success: function(response) {
+            // Update the chart data
             let chart_data = JSON.parse(response.chart_data);
             window.mainchart.data.labels = chart_data["x_data"];
             window.mainchart.data.datasets = Object.keys(chart_data["y_data"]).map((key, index) => ({
@@ -23,9 +24,13 @@ function update_chart(current_value) {
                 borderColor: window.colors[index % window.colors.length],
                 data: chart_data["y_data"][key]
             }));
-
             window.mainchart.update();
 
+            // Update the Last Updated time
+            var last_updated = new Date(response.last_updated).toLocaleString();
+            $("#last_updated").text(last_updated);
+
+            // Indicate completion
             $("#loadingicon").hide();
             toggle_disabled_chart_buttons(false);
         }

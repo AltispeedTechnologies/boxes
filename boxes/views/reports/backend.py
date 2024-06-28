@@ -73,8 +73,9 @@ def report_stats_chart(request):
     freq = data.get("filter")
     chart = Chart.objects.filter(frequency=freq).first()
     chart_data = json.dumps(chart.chart_data)
+    last_updated = chart.last_updated.isoformat()
 
-    return JsonResponse({"success": True, "chart_data": chart_data})
+    return JsonResponse({"success": True, "chart_data": chart_data, "last_updated": last_updated})
 
 
 def report_generate_pdf(request, pk):
