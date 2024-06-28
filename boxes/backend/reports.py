@@ -231,8 +231,7 @@ def clean_config(config):
     return True
 
 
-def report_chart_generate(data):
-    timeframe_filter = data.get("filter")
+def report_chart_generate(timeframe_filter):
     today, starting_point, days = _datetime_from_period(timeframe_filter)
 
     # Prepare date list for x-axis
@@ -274,14 +273,26 @@ def report_chart_generate(data):
         )
     }
 
+    # Get totals for each column
+    total_data = {
+        "packages_in": 0,
+        "packages_out": 0,
+        "emails_sent": 0,
+    }
+
     # Combine data
     for count in package_counts:
         index = start_date_index[count["date"].strftime("%m/%d/%Y")]
         y_data["Packages In"][index] = count["packages_in"]
         y_data["Packages Out"][index] = count["packages_out"]
+        total_data["packages_in"] += count["packages_in"]
+        total_data["packages_out"] += count["packages_out"]
 
     for count in email_counts:
         index = start_date_index[count["date"].strftime("%m/%d/%Y")]
         y_data["Emails Sent"][index] = count["emails_sent"]
+        total_data["emails_sent"] += count["emails_sent"]
 
-    return x_data, y_data
+    chart_data = {"x_data": x_data, "y_data": y_data}
+
+    return chart_data, total_data

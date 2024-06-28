@@ -15,7 +15,7 @@ function update_chart(current_value) {
         payload: JSON.stringify(payload),
         on_success: function(response) {
             // Update the chart data
-            let chart_data = JSON.parse(response.chart_data);
+            let chart_data = response.chart_data;
             window.mainchart.data.labels = chart_data["x_data"];
             window.mainchart.data.datasets = Object.keys(chart_data["y_data"]).map((key, index) => ({
                 fill: false,
@@ -25,6 +25,12 @@ function update_chart(current_value) {
                 data: chart_data["y_data"][key]
             }));
             window.mainchart.update();
+
+            // Update the totals
+            let total_data = response.total_data;
+            $("#emails_sent").text(total_data["emails_sent"]);
+            $("#packages_in").text(total_data["packages_in"]);
+            $("#packages_out").text(total_data["packages_out"]);
 
             // Update the Last Updated time
             var last_updated = new Date(response.last_updated).toLocaleString();

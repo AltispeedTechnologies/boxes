@@ -17,9 +17,11 @@ def report_data(request):
     # The initial filter value is week, get that data
     chart = Chart.objects.filter(frequency="W").first()
     chart_data = json.dumps(chart.chart_data)
+    total_data = chart.total_data
 
     return render(request, "reports/data.html", {"chart_data": chart_data,
-                                                 "last_updated": chart.last_updated})
+                                                 "last_updated": chart.last_updated,
+                                                 "total_data": total_data})
 
 
 @require_http_methods(["GET"])

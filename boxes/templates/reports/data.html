@@ -35,6 +35,21 @@
         <button class="btn btn-light" value="Y">This Year</button>
     </div>
 
+    <div class="d-flex justify-content-center">
+        <div class="border border-1 border-primary text-center p-2 mx-1">
+            <small>Emails Sent</small><br />
+            <h5 class="text-primary" id="emails_sent">{{ total_data.emails_sent }}</h5>
+        </div>
+        <div class="border border-1 border-danger text-center p-2 mx-1">
+            <small>Packages In</small><br />
+            <h5 class="text-danger" id="packages_in">{{ total_data.packages_in }}</h5>
+        </div>
+        <div class="border border-1 border-warning text-center p-2 mx-1">
+            <small>Packages Out</small><br />
+            <h5 class="text-warning" id="packages_out">{{ total_data.packages_out }}</h5>
+        </div>
+    </div>
+
     <canvas width="100%" height="25%" id="mainchart"></canvas>
     <div class="d-flex justify-content-end">
         <small class="text-muted">

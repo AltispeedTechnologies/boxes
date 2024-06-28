@@ -139,13 +139,13 @@ def regenerate_report_data():
     with transaction.atomic():
         for freq, _ in CHART_FREQUENCIES:
             # Grab the chart data
-            x_data, y_data = reports_backend.report_chart_generate({"filter": freq})
+            chart_data, total_data = reports_backend.report_chart_generate(freq)
 
             chart, created = Chart.objects.update_or_create(
                 frequency=freq,
                 defaults={
-                    "total_data": {},
-                    "chart_data": {"x_data": x_data, "y_data": y_data},
+                    "total_data": total_data,
+                    "chart_data": chart_data,
                     "last_updated": timezone.now()
                 }
             )
