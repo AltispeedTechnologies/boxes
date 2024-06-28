@@ -47,8 +47,8 @@ function check() {
     $PYTHON_PATH manage.py check --deploy
 }
 
-function collectstatic() {
-    $PYTHON_PATH manage.py collectstatic --no-input
+function processjs() {
+    $PYTHON_PATH manage.py processjs
 }
 
 # Use case statement to process commands
@@ -57,19 +57,19 @@ case "$1" in
         update_pip
         migrate
         init
-        collectstatic
+        processjs
         ;;
     dev)
         update_pip
         migrate
         init
         load_testdata
-        collectstatic
+        processjs
         ;;
     update)
         update_pip
         migrate
-        collectstatic
+        processjs
         ;;
     check)
         check
