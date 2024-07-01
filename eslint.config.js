@@ -6,6 +6,7 @@ module.exports = {
         sourceType: "script",
         globals: {
             "Chart": false,
+            "Turbo": false,
             ...globals.browser,
             ...globals.jquery,
             ...globals.amd,

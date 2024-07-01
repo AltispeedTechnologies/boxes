@@ -3,11 +3,14 @@ from django.core.paginator import Paginator
 from django.db.models import Case, When, Value, CharField, F
 from django.db.models.functions import Concat
 from django.shortcuts import render
+from django.utils.html import escape
 from django.views.decorators.http import require_http_methods
 
 
 @require_http_methods(["GET"])
 def account_mgmt(request):
+    query = escape(request.GET.get("q", ""))
+
     accounts = Account.objects.select_related(
         "useraccount__user"
     ).annotate(
@@ -20,7 +23,7 @@ def account_mgmt(request):
         )
     ).values(
         "id", "name", "hr_balance", "phone_number", "mobile_number"
-    ).order_by("name")
+    ).filter(name__icontains=query).order_by("name")
 
     page_number = request.GET.get("page", 1)
     per_page = request.GET.get("per_page", 10)
@@ -28,4 +31,5 @@ def account_mgmt(request):
     paginator = Paginator(accounts, per_page)
     page_obj = paginator.get_page(page_number)
 
-    return render(request, "mgmt/accounts.html", {"page_obj": page_obj})
+    return render(request, "mgmt/accounts.html", {"page_obj": page_obj,
+                                                  "query": query})

@@ -3,6 +3,7 @@
 {% block javascript %}
 {% load static %}
 <script src="{% static 'js/modals/new_acct.js' %}"></script>
+<script src="{% static 'js/mgmt/accounts.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -13,7 +14,11 @@
 
     {% include "_messages.html" %}
 
-    <div class="d-flex justify-content-end">
+    <div class="d-flex justify-content-between">
+        <div class="d-flex justify-content-beginning">
+            <input class="form-control" id="accountquery" placeholder="Search accounts..." value="{{ query }}"></input>
+            <button class="btn btn-primary ms-1" id="searchaccounts">Search</button>
+        </div>
         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createNewCustomerModal">
             <i class="fas fa-plus"></i> Add
         </button>
