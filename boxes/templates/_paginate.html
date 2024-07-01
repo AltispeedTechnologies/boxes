@@ -50,6 +50,8 @@
                     <option value="?page={{ page_obj.number }}{% query_string per_page=25 %}" {% if current_per_page == '25' %}selected{% endif %}>25</option>
                     <option value="?page={{ page_obj.number }}{% query_string per_page=50 %}" {% if current_per_page == '50' %}selected{% endif %}>50</option>
                     <option value="?page={{ page_obj.number }}{% query_string per_page=100 %}" {% if current_per_page == '100' %}selected{% endif %}>100</option>
+                    <option value="?page={{ page_obj.number }}{% query_string per_page=250 %}" {% if current_per_page == '250' %}selected{% endif %}>250</option>
+                    <option value="?page={{ page_obj.number }}{% query_string per_page=500 %}" {% if current_per_page == '500' %}selected{% endif %}>500</option>
                 {% endwith %}
             </select>
             <span class="input-group-text">per page</span>
