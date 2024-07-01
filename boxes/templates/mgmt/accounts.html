@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/modals/new_acct.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="container bg-body shadow rounded p-3 col-md-10" id="accountmgmt">
     <div class="row bg-primary bg-gradient rounded mb-3">
@@ -7,6 +12,13 @@
     </div>
 
     {% include "_messages.html" %}
+
+    <div class="d-flex justify-content-end">
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createNewCustomerModal">
+            <i class="fas fa-plus"></i> Add
+        </button>
+    </div>
+
     {% include "_paginate.html" %}
 
     <div class="table-responsive mt-3">
@@ -21,7 +33,7 @@
             </thead>
             <tbody id="accounts">
                 {% for account in page_obj %}
-                    <tr data-id="{{ account.id }}">
+                    <tr>
                         <td>
                             {{ account.name }}
                         </td>
@@ -33,6 +45,12 @@
                             {{ account.mobile_number|default:"" }}
                         </td>
                         <td class="text-nowrap" style="width: 1%;">
+                            <a role="button" class="btn btn-info" href="/accounts/{{ account.id }}/packages">
+                                <i class="fa-solid fa-circle-info"></i>
+                            </a>
+                            <a role="button" class="btn btn-primary" href="/accounts/{{ account.id }}/edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -40,4 +58,6 @@
         </table>
     </div>
 </div>
+
+{% include "modals/new_acct.html" %}
 {% endblock %}

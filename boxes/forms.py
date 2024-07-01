@@ -16,7 +16,7 @@ class CustomUserForm(UserChangeForm):
     class Meta:
         model = CustomUser
         fields = ["prefix", "first_name", "middle_name", "last_name", "suffix", "company", "phone_number",
-                  "mobile_number"]
+                  "mobile_number", "username"]
 
     def __init__(self, *args, **kwargs):
         super(CustomUserForm, self).__init__(*args, **kwargs)
@@ -25,6 +25,7 @@ class CustomUserForm(UserChangeForm):
             if model_field.null or model_field.blank:
                 field.required = False
         self.fields["first_name"].required = True
+        self.fields["username"].required = False
 
 
 class PackageForm(forms.ModelForm):

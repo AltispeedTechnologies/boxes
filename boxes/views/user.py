@@ -1,5 +1,4 @@
 import json
-import random
 import string
 from boxes.forms import CustomUserForm
 from boxes.models import Account, CustomUser, CustomUserEmail, UserAccount
@@ -7,6 +6,7 @@ from boxes.management.exception_catcher import exception_catcher
 from django.db import transaction
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.utils.crypto import get_random_string
 
 
 @require_http_methods(["POST"])
@@ -41,7 +41,7 @@ def update_user(request):
 # Generate a unique username
 def generate_username():
     while True:
-        username = "".join(random.choices(string.ascii_letters + string.digits + "@._+-", k=8))
+        username = get_random_string(149)
         if not CustomUser.objects.filter(username=username).exists():
             return username
 
@@ -51,6 +51,8 @@ def generate_username():
 def create_user(request):
     data = json.loads(request.body)
     data["username"] = generate_username()
+    print("!!!!!!!!!!!!!!!!!!!!")
+    print(data["username"])
 
     with transaction.atomic():
         form = CustomUserForm(data)
