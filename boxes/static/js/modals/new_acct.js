@@ -18,11 +18,11 @@ function new_acct() {
                 $("#savingiconnew").hide();
             },
             on_success: function(response) {
-                if ($("#id_account_id").length === 0) { window.location.reload(); }
+                if ($("#create_account_id").length === 0) { window.location.reload(); }
 
                 var option = new Option(response.account_name, response.account_id, true, true);
-                $("#id_account_id").append(option);
-                $("#id_account_id").val(response.account_id).trigger("change");
+                $("#create_account_id").append(option);
+                $("#create_account_id").val(response.account_id).trigger("change");
                 $("#createNewCustomerModal").modal("hide");
             }
         });
