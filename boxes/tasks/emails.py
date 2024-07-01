@@ -74,14 +74,14 @@ def _send_email(email_data):
     SentEmailResult.objects.create(sent_email=sent_email, response=json_result)
 
 
-def _prepare_email_content(user, template, tracking_code, carrier_name):
+def _prepare_email_content(user, template, tracking_code, carrier_name, comment):
     hr_name = f"{user.first_name} {user.last_name}"
     email_html = template.content
 
     pattern = r'<span [^>]*class="custom-block[^"]*"[^>]*>([^<]+)</span>'
     email_html = re.sub(pattern, lambda m: f'{{{m.group(1).lower().replace(" ", "_")}}}', email_html)
     email_html = email_html.format(first_name=user.first_name, last_name=user.last_name, tracking_code=tracking_code,
-                                   carrier=carrier_name)
+                                   carrier=carrier_name, comment=comment)
 
     # Remove all HTML tags and replace <br> and <br/> with newlines
     email_text = re.sub(r"<[^>]+>", "", email_html)
@@ -95,7 +95,8 @@ def _send_users(users, email_data):
     for user in users:
         hr_name, email_html, email_text = _prepare_email_content(user, email_data["template"],
                                                                  email_data["tracking_code"],
-                                                                 email_data["carrier_name"])
+                                                                 email_data["carrier_name"],
+                                                                 email_data["comment"])
 
         for recipient_email_obj in CustomUserEmail.objects.filter(user=user):
             email_data.update({
@@ -127,14 +128,17 @@ def send_emails():
 
         for template_id, package_ids in templates.items():
             template = template_objs[template_id]
-            results = Package.objects.filter(pk__in=package_ids).values_list("tracking_code", "carrier__name")
+            results = Package.objects.filter(pk__in=package_ids).values_list("tracking_code", "carrier__name",
+                                                                             "comments")
 
             if results:
                 tracking_codes = [result[0] for result in results]
                 carrier_names = [result[1] for result in results]
+                comments = [result[2] for result in results]
 
                 tracking_code = ", ".join(tracking_codes)
                 carrier_name = ", ".join(set(carrier_names))
+                comment = "\n".join(comments)
 
                 email_data = {
                     "template": template,
@@ -144,6 +148,7 @@ def send_emails():
                     "email_settings": email_settings,
                     "mailjet": mailjet,
                     "account_id": account_id,
+                    "comment": comment
                 }
 
                 _send_users(users, email_data)
