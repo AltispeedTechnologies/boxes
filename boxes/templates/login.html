@@ -24,6 +24,7 @@
                         {% endif %}
                     </div>
                     {% endfor %}
+                    <input type="hidden" name="next" value="{{ request.GET.next }}"></input>
                     <div class="text-center">
                         <button type="submit" class="btn btn-primary">Login</button>
                     </div>

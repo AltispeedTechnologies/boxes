@@ -47,14 +47,18 @@ def sign_in(request):
     elif request.method == "POST":
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "").strip()
+        next_page = request.POST.get("next", None)
 
         user = CustomUser.objects.only("id", "password", "is_active").get(username=username)
 
         if check_password(password, user.password):
             if user.is_active:
                 login(request, user)
-                success = reverse_lazy("home")
-                return redirect(success)
+                if next_page:
+                    return redirect(next_page)
+                else:
+                    success = reverse_lazy("home")
+                    return redirect(success)
             else:
                 messages.error(request, "Your account is not active.")
         else:
