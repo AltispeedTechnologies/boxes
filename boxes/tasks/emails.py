@@ -1,8 +1,10 @@
 import os
 import json
 import re
-from boxes.models import (CustomUserEmail, EmailQueue, EmailSettings, GlobalSettings, Package, SentEmail,
-                          SentEmailContents, SentEmailPackage, SentEmailResult, UserAccount)
+from boxes.models import (
+    CustomUserEmail, EmailQueue, EmailSettings, GlobalSettings, Package, SentEmail,
+    SentEmailContents, SentEmailPackage, SentEmailResult, UserAccount
+)
 from celery import shared_task
 from django.db import transaction
 from html import unescape
@@ -32,82 +34,77 @@ def _fetch_candidates():
     return candidates, template_objs
 
 
-def _send_email(email_html, email_settings, email_text, hr_name, mailjet, package_ids, recipient_email, template,
-                account_id):
+def _send_email(email_data):
     email_payload = {
         "Messages": [
             {
-                "From": {
-                        "Email": email_settings.sender_email,
-                        "Name": email_settings.sender_name
-                },
-                "To": [
-                    {
-                        "Email": recipient_email,
-                        "Name": hr_name
-                    }
-                ],
-                "Subject": template.subject,
-                "TextPart": email_text,
-                "HTMLPart": email_html
+                "From": {"Email": email_data["email_settings"].sender_email,
+                         "Name": email_data["email_settings"].sender_name},
+                "To": [{"Email": email_data["recipient_email"], "Name": email_data["hr_name"]}],
+                "Subject": email_data["template"].subject,
+                "TextPart": email_data["email_text"],
+                "HTMLPart": email_data["email_html"]
             }
         ]
     }
 
     # Send the email
-    result = mailjet.send.create(data=email_payload)
+    result = email_data["mailjet"].send.create(data=email_payload)
 
-    # Interpret the immediate result and store it for later analyzation
+    # Interpret the immediate result and store it for later analysis
     json_result = result.json()
     json_message = json_result["Messages"][0]
-    success = False
-    # See https://dev.mailjet.com/email/guides/send-api-v31/
-    if json_message["Status"] == "success":
-        success = True
-
-    # We are only sending one email per request, so it will always be the first item
-    # If there is no message_uuid from the response, we can assume it was also unsuccessful
-    message_uuid = None
-    if success:
-        message_uuid = json_message["To"][0]["MessageUUID"]
+    success = json_message["Status"] == "success"
+    message_uuid = json_message["To"][0]["MessageUUID"] if success else None
 
     # Create main SentEmail object
-    sent_email = SentEmail.objects.create(account_id=account_id,
-                                          subject=template.subject,
-                                          email=recipient_email,
-                                          success=success,
-                                          message_uuid=message_uuid)
+    sent_email = SentEmail.objects.create(
+        account_id=email_data["account_id"],
+        subject=email_data["template"].subject,
+        email=email_data["recipient_email"],
+        success=success,
+        message_uuid=message_uuid
+    )
     # Store the contents of the sent email
-    SentEmailContents.objects.create(sent_email=sent_email, html=email_html)
+    SentEmailContents.objects.create(sent_email=sent_email, html=email_data["email_html"])
     # Ensure each package can have a record of a sent email
-    for package_id in package_ids:
+    for package_id in email_data["package_ids"]:
         SentEmailPackage.objects.create(sent_email=sent_email, package_id=package_id)
     # Store the raw JSON result, in case something goes haywire
     SentEmailResult.objects.create(sent_email=sent_email, response=json_result)
 
 
-def _send_users(users, template, tracking_code, carrier_name, package_ids, email_settings, mailjet, account_id):
+def _prepare_email_content(user, template, tracking_code, carrier_name):
+    hr_name = f"{user.first_name} {user.last_name}"
+    email_html = template.content
+
+    pattern = r'<span [^>]*class="custom-block[^"]*"[^>]*>([^<]+)</span>'
+    email_html = re.sub(pattern, lambda m: f'{{{m.group(1).lower().replace(" ", "_")}}}', email_html)
+    email_html = email_html.format(first_name=user.first_name, last_name=user.last_name, tracking_code=tracking_code,
+                                   carrier=carrier_name)
+
+    # Remove all HTML tags and replace <br> and <br/> with newlines
+    email_text = re.sub(r"<[^>]+>", "", email_html)
+    email_text = re.sub(r"<br\s*/?>", "\n", email_text, flags=re.IGNORECASE)
+    email_text = unescape(email_text)
+
+    return hr_name, email_html, email_text
+
+
+def _send_users(users, email_data):
     for user in users:
-        hr_name = user.first_name + " " + user.last_name
-        email_html = template.content
-
-        pattern = r'<span [^>]*class="custom-block[^"]*"[^>]*>([^<]+)</span>'
-        email_html = re.sub(pattern, lambda m: f'{{{m.group(1).lower().replace(" ", "_")}}}', email_html)
-        email_html = email_html.format(first_name=user.first_name,
-                                       last_name=user.last_name,
-                                       tracking_code=tracking_code,
-                                       carrier=carrier_name)
-
-        # Remove all HTML tags
-        email_text = re.sub(r"<[^>]+>", "", email_html)
-        # Replace <br> and <br/> with newlines
-        email_text = re.sub(r"<br\s*/?>", "\n", email_text, flags=re.IGNORECASE)
-        email_text = unescape(email_text)
+        hr_name, email_html, email_text = _prepare_email_content(user, email_data["template"],
+                                                                 email_data["tracking_code"],
+                                                                 email_data["carrier_name"])
 
         for recipient_email_obj in CustomUserEmail.objects.filter(user=user):
-            recipient_email = recipient_email_obj.email
-            _send_email(email_html, email_settings, email_text, hr_name, mailjet, package_ids, recipient_email,
-                        template, account_id)
+            email_data.update({
+                "hr_name": hr_name,
+                "email_html": email_html,
+                "email_text": email_text,
+                "recipient_email": recipient_email_obj.email,
+            })
+            _send_email(email_data)
 
 
 @shared_task
@@ -118,7 +115,6 @@ def send_emails():
         return
 
     candidates, template_objs = _fetch_candidates()
-
     email_settings = EmailSettings.objects.first()
 
     api_key = os.environ["MJ_APIKEY_PUBLIC"]
@@ -133,15 +129,21 @@ def send_emails():
             template = template_objs[template_id]
             results = Package.objects.filter(pk__in=package_ids).values_list("tracking_code", "carrier__name")
 
-            if len(results) > 1:
-                # Create comma-separated lists if multiple results
-                tracking_code = ", ".join([result[0] for result in results])
-                unique_carrier_names = set(result[1] for result in results)
-                carrier_name = ", ".join(unique_carrier_names)
-            elif results:
-                # Direct assignment if only one result
-                tracking_code, carrier_name = results[0]
-            else:
-                continue
+            if results:
+                tracking_codes = [result[0] for result in results]
+                carrier_names = [result[1] for result in results]
 
-            _send_users(users, template, tracking_code, carrier_name, package_ids, email_settings, mailjet, account_id)
+                tracking_code = ", ".join(tracking_codes)
+                carrier_name = ", ".join(set(carrier_names))
+
+                email_data = {
+                    "template": template,
+                    "tracking_code": tracking_code,
+                    "carrier_name": carrier_name,
+                    "package_ids": package_ids,
+                    "email_settings": email_settings,
+                    "mailjet": mailjet,
+                    "account_id": account_id,
+                }
+
+                _send_users(users, email_data)
