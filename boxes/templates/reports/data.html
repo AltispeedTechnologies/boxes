@@ -24,29 +24,31 @@
         </nav>
     </div>
 
-    <div class="d-flex justify-content-end my-3" id="chart_toggle">
-        <div class="me-2 align-self-center">
-            <i id="loadingicon" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+    <div class="d-flex justify-content-between">
+        <div class="d-flex my-3">
+            <div class="border border-1 border-primary text-center p-2 mx-1">
+                <small>Emails Sent</small><br />
+                <h5 class="text-primary" id="emails_sent">{{ total_data.emails_sent }}</h5>
+            </div>
+            <div class="border border-1 border-danger text-center p-2 mx-1">
+                <small>Packages In</small><br />
+                <h5 class="text-danger" id="packages_in">{{ total_data.packages_in }}</h5>
+            </div>
+            <div class="border border-1 border-warning text-center p-2 mx-1">
+                <small>Packages Out</small><br />
+                <h5 class="text-warning" id="packages_out">{{ total_data.packages_out }}</h5>
+            </div>
         </div>
-        <button class="btn btn-light" value="T">Today</button>
-        <button class="btn btn-primary" value="W">This Week</button>
-        <button class="btn btn-light" value="M">This Month</button>
-        <button class="btn btn-light" value="Q">This Quarter</button>
-        <button class="btn btn-light" value="Y">This Year</button>
-    </div>
 
-    <div class="d-flex justify-content-center">
-        <div class="border border-1 border-primary text-center p-2 mx-1">
-            <small>Emails Sent</small><br />
-            <h5 class="text-primary" id="emails_sent">{{ total_data.emails_sent }}</h5>
-        </div>
-        <div class="border border-1 border-danger text-center p-2 mx-1">
-            <small>Packages In</small><br />
-            <h5 class="text-danger" id="packages_in">{{ total_data.packages_in }}</h5>
-        </div>
-        <div class="border border-1 border-warning text-center p-2 mx-1">
-            <small>Packages Out</small><br />
-            <h5 class="text-warning" id="packages_out">{{ total_data.packages_out }}</h5>
+        <div class="my-3" id="chart_toggle">
+            <div class="me-2 align-self-center">
+                <i id="loadingicon" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+            </div>
+            <button class="btn btn-light" value="T">Today</button>
+            <button class="btn btn-primary" value="W">This Week</button>
+            <button class="btn btn-light" value="M">This Month</button>
+            <button class="btn btn-light" value="Q">This Quarter</button>
+            <button class="btn btn-light" value="Y">This Year</button>
         </div>
     </div>
 
