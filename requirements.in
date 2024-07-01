@@ -20,3 +20,6 @@ mailjet-rest==1.3.4
 # Tooling and demo instance setup
 pycodestyle==2.12.0
 Faker==26.0.0
+
+# Payment processing
+stripe==10.1.0
