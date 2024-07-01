@@ -60,7 +60,12 @@
                     </div>
                     <div class="col">
                         <strong><label for="edit_account_id">Customer</label></strong>
-                        <select name="account_id" class="form-control select2 mr-2" id="edit_account_id"></select>
+                        <div class="d-flex align-items-center position-relative">
+                            <select name="account_id" class="form-control select2 mr-2" id="edit_account_id"></select>
+                            <button id="new_acct_btn" class="btn btn-success ms-1">
+                                <i id="lock_icon" class="fas fa-plus"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="col">
                         <strong><label for="edit_package_type_id">Type</label></strong>
@@ -148,6 +153,70 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
                 <button type="button" class="btn btn-primary">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="createNewCustomerEditModal" tabindex="-1" aria-labelledby="createNewCustomerEditModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createNewCustomerEditModalLabel">Create New Customer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container">
+                <form id="userform">
+                    <div class="row">
+                        <div class="col-md-1">
+                            <label for="prefix" class="form-label">Prefix</label>
+                            <input type="text" class="form-control" id="prefix" name="prefix">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="first_name" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="middle_name" class="form-label">Middle Name</label>
+                            <input type="text" class="form-control" id="middle_name" name="middle_name">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-1 mb-3">
+                            <label for="suffix" class="form-label">Suffix</label>
+                            <input type="text" class="form-control" id="suffix" name="suffix">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label for="company" class="form-label">Company</label>
+                            <input type="text" class="form-control" id="company" name="company">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="company" class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" id="phone_number" name="phone_number">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="company" class="form-label">Email Address</label>
+                            <input type="text" class="form-control" id="email" name="email">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <i id="savingiconnew" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+                <button type="button" class="btn btn-secondary">Discard</button>
+                <button type="button" class="btn btn-primary">Create</button>
             </div>
         </div>
     </div>

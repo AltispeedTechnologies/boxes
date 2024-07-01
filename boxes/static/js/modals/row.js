@@ -70,6 +70,45 @@ function setup_actions() {
         });
     });
 
+    $("#editModal #new_acct_btn").off("click").on("click", function() {
+        $("#editModal").modal("hide");
+        $("#createNewCustomerEditModal").modal("show");
+    });
+
+    $("#createNewCustomerEditModal .btn-primary").off("click").on("click", function() {
+        $("#createNewCustomerEditModal #savingiconnew").show();
+        var $form = $("#createNewCustomerEditModal #userform");
+
+        var form_data = {};
+        $form.serializeArray().forEach(function(item) {
+            form_data[item.name] = item.value;
+        });
+
+        window.ajax_request({
+            type: "POST",
+            url: "/users/new",
+            payload: JSON.stringify(form_data),
+            content_type: "application/json",
+            on_response: function() {
+                $form.find(".is-invalid").removeClass("is-invalid");
+                $("#createNewCustomerEditModal #savingiconnew").hide();
+            },
+            on_success: function(response) {
+                var option = new Option(response.account_name, response.account_id, true, true);
+                $("#edit_account_id").append(option);
+                $("#edit_account_id").val(response.account_id).trigger("change");
+                $("#createNewCustomerEditModal").modal("hide");
+                $("#editModal").modal("show");
+                $("#createNewCustomerEditModal input").val("");
+            }
+        });
+    });
+
+    $("#createNewCustomerEditModal .btn-secondary").off("click").on("click", function() {
+        $("#createNewCustomerEditModal").modal("hide");
+        $("#editModal").modal("show");
+        $("#createNewCustomerEditModal input").val("");
+    });
 
     $("#editModal .btn-primary").off("click").on("click", function() {
         var $tr = $("tr[data-row-id=\"" + row_id + "\"]");
