@@ -28,6 +28,7 @@ fi
 
 # Define functions for various setup tasks
 function update_pip() {
+    $PYTHON_PATH -m pip install --upgrade pip
     $PYTHON_PATH -m pip install -r requirements.txt
 }
 
