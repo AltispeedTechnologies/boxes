@@ -48,10 +48,43 @@ def query_string(context, per_page=None):
 
     query = context.get("query")
     filter_val = context.get("filter")
+    frequency = context.get("frequency")
+    chart = context.get("chart")
 
     if query:
         query_string += f"&q={query}"
     if filter_val:
         query_string += f"&filter={filter_val}"
+    if frequency:
+        query_string += f"&frequency={frequency}"
+    if chart:
+        query_string += f"&chart={chart}"
 
     return mark_safe(query_string)
+
+
+@register.simple_tag(takes_context=True)
+def chart_is_selected(context, freq):
+    frequency = context.get("frequency")
+    set_class = "btn "
+    set_class += "btn-primary" if frequency == freq else "btn-light"
+
+    return set_class
+
+
+@register.simple_tag(takes_context=True)
+def data_tab_is_selected(context, chart):
+    current_chart = context.get("chart")
+    set_class = "flex-sm-fill text-sm-center nav-link "
+    set_class += "active" if chart == current_chart else "bg-light"
+
+    return set_class
+
+
+@register.simple_tag(takes_context=True)
+def chart_tab_is_selected(context, freq):
+    frequency = context.get("frequency")
+    set_class = "flex-sm-fill text-sm-center nav-link "
+    set_class += "active" if frequency == freq else "bg-light"
+
+    return set_class

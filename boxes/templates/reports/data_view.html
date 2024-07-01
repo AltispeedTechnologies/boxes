@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block javascript %}
+{% load static %}
+{% if chart == "emails_sent" %}
+<script src="{% static 'js/modals/email_contents.js' %}"></script>
+{% else %}
+<script src="{% static 'js/bulk_actions.js' %}"></script>
+<script src="{% static 'js/table_select.js' %}"></script>
+<script src="{% static 'js/modals/row.js' %}"></script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% load custom_filters %}
+<div class="bg-body shadow rounded p-3" id="reportdata">
+    <div class="container mb-4">
+        <div class="row bg-primary bg-gradient rounded mb-3">
+            <h2 class="text-center text-white py-2">Reports and Data</h2>
+        </div>
+    </div>
+
+    {% include "_messages.html" %}
+
+    <div class="row mx-auto text-center align-items-center">
+        <nav class="nav nav-pills flex-column flex-sm-row">
+            <a class="flex-sm-fill text-sm-center nav-link active"
+               href="/reports/data">Data</a>
+            <a class="flex-sm-fill text-sm-center nav-link bg-light"
+               href="/reports/list">Reports</a>
+        </nav>
+        <nav class="nav nav-pills flex-column flex-sm-row my-2">
+            <a class="{% data_tab_is_selected chart='packages_in' %}"
+               href="/reports/data/view?frequency={{ frequency }}&chart=packages_in">Packages In</a>
+            <a class="{% data_tab_is_selected chart='packages_out' %}"
+               href="/reports/data/view?frequency={{ frequency }}&chart=packages_out">Packages Out</a>
+            <a class="{% data_tab_is_selected chart='emails_sent' %}"
+               href="/reports/data/view?frequency={{ frequency }}&chart=emails_sent">Emails Sent</a>
+        </nav>
+        <nav class="nav nav-pills flex-column flex-sm-row">
+            <a class="{% chart_tab_is_selected freq='T' %}" href="/reports/data/view?frequency=T&chart={{ chart }}">Today</a>
+            <a class="{% chart_tab_is_selected freq='W' %}" href="/reports/data/view?frequency=W&chart={{ chart }}">This Week</a>
+            <a class="{% chart_tab_is_selected freq='M' %}" href="/reports/data/view?frequency=M&chart={{ chart }}">This Month</a>
+            <a class="{% chart_tab_is_selected freq='Q' %}" href="/reports/data/view?frequency=Q&chart={{ chart }}">This Quarter</a>
+            <a class="{% chart_tab_is_selected freq='Y' %}" href="/reports/data/view?frequency=Y&chart={{ chart }}">This Year</a>
+        </nav>
+    </div>
+
+    {% if chart == "emails_sent" %}
+        {% include "_paginate.html" %}
+        {% include "_email_table.html" %}
+    {% else %}
+        {% include "packages/_table.html" %}
+    {% endif %}
+</div>
+{% endblock %}

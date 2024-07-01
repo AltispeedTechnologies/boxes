@@ -1,15 +1,12 @@
 import json
-from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
-from django.db.models import F, Value, CharField, Q
-from django.db.models.functions import Concat
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
 from boxes.models import (Account, AccountAlias, AccountLedger, CustomUserEmail, SentEmail, SentEmailContents,
                           SentEmailPackage, SentEmailResult)
 from boxes.management.exception_catcher import exception_catcher
-from .common import _get_packages, _get_matching_users
+from boxes.views.common import _get_packages, _get_matching_users, _get_emails
 
 
 @require_http_methods(["GET"])
@@ -79,35 +76,11 @@ def account_packages(request, pk):
 @require_http_methods(["GET"])
 def account_emails(request, pk):
     account = Account.objects.filter(id=pk).select_related("accountbalance").first()
-    emails = SentEmail.objects.filter(account=account).annotate(
-        sent_id=F("pk"),
-        timestamp_val=F("timestamp"),
-        subject_val=F("subject"),
-        email_val=F("email"),
-        status=F("success"),
-        tracking_codes=ArrayAgg(
-            Concat(
-                F("sentemailpackage__package__id"),
-                Value(" "),
-                F("sentemailpackage__package__tracking_code"),
-                output_field=CharField()
-            ),
-            distinct=True,
-            filter=Q(sentemailpackage__package__isnull=False)
-        )
-    ).order_by("-timestamp_val")
-    for email in emails:
-        tracking_codes = [
-            [int(part) if i == 0 else part for i, part in enumerate(code.split(" ", 1))]
-            for code in email.tracking_codes
-        ]
-        email.tracking_codes = tracking_codes
 
     page_number = request.GET.get("page", 1)
     per_page = request.GET.get("per_page", 10)
 
-    paginator = Paginator(emails, per_page)
-    page_obj = paginator.get_page(page_number)
+    page_obj = _get_emails(per_page, page_number, account=account)
 
     return render(request, "accounts/emails.html", {"account": account,
                                                     "page_obj": page_obj,

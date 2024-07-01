@@ -6,6 +6,7 @@
 {% endblock %}
 
 {% block content %}
+{% load custom_filters %}
 <div class="bg-body shadow rounded p-3" id="reportdata">
     <div class="container mb-4">
         <div class="row bg-primary bg-gradient rounded mb-3">
@@ -24,8 +25,8 @@
         </nav>
     </div>
 
-    <div class="d-flex justify-content-between">
-        <div class="d-flex my-3">
+    <div class="d-flex justify-content-between my-4">
+        <div class="d-flex h-25">
             <div class="border border-1 border-primary text-center p-2 mx-1">
                 <small>Emails Sent</small><br />
                 <h5 class="text-primary" id="emails_sent">{{ total_data.emails_sent }}</h5>
@@ -40,15 +41,23 @@
             </div>
         </div>
 
-        <div class="my-3" id="chart_toggle">
-            <div class="me-2 align-self-center">
-                <i id="loadingicon" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+        <div>
+            <div id="chart_toggle">
+                <i id="loadingicon" class="fas fa-spinner fa-spin text-warning me-2" style="display: none;"></i>
+                <button class="{% chart_is_selected freq='T' %}" value="T">Today</button>
+                <button class="{% chart_is_selected freq='W' %}" value="W">This Week</button>
+                <button class="{% chart_is_selected freq='M' %}" value="M">This Month</button>
+                <button class="{% chart_is_selected freq='Q' %}" value="Q">This Quarter</button>
+                <button class="{% chart_is_selected freq='Y' %}" value="Y">This Year</button>
             </div>
-            <button class="btn btn-light" value="T">Today</button>
-            <button class="btn btn-primary" value="W">This Week</button>
-            <button class="btn btn-light" value="M">This Month</button>
-            <button class="btn btn-light" value="Q">This Quarter</button>
-            <button class="btn btn-light" value="Y">This Year</button>
+
+            <hr class="bg-secondary border-2 border-top border-secondary" />
+
+            <div class="d-flex justify-content-end">
+                <a role="button" class="btn btn-primary" href="/reports/data/view?frequency={{ frequency }}">
+                    <i class="fa-solid fa-table-cells"></i> View Data
+                </a>
+            </div>
         </div>
     </div>
 

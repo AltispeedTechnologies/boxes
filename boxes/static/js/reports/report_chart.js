@@ -88,6 +88,15 @@ function init_report_chart() {
 
         // Update the chart to match the current filter
         update_chart(current_value);
+
+        // Update the current browser URL with the new frequency
+        var url = new URL(window.location.href);
+        var params = new URLSearchParams(url.search);
+
+        // Actually set the URL and push to history
+        params.set("frequency", current_value);
+        url.search = params.toString();
+        window.history.pushState({ path: url.href }, "", url.href);
     });
 }
 

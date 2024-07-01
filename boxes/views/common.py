@@ -1,7 +1,9 @@
 from boxes.models import *
 from boxes.tasks import create_user_from_account
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
-from django.db.models import Case, Exists, When, Max, F, OuterRef
+from django.db.models import Case, Exists, When, Max, F, OuterRef, Value, CharField, Q
+from django.db.models.functions import Concat
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from html_sanitizer import Sanitizer
@@ -77,6 +79,38 @@ def _get_packages(per_page, **kwargs):
     paginator = Paginator(packages, per_page)
 
     return paginator
+
+
+def _get_emails(per_page, page_number, **kwargs):
+    emails = SentEmail.objects.annotate(
+        sent_id=F("pk"),
+        timestamp_val=F("timestamp"),
+        subject_val=F("subject"),
+        email_val=F("email"),
+        status=F("success"),
+        tracking_codes=ArrayAgg(
+            Concat(
+                F("sentemailpackage__package__id"),
+                Value(" "),
+                F("sentemailpackage__package__tracking_code"),
+                output_field=CharField()
+            ),
+            distinct=True,
+            filter=Q(sentemailpackage__package__isnull=False)
+        )
+    ).filter(**kwargs).order_by("-timestamp_val")
+
+    paginator = Paginator(emails, per_page)
+    emails_page = paginator.page(page_number)
+
+    for email in emails_page:
+        tracking_codes = [
+            [int(part) if i == 0 else part for i, part in enumerate(code.split(" ", 1))]
+            for code in email.tracking_codes
+        ]
+        email.tracking_codes = tracking_codes
+
+    return emails_page
 
 
 def _search_packages_helper(query, per_page, **kwargs):

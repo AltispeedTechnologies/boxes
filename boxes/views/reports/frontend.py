@@ -2,8 +2,10 @@ import csv
 import io
 import json
 import os
-from boxes.models import Chart, GlobalSettings, Report, ReportResult
 from boxes.backend import reports as reports_backend
+from boxes.models import Chart, GlobalSettings, Report, ReportResult
+from boxes.models.chart import CHART_FREQUENCIES
+from boxes.views.common import _get_packages, _get_emails
 from django.conf import settings
 from django.core.paginator import Paginator
 from django.http import FileResponse, Http404, HttpResponse
@@ -14,14 +16,53 @@ from django.utils import timezone
 
 @require_http_methods(["GET"])
 def report_data(request):
+    # If the frequency is different, ensure it is in the supported list
+    frequency = request.GET.get("frequency", "W")
+    is_supported = any(freq[0] == frequency for freq in CHART_FREQUENCIES)
+    frequency = frequency if is_supported else "W"
+
     # The initial filter value is week, get that data
-    chart = Chart.objects.filter(frequency="W").first()
+    chart = Chart.objects.filter(frequency=frequency).first()
     chart_data = json.dumps(chart.chart_data)
     total_data = chart.total_data
 
     return render(request, "reports/data.html", {"chart_data": chart_data,
                                                  "last_updated": chart.last_updated,
-                                                 "total_data": total_data})
+                                                 "total_data": total_data,
+                                                 "frequency": frequency})
+
+
+@require_http_methods(["GET"])
+def report_data_view(request):
+    # Ensure the frequency is in the supported list
+    frequency = request.GET.get("frequency", "W")
+    is_supported = any(freq[0] == frequency for freq in CHART_FREQUENCIES)
+    frequency = frequency if is_supported else "W"
+
+    # Get the specific chart
+    chart = request.GET.get("chart", "packages_in")
+    allowed_charts = ["packages_in", "packages_out", "emails_sent"]
+    chart = chart if chart in allowed_charts else "packages_in"
+
+    # Get the page number and per_page values
+    page_number = request.GET.get("page", 1)
+    per_page = request.GET.get("per_page", 10)
+
+    # Get the packages from this time period
+    _, time_period, _ = reports_backend._datetime_from_period(frequency)
+    match chart:
+        case "packages_in":
+            packages = _get_packages(per_page, check_in_time__gte=time_period)
+            page_obj = packages.get_page(page_number)
+        case "packages_out":
+            packages = _get_packages(per_page, check_out_time__gte=time_period)
+            page_obj = packages.get_page(page_number)
+        case "emails_sent":
+            page_obj = _get_emails(per_page, page_number, timestamp_val__gte=time_period)
+
+    return render(request, "reports/data_view.html", {"page_obj": page_obj,
+                                                      "frequency": frequency,
+                                                      "chart": chart})
 
 
 @require_http_methods(["GET"])
