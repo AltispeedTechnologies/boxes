@@ -17,7 +17,6 @@ urlpatterns = [
     path("admin/", is_staff(admin.site.urls)),
 
     # User authentication
-    path("register/", register, name="register"),
     path("login/", sign_in, name="login"),
     path("logout/", sign_out, name="logout"),
 

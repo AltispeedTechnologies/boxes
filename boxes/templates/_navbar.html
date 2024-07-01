@@ -45,11 +45,6 @@
                 <li class="nav-item">
                     <a class="nav-link fw-bold" href="{% url 'logout' %}">Logout</a>
                 </li>
-                {% if request.user.is_admin %}
-                    <li class="nav-item">
-                        <a class="nav-link fw-bold" href="{% url 'register' %}">Register New User</a>
-                    </li>
-                {% endif %}
             </ul>
         {% else %}
             <ul class="navbar-nav ml-auto">

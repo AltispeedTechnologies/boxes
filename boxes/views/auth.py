@@ -14,30 +14,6 @@ from boxes.management.exception_catcher import exception_catcher
 from boxes.models import CustomUser
 
 
-def register(request):
-    # Simple page viewing
-    if request.method == "GET":
-        form = RegisterForm()
-        return render(request, "register.html", {"form": form})
-
-    # On submission of the form
-    if request.method == "POST":
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.username = user.username.lower()
-            user.save()
-
-            messages.success(request, "User successfully registered.")
-            login(request, user)
-
-            success = reverse_lazy("home")
-            return redirect(success)
-        else:
-            # Also returns a message on the screen
-            return render(request, "register.html", {"form": form})
-
-
 @csrf_exempt
 @exception_catcher()
 def sign_in(request):
