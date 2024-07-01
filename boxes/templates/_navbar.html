@@ -6,40 +6,42 @@
                 <img src="/media/images/navbar_logo.png" alt="Logo" />
                 <span class="navbar-text fw-bold">Hello, {{ request.user.first_name | title }}!</span>
             </div>
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link fw-bold" href="{% url 'home' %}">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link fw-bold" href="{% url 'check_in' %}">Check In</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link fw-bold" href="{% url 'packages' %}">Search</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link fw-bold" href="{% url 'check_out' %}">Check Out</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link fw-bold" href="{% url 'picklists' %}">Picklists</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link fw-bold" href="{% url 'report_data' %}">Reports and Data</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle fw-bold" href="#" id="mgmt_dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Management
-                    </a>
-                    <ul class="dropdown-menu" aria-labelledby="mgmt_dropdown">
-                        <li><a class="dropdown-item" href="{% url 'account_mgmt' %}">Accounts</a></li>
-                        <li><a class="dropdown-item" href="{% url 'carrier_settings' %}">Carriers</a></li>
-                        <li><a class="dropdown-item" href="{% url 'charge_settings' %}">Charges</a></li>
-                        <li><a class="dropdown-item" href="{% url 'email_settings' %}">Emails</a></li>
-                        <li><a class="dropdown-item" href="{% url 'email_template' %}">Email Templates</a></li>
-                        <li><a class="dropdown-item" href="{% url 'general_settings' %}">General</a></li>
-                        <li><a class="dropdown-item" href="{% url 'package_type_settings' %}">Package Types</a></li>
-                    </ul>
-                </li>
-            </ul>
+            {% if request.user.is_staff %}
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold" href="{% url 'home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold" href="{% url 'check_in' %}">Check In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold" href="{% url 'packages' %}">Search</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold" href="{% url 'check_out' %}">Check Out</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold" href="{% url 'picklists' %}">Picklists</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold" href="{% url 'report_data' %}">Reports and Data</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle fw-bold" href="#" id="mgmt_dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Management
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="mgmt_dropdown">
+                            <li><a class="dropdown-item" href="{% url 'account_mgmt' %}">Accounts</a></li>
+                            <li><a class="dropdown-item" href="{% url 'carrier_settings' %}">Carriers</a></li>
+                            <li><a class="dropdown-item" href="{% url 'charge_settings' %}">Charges</a></li>
+                            <li><a class="dropdown-item" href="{% url 'email_settings' %}">Emails</a></li>
+                            <li><a class="dropdown-item" href="{% url 'email_template' %}">Email Templates</a></li>
+                            <li><a class="dropdown-item" href="{% url 'general_settings' %}">General</a></li>
+                            <li><a class="dropdown-item" href="{% url 'package_type_settings' %}">Package Types</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            {% endif %}
 
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
