@@ -51,8 +51,6 @@ def generate_username():
 def create_user(request):
     data = json.loads(request.body)
     data["username"] = generate_username()
-    print("!!!!!!!!!!!!!!!!!!!!")
-    print(data["username"])
 
     with transaction.atomic():
         form = CustomUserForm(data)
