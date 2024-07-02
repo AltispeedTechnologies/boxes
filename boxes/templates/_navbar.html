@@ -41,6 +41,12 @@
                         </ul>
                     </li>
                 </ul>
+            {% elif request.user.is_customer %}
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold">Payments</a>
+                    </li>
+                </ul>
             {% endif %}
 
             <ul class="navbar-nav ml-auto">

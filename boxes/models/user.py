@@ -17,7 +17,10 @@ class CustomUser(AbstractUser):
         return self.groups.filter(name="Admin").exists()
 
     def is_staff(self):
-        return self.groups.filter(name="Admin").exists() or self.groups.filter(name="Staff").exists()
+        return self.groups.filter(name="Staff").exists()
+
+    def is_customer(self):
+        return self.groups.filter(name="Customer").exists()
 
 
 class CustomUserEmail(models.Model):

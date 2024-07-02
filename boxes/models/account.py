@@ -87,3 +87,13 @@ class AccountChargeSettings(models.Model):
     package_type = models.ForeignKey("PackageType", on_delete=models.RESTRICT, null=True)
     frequency = models.CharField(max_length=1, choices=FREQUENCY_CHOICES, null=True)
     endpoint = models.IntegerField(null=True)
+
+
+class AccountStripeCustomer(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.RESTRICT)
+    customer_id = models.CharField(null=True)
+
+
+class StripePaymentMethod(models.Model):
+    customer = models.ForeignKey(AccountStripeCustomer, on_delete=models.RESTRICT)
+    payment_method_id = models.CharField()

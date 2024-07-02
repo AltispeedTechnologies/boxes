@@ -14,6 +14,7 @@
 </style>
 
 <div class="d-flex justify-content-center align-items-center">
+{% if request.user.is_staff %}
     <a href="{% url 'account_mgmt' %}" role="button" class="btn btn-primary btn-lg btn-verylarge mx-2">
         <i class="fa-solid fa-user-group mb-3" style="font-size: 6rem;"></i>
         Accounts
@@ -26,6 +27,16 @@
         <i class="fa-solid fa-chart-simple mb-3" style="font-size: 6rem;"></i>
         Today at a Glance
     </a>
+{% elif request.user.is_customer %}
+    <a href="" role="button" class="btn btn-primary btn-lg btn-verylarge mx-2">
+        <i class="fa-solid fa-cube mb-3" style="font-size: 6rem;"></i>
+        My Parcels
+    </a>
+    <a href="{% url 'customer_payment_methods' %}" role="button" class="btn btn-success btn-lg btn-verylarge mx-2">
+        <i class="fa-solid fa-money-bill mb-3" style="font-size: 6rem;"></i>
+        Edit Payment Methods
+    </a>
+{% endif %}
 </div>
 
 {% endblock content %}

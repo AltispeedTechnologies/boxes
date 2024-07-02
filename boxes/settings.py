@@ -40,6 +40,7 @@ env = environ.Env(
     SECURE_REFERRER_POLICY=(str, "same-origin"),
     SECURE_SSL_HOST=(str, None),
     SECURE_SSL_REDIRECT=(bool, True),
+    STRIPE_API_KEY=(str, None),
 )
 
 # Set the project base directory
@@ -53,7 +54,6 @@ environ.Env.read_env(env.str('ENV_PATH', '/etc/boxes.env'))
 # django.utils.translation -- that module depends on the settings.
 def gettext_noop(s):
     return s
-
 
 ####################
 # CORE             #
@@ -495,6 +495,11 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute=2),
     },
 }
+
+##########
+# STRIPE #
+##########
+STRIPE_API_KEY = env("STRIPE_API_KEY")
 
 ############
 # SESSIONS #

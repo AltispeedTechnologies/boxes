@@ -16,6 +16,14 @@ def is_staff(view_func):
     return wrapped_view
 
 
+def is_customer(view_func):
+    def wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated or not request.user.is_customer():
+            return HttpResponseForbidden()
+        return view_func(request, *args, **kwargs)
+    return wrapped_view
+
+
 def decorate_urlpatterns(urlpatterns, decorator):
     for i in range(len(urlpatterns)):
         if isinstance(urlpatterns[i], URLPattern):
@@ -26,9 +34,15 @@ def decorate_urlpatterns(urlpatterns, decorator):
 
 
 public_urlpatterns = [
-    path("", index, name="home"),
     path("login/", sign_in, name="login"),
     path("logout/", sign_out, name="logout"),
+]
+
+
+customer_urlpatterns = [
+    path("", index, name="home"),
+    path("customer/payments/methods", customer_payment_methods, name="customer_payment_methods"),
+    path("customer/payments/methods/create", customer_create_payment_method, name="customer_create_payment_method"),
 ]
 
 
@@ -130,7 +144,8 @@ staff_urlpatterns = [
 ]
 
 staff_urlpatterns = decorate_urlpatterns(staff_urlpatterns, is_staff)
+customer_urlpatterns = decorate_urlpatterns(customer_urlpatterns, is_customer)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-] + public_urlpatterns + staff_urlpatterns
+] + public_urlpatterns + staff_urlpatterns + customer_urlpatterns
