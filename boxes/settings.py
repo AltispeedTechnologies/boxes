@@ -55,6 +55,7 @@ environ.Env.read_env(env.str('ENV_PATH', '/etc/boxes.env'))
 def gettext_noop(s):
     return s
 
+
 ####################
 # CORE             #
 ####################
