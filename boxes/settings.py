@@ -492,7 +492,7 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute=1),
     },
     "total_accounts": {
-        "task": "boxes.tasks.maintenance.total_accounts",
+        "task": "boxes.charges.maintenance.total_accounts",
         "schedule": crontab(minute=2),
     },
 }
