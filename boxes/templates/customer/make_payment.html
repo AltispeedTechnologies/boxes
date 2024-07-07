@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container bg-body shadow-sm rounded p-3" id="customercharges">
+    <div class="row bg-primary bg-gradient rounded mb-3">
+        <h2 class="text-center text-white py-2">Make a Payment</h2>
+    </div>
+
+    <div class="table-responsive mt-3 w-25">
+        <table class="table">
+            <tbody>
+                {% if parcel_fees %}
+                <tr>
+                    <td>Parcel fees</td>
+                    <td>${{ parcel_fees }}</td>
+                </tr>
+                {% endif %}
+                {% if late_fees %}
+                <tr>
+                    <td>Late fees</td>
+                    <td>${{ late_fees }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td class="fw-bold">Amount due</td>
+                    <td>${{ balance }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

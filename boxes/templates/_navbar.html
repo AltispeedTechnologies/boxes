@@ -43,8 +43,14 @@
                 </ul>
             {% elif request.user.is_customer %}
                 <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                        <a class="nav-link fw-bold">Payments</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle fw-bold" href="#" id="payments_dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Payments
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="payments_dropdown">
+                            <li><a class="dropdown-item" href="{% url 'customer_make_payment' %}">Make a Payment</a></li>
+                            <li><a class="dropdown-item" href="{% url 'customer_payment_methods' %}">Payment Methods</a></li>
+                        </ul>
                     </li>
                 </ul>
             {% endif %}
