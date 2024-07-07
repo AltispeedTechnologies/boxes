@@ -55,14 +55,31 @@ def _get_billing_portal_id():
 @require_http_methods(["GET"])
 def customer_make_payment(request):
     account_id = UserAccount.objects.get(user_id=request.user.id).account_id
+    customer_id = _get_customer_id(request.user.id)
+
     balance = Account.objects.get(pk=account_id).balance * -1
     other_balances = AccountBalance.objects.get(account_id=account_id)
     parcel_fees = other_balances.regular_balance * -1 if other_balances.regular_balance != 0.00 else None
     late_fees = other_balances.late_balance * -1 if other_balances.regular_balance != 0.00 else None
 
+    payment_methods = stripe.Customer.list_payment_methods(customer_id).data
+    default_method, default_method_id = None, None
+
+    default_method_id = stripe.Customer.retrieve(customer_id)["invoice_settings"]["default_payment_method"]
+    if default_method_id:
+        for method in payment_methods:
+            if method.id == default_method_id:
+                default_method = method
+                break
+    elif len(payment_methods) > 0:
+        default_method = payment_methods[0]
+
     return render(request, "customer/make_payment.html", {"balance": balance,
                                                           "parcel_fees": parcel_fees,
-                                                          "late_fees": late_fees})
+                                                          "late_fees": late_fees,
+                                                          "payment_methods": payment_methods,
+                                                          "default_payment_method": default_method,
+                                                          "default_payment_method_id": default_method_id})
 
 
 @require_http_methods(["GET"])

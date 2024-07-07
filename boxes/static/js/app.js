@@ -146,19 +146,47 @@ window.debounce = function(func, wait) {
 
 /// Properly validate price inputs, and do not allow any extra characters
 window.format_price_input = function(input_element) {
-    var value = input_element.val().replace(/[^0-9\.]/g, "");
+    var value = input_element.val();
+    var cursor_position = input_element[0].selectionStart;
+
+    // Remove all non-numeric characters except the decimal point
+    value = value.replace(/[^0-9\.]/g, "");
     var split = value.split(".");
+    
+    // Handle multiple decimals
     if (split.length > 2) {
         value = split[0] + "." + split[1].slice(0, 2);
     } else if (split.length === 2) {
         split[1] = split[1].slice(0, 2);
         value = split.join(".");
     }
+    
+    // Limit integer part to 6 digits
     if (split[0].length > 6) {
         value = value.slice(0, 6) + (split.length === 2 ? "." + split[1] : "");
     }
+
+    // Format value with two decimal places if the decimal is present
+    if (value.includes(".")) {
+        var float_value = parseFloat(value).toFixed(2);
+        if (isNaN(float_value)) {
+            float_value = '0.00';
+        }
+        value = float_value;
+    }
+
     input_element.val(value);
-}
+
+    // Adjust cursor position to handle formatting
+    var new_cursor_position = cursor_position;
+
+    // Ensure the cursor position doesn't exceed the value length
+    if (new_cursor_position > value.length) {
+        new_cursor_position = value.length;
+    }
+
+    input_element[0].setSelectionRange(new_cursor_position, new_cursor_position);
+};
 
 // Grab picklist data appropriately
 window.picklist_data = (function() {

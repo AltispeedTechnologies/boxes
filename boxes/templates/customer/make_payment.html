@@ -1,32 +1,101 @@
 {% extends "base.html" %}
 
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/customer/make_payment.js' %}"></script>
+{% endblock %}
+
 {% block content %}
-<div class="container bg-body shadow-sm rounded p-3" id="customercharges">
+<div class="container bg-body shadow-sm rounded p-3 col-md-10" id="customercharges">
     <div class="row bg-primary bg-gradient rounded mb-3">
         <h2 class="text-center text-white py-2">Make a Payment</h2>
     </div>
 
-    <div class="table-responsive mt-3 w-25">
-        <table class="table">
-            <tbody>
-                {% if parcel_fees %}
-                <tr>
-                    <td>Parcel fees</td>
-                    <td>${{ parcel_fees }}</td>
-                </tr>
-                {% endif %}
-                {% if late_fees %}
-                <tr>
-                    <td>Late fees</td>
-                    <td>${{ late_fees }}</td>
-                </tr>
-                {% endif %}
-                <tr>
-                    <td class="fw-bold">Amount due</td>
-                    <td>${{ balance }}</td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="row justify-content-between mt-2">
+        <div class="col-md-3 justify-content-center">
+            <h4 class="text-center fw-bold">Current Balance Due</h4>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <tbody>
+                        {% if parcel_fees %}
+                        <tr>
+                            <td>Parcel fees</td>
+                            <td>${{ parcel_fees }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if late_fees %}
+                        <tr>
+                            <td>Late fees</td>
+                            <td>${{ late_fees }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td class="fw-bold">Amount due</td>
+                            <td>${{ balance }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <h4 class="text-center fw-bold">Submit Payment</h4>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="paymentamount" id="currentdue" checked>
+                <label class="form-check-label" for="currentdue">
+                    <span class="fw-bold">Amount Due:</span> ${{ balance }}
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="paymentamount" id="otheramount">
+                <label class="fw-bold" for="otheramount">
+                    Other Amount
+                </label>
+            </div>
+            <div class="input-group my-2 d-none" id="enterotherinput">
+                <label class="input-group-text" for="otheramountinput">$</label>
+                <input class="form-control" id="otheramountinput" type="text"></input>
+            </div>
+
+            <hr />
+
+            <div class="mb-3">
+                <p class="fw-bold mb-1">Select a Payment Method</p>
+                <div class="btn-group w-100 text-left" style="height: 45px;">
+                    {% load customer_filters %}
+                    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" id="currentpaymentmethod" aria-expanded="false">
+                        {% if default_payment_method %}
+                            {% if default_payment_method.card.wallet %}
+                                {{ default_payment_method.card.wallet.type }}
+                            {% endif %}
+                            <i class="fs-3 {% get_card_logo default_payment_method.card.brand %}"></i>
+                            ending in <span class="font-monospace">{{ default_payment_method.card.last4 }}</span>
+                            (Expires: {{ default_payment_method.card.exp_month }}/{{ default_payment_method.card.exp_year }})
+                        {% else %}
+                            <i class="fas fa-plus"></i> Add a New Payment Method
+                        {% endif %}
+                    </button>
+                    <ul class="dropdown-menu w-100" id="paymentmethodsdropdown">
+                        {% for method in payment_methods %}
+                        <li><a class="dropdown-item {% if method.id == default_payment_method.id %}active{% endif %}">
+                            {% if method.card.wallet %}
+                                {{ method.card.wallet.type }}
+                            {% endif %}
+                            <i class="fs-3 {% get_card_logo method.card.brand %}"></i>
+                            ending in <span class="font-monospace">{{ method.card.last4 }}</span>
+
+                            (Expires: {{ method.card.exp_month }}/{{ method.card.exp_year }})
+                        </a></li>
+                        {% endfor %}
+                        <li><a class="dropdown-item"><i class="fas fa-plus"></i> Add a New Payment Method</a></li>
+                    </ul>
+
+                </div>
+            </div>
+            <div class="text-center">
+                <button class="btn btn-success">Submit</button>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
