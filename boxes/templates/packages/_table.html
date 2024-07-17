@@ -55,7 +55,10 @@
                                 {{ package.tracking_code }}
                             </a>
                         </td>
-                        <td data-type="price">${{ package.price }}</td>
+                        <td data-type="price" data-paid="{{ package.paid }}">
+                            <i class="fa-solid fa-money-bill {% if package.paid %}text-success{% else %}text-danger{% endif %}"></i>
+                            <a class="text-decoration-none text-reset">${{ package.price }}</a>
+                        </td>
                         <td data-type="carrier" data-id="{{ package.carrier_id }}">{{ package.carrier__name }}</td>
                         <td data-type="package_type" data-id="{{ package.package_type_id }}" class="mutableData">{{ package.package_type__description }}</td>
                         <td data-type="inside" data-id="{{ package.inside }}" class="text-center fs-4">

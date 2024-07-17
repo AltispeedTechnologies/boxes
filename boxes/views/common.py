@@ -66,6 +66,7 @@ def _get_packages(per_page, **kwargs):
         "package_type_id",
         "current_state",
         "inside",
+        "paid",
         "price",
         "carrier__name",
         "account__name",
