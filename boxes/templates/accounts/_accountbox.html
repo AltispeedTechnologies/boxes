@@ -6,8 +6,17 @@
             <h2 id="accountdesc">{{ account.name }}</h2>
         </div>
         <div class="col text-end">
-            <h4><strong>Balance:</strong> {{ account.hr_balance }}</h4>
-            <h6><strong>Parcel fees:</strong> {{ account.accountbalance.hr_regular_balance }} - <strong>Late fees:</strong> {{ account.accountbalance.hr_late_balance }}</h6>
+            <h4>
+                <strong>{% if account.balance > 0 %}Credit {% endif %}Balance{% if account.balance < 0 %} Due{% endif %}:</strong> {{ account.hr_balance }}
+            </h4>
+            <h6>
+                {% if account.accountbalance.regular_balance < 0 %}
+                <strong>Parcel fees due:</strong> {{ account.accountbalance.hr_regular_balance }}
+                {% endif %}
+                {% if account.accountbalance.late_balance < 0 %}
+                <strong>Late fees due:</strong> {{ account.accountbalance.hr_late_balance }}
+                {% endif %}
+            </h6>
         </div>
     </div>
     <div class="row">

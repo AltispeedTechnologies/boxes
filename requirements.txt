@@ -42,6 +42,8 @@ django==5.0.7
     # via -r requirements.in
 django-environ==0.11.2
     # via -r requirements.in
+django-mathfilters==1.0.0
+    # via -r requirements.in
 faker==26.0.0
     # via -r requirements.in
 fonttools[woff]==4.53.1
@@ -79,7 +81,7 @@ pycodestyle==2.12.0
     # via -r requirements.in
 pycparser==2.22
     # via cffi
-pydyf==0.10.0
+pydyf==0.11.0
     # via weasyprint
 pyphen==0.15.0
     # via weasyprint
@@ -101,7 +103,7 @@ six==1.16.0
     #   python-dateutil
 soupsieve==2.5
     # via beautifulsoup4
-sqlparse==0.5.0
+sqlparse==0.5.1
     # via django
 stripe==10.2.0
     # via -r requirements.in

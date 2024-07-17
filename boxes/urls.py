@@ -34,16 +34,21 @@ def decorate_urlpatterns(urlpatterns, decorator):
 
 
 public_urlpatterns = [
+    path("", index, name="home"),
     path("login/", sign_in, name="login"),
     path("logout/", sign_out, name="logout"),
+    path("webhooks/stripe", stripe_webhooks, name="stripe_webhooks"),
 ]
 
 
 customer_urlpatterns = [
-    path("", index, name="home"),
     path("customer/payments", customer_make_payment, name="customer_make_payment"),
     path("customer/payments/portal", customer_payment_methods, name="customer_payment_methods"),
     path("customer/payments/portal/redir", customer_billing_portal, name="customer_billing_portal"),
+    path("invoice/new", customer_new_invoice, name="customer_new_invoice"),
+    path("invoice/<int:pk>", customer_view_invoice, name="customer_view_invoice"),
+    path("invoice/<int:pk>/cancel", customer_cancel_invoice, name="customer_cancel_invoice"),
+    path("invoice/<int:pk>/confirm", customer_confirm_invoice, name="customer_confirm_invoice"),
 ]
 
 

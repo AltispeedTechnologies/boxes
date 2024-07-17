@@ -1,0 +1,60 @@
+{% block content %}
+{% load mathfilters %}
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Amount</th>
+                <th>Qty</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% load customer_filters %}
+            {% for line_item in invoice.line_items %}
+            <tr>
+                <td>
+                    {% if line_item.trk %}
+                        {% if line_item.prtl %}
+                            PARTIAL
+                        {% endif %}
+                        {% if line_item.late %}
+                            Late
+                        {% else %}
+                            Parcel
+                        {% endif %}
+                        fee for {{ line_item.trk }}
+                    {% elif line_item.amt > 0 %}
+                        Credit Balance
+                    {% else %}
+                        Account Credit
+                    {% endif %}
+                </td>
+                <td>{{ line_item.amt|format_negative }}</td>
+                <td>{{ line_item.qty }}</td>
+                <td>{{ line_item.amt|mul:line_item.qty|format_negative }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td class="fw-bold">Subtotal</td>
+                <td></td>
+                <td></td>
+                <td>${{ invoice.balance.subtotal|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold">Tax (7.5%)</td>
+                <td></td>
+                <td></td>
+                <td>${{ invoice.balance.tax|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td class="fw-bold">Total Due</td>
+                <td></td>
+                <td></td>
+                <td class="fw-bold">${{ invoice.balance.total|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

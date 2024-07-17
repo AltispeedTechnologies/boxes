@@ -2,6 +2,7 @@ from boxes.management.exception_catcher import exception_catcher
 from boxes.models import (Account, AccountLedger, Carrier, Package, PackageLedger, PackagePicklist, PackageQueue,
                           PackageType, UserAccount)
 from boxes.tasks import total_accounts
+from collections import defaultdict
 from decimal import Decimal
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -122,7 +123,33 @@ def update_packages_util(request, state, debit_credit_switch=False):
         if not ids:
             raise ValueError("No package IDs provided.")
 
+        # Update the state
         Package.objects.filter(id__in=ids).update(current_state=state)
+
+        # If an Account is not billable, mark all its packages as paid
+        Package.objects.filter(id__in=ids, account__billable=False, paid=False).update(paid=True)
+
+        # If there is a positive account balance that covers the price of a given Package, mark it as paid
+        account_packages = defaultdict(lambda: {"balance": 0, "packages": []})
+        for package in Package.objects.filter(
+                id__in=ids, account__billable=True, paid=False, account__balance__gt=0
+                ).values("id", "price", "account_id", "account__balance").order_by("id"):
+            account_id = package["account_id"]
+            account_packages[account_id]["balance"] = package["account__balance"]
+            account_packages[account_id]["packages"].append((package["id"], package["price"]))
+        mark_paid = []
+        for _, data in account_packages.items():
+            running_balance = data["balance"]
+            for pkg_id, price in data["packages"]:
+                if running_balance <= 0:
+                    break
+                elif price > running_balance:
+                    continue
+                elif price <= running_balance:
+                    running_balance -= price
+                    mark_paid.append(pkg_id)
+        if len(mark_paid) > 0:
+            Package.objects.filter(id__in=mark_paid).update(paid=True)
 
         # Remove the packages from all queues and picklists in the process
         PackageQueue.objects.filter(package_id__in=ids).delete()

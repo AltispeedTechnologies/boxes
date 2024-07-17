@@ -41,6 +41,7 @@ env = environ.Env(
     SECURE_SSL_HOST=(str, None),
     SECURE_SSL_REDIRECT=(bool, True),
     STRIPE_API_KEY=(str, None),
+    STRIPE_ENDPOINT_SECRET=(str, None),
 )
 
 # Set the project base directory
@@ -176,6 +177,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "mathfilters",
     "boxes",
 ]
 
@@ -492,8 +494,12 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute=1),
     },
     "total_accounts": {
-        "task": "boxes.charges.maintenance.total_accounts",
+        "task": "boxes.tasks.charges.total_accounts",
         "schedule": crontab(minute=2),
+    },
+    "remove_old_coupons": {
+        "task": "boxes.tasks.stripe.remove_old_coupons",
+        "schedule": crontab(minute=3),
     },
 }
 
@@ -501,6 +507,7 @@ CELERY_BEAT_SCHEDULE = {
 # STRIPE #
 ##########
 STRIPE_API_KEY = env("STRIPE_API_KEY")
+STRIPE_ENDPOINT_SECRET = env("STRIPE_ENDPOINT_SECRET")
 
 ############
 # SESSIONS #

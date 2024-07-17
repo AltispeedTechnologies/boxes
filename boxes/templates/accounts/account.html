@@ -19,7 +19,7 @@
             <thead>
                 <tr>
                     <th scope="col">User</th>
-                    <th scope="col">Tracking Code</th>
+                    <th scope="col">Reference</th>
                     <th scope="col">Payment</th>
                     <th scope="col">Charge</th>
                     <th scope="col">Description</th>
@@ -32,9 +32,15 @@
                     <tr>
                         <td>{{ entry.user__first_name }} {{ entry.user__last_name }}</td>
                         <td>
+                            {% if entry.package__tracking_code %}
                             <a href="/packages/{{ entry.package_id }}">
                                 {{ entry.package__tracking_code }}
                             </a>
+                            {% elif entry.invoice__id %}
+                            <a href="/invoice/{{ entry.invoice__id }}">
+                                Invoice #{{ entry.invoice__id|stringformat:"08d" }}
+                            </a>
+                            {% endif %}
                         </td>
                         <td>${{ entry.credit }}</td>
                         <td>${{ entry.debit }}</td>

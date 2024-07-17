@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/customer/confirm_payment.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container bg-body shadow-sm rounded p-3 col-md-10" id="invoice">
+    <div class="row bg-primary bg-gradient rounded mb-3">
+        <h2 class="text-center text-white py-2">Invoice #{{ invoice.id|default_if_none:0|stringformat:"08d" }}</h2>
+    </div>
+
+    {% include "customer/_invoice.html" %}
+
+    <div class="col border p-3 my-2 bg-light rounded shadow-sm">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h6 class="mb-1">
+                    <strong>Payment Method</strong>
+                </h6>
+                {% if invoice.payment_method %}
+                <div class="d-flex align-items-center">
+                    {% load customer_filters %}
+                    <i class="fs-3 {% get_card_logo invoice.payment_method.brand %} me-2"></i>
+                    {% if invoice.payment_method.wallet %}
+                        <span class="badge bg-primary me-2">{{ invoice.payment_method.wallet.type }}</span>
+                    {% endif %}
+                    <span class="text-muted">{{ invoice.payment_method.last4 }}</span>
+                </div>
+                {% endif %}
+            </div>
+            <div id="invoicepaymentstatus">
+                {% if invoice.current_state == 0 %}
+                <a role="button" class="btn btn-danger btn-lg" href="/invoice/{{ invoice.id }}/cancel"
+                   data-turbo="false">
+                    Cancel
+                </a>
+                <button id="confirmbtn" data-id="{{ invoice.id }}" class="btn btn-primary btn-lg">
+                    Confirm
+                </button>
+                {% elif invoice.current_state == 1 %}
+                <h4 class="text-danger">
+                    <i class="fa-solid fa-circle-exclamation"></i> Requires Action
+                </h4>
+                {% elif invoice.current_state == 2 %}
+                <h4 class="text-warning">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Processing
+                </h4>
+                {% elif invoice.current_state == 3 %}
+                <h4 class="text-success">
+                    <i class="fa-solid fa-circle-check"></i> Succeeded
+                </h4>
+                {% elif invoice.current_state == 4 %}
+                <h4 class="text-danger">
+                    <i class="fa-solid fa-circle-xmark"></i> Failed
+                </h4>
+                <div class="dropdown">
+                    <a class="btn btn-success dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Actions
+                    </a>
+
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" id="selectanothermethod"><i class="fa-solid fa-list text-primary"></i> Select Another Method</a></li>
+                        {% if invoice.payment_method %}
+                        <li>
+                            <a class="dropdown-item" id="retrypayment" data-id="{{ invoice.id }}">
+                                <i class="fa-solid fa-spinner fa-spin text-warning"></i> Retry
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li>
+                            <a class="dropdown-item" href="/invoice/{{ invoice.id }}/cancel" data-turbo="false">
+                                <i class="fa-solid fa-circle-xmark text-danger"></i> Cancel
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

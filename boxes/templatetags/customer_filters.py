@@ -23,8 +23,14 @@ def get_card_logo(brand):
     icon_name = "fa-brands "
 
     match brand:
+        case "amazon_pay":
+            icon_name += "fa-cc-amazon-pay"
         case "amex":
             icon_name += "fa-cc-amex"
+        case "bank":
+            icon_name = "fa-solid fa-building-columns"
+        case "cashapp":
+            icon_name = "fa-solid fa-wallet"
         case "diners":
             icon_name += "fa-cc-diners-club"
         case "discover":
@@ -52,3 +58,16 @@ def get_card_number(card_type, last_four):
         return f"{'*' * 4} {'*' * 6} {'*' * 4} {last_four}"
     else:
         return f"{'*' * 4} {'*' * 4} {'*' * 4} {'*' * (num_asterisks - 12)} {last_four}"
+
+
+@register.filter
+def format_negative(value):
+    decimal_places = 2
+    try:
+        value = float(value)
+        formatted_value = f'${value:,.{decimal_places}f}'
+        if value < 0:
+            return f'$({formatted_value[2:]})'
+        return formatted_value
+    except (ValueError, TypeError):
+        return value

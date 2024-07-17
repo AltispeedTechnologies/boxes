@@ -34,7 +34,7 @@ def account_edit(request, pk):
 @require_http_methods(["GET"])
 def account_ledger(request, pk):
     account = Account.objects.filter(id=pk).select_related("accountbalance").first()
-    ledger = AccountLedger.objects.select_related("user", "package").values(
+    ledger = AccountLedger.objects.select_related("user", "package", "invoice").values(
         "credit",
         "debit",
         "timestamp",
@@ -43,7 +43,8 @@ def account_ledger(request, pk):
         "is_late",
         "user__first_name",
         "user__last_name",
-        "package__tracking_code"
+        "package__tracking_code",
+        "invoice__id"
     ).filter(account_id=pk).order_by("-timestamp")
 
     page_number = request.GET.get("page", 1)

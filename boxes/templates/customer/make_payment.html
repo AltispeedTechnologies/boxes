@@ -6,53 +6,59 @@
 {% endblock %}
 
 {% block content %}
+<!-- Specific overrides, since we do not have separate CSS files -->
+<style>
+    .dropdown-item, .dropdown-toggle {
+        display: flex;
+        align-items: center;
+        height: 40px;
+    }
+    .dropdown-item i, .dropdown-toggle i {
+        padding-right: 5px;
+    }
+</style>
+
 <div class="container bg-body shadow-sm rounded p-3 col-md-10" id="customercharges">
     <div class="row bg-primary bg-gradient rounded mb-3">
         <h2 class="text-center text-white py-2">Make a Payment</h2>
     </div>
 
     <div class="row justify-content-between mt-2">
-        <div class="col-md-3 justify-content-center">
-            <h4 class="text-center fw-bold">Current Balance Due</h4>
-
-            <div class="table-responsive">
-                <table class="table">
-                    <tbody>
-                        {% if parcel_fees %}
-                        <tr>
-                            <td>Parcel fees</td>
-                            <td>${{ parcel_fees }}</td>
-                        </tr>
-                        {% endif %}
-                        {% if late_fees %}
-                        <tr>
-                            <td>Late fees</td>
-                            <td>${{ late_fees }}</td>
-                        </tr>
-                        {% endif %}
-                        <tr>
-                            <td class="fw-bold">Amount due</td>
-                            <td>${{ balance }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="col-md-5 d-flex flex-column justify-content-center">
+            {% if invoice.balance.subtotal > 0 %}
+                <h4 class="text-center fw-bold">Currently Due</h4>
+                {% include "customer/_invoice.html" %}
+            {% else %}
+                <div class="d-flex flex-column justify-content-center align-items-center h-100">
+                    {% if invoice.balance.subtotal == 0 %}
+                        <h4 class="text-center fw-bold">No balance currently due</h4>
+                    {% else %}
+                        {% load mathfilters %}
+                        <h4 class="text-center fw-bold">Credit Balance</h4>
+                        <h3>${{ invoice.balance.subtotal|mul:-1|floatformat:2 }}</h3>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
+
         <div class="col-md-5">
             <h4 class="text-center fw-bold">Submit Payment</h4>
+            {% if invoice.balance.subtotal > 0 %}
             <div class="form-check">
-                <input class="form-check-input" type="radio" name="paymentamount" id="currentdue" checked>
+                <input class="form-check-input" type="radio" name="paymentamount" id="currentdue" data-balance="{{ invoice.balance.subtotal|floatformat:2 }}" checked>
                 <label class="form-check-label" for="currentdue">
-                    <span class="fw-bold">Amount Due:</span> ${{ balance }}
+                    <span class="fw-bold">Amount Due:</span> ${{ invoice.balance.total|floatformat:2 }}
                 </label>
             </div>
+            {% endif %}
             <div class="form-check">
-                <input class="form-check-input" type="radio" name="paymentamount" id="otheramount">
+                <input class="form-check-input" type="radio" name="paymentamount" id="otheramount"
+                       {% if invoice.balance.subtotal <= 0 %}checked{% endif %}>
                 <label class="fw-bold" for="otheramount">
                     Other Amount
                 </label>
             </div>
-            <div class="input-group my-2 d-none" id="enterotherinput">
+            <div class="input-group my-2 {% if invoice.balance.subtotal > 0 %}d-none{% endif %}" id="enterotherinput">
                 <label class="input-group-text" for="otheramountinput">$</label>
                 <input class="form-control" id="otheramountinput" type="text"></input>
             </div>
@@ -60,40 +66,45 @@
             <hr />
 
             <div class="mb-3">
-                <p class="fw-bold mb-1">Select a Payment Method</p>
-                <div class="btn-group w-100 text-left" style="height: 45px;">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="paymentmethod" id="onetimemethod">
+                    <label class="form-check-label" for="onetimemethod">
+                        <span class="fw-bold">One-Time Payment</span>
+                    </label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="paymentmethod" id="selectmethod" checked>
+                    <label class="form-check-label" for="selectmethod">
+                        <span class="fw-bold">Select a Payment Method</span>
+                    </label>
+                </div>
+                <div class="btn-group w-100 text-left mb-2">
                     {% load customer_filters %}
-                    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" id="currentpaymentmethod" aria-expanded="false">
+                    <button type="button" class="btn btn-light dropdown-toggle border text-start" data-bs-toggle="dropdown" id="currentpaymentmethod"
+                            aria-expanded="false" style="height: 45px;"
                         {% if default_payment_method %}
-                            {% if default_payment_method.card.wallet %}
-                                {{ default_payment_method.card.wallet.type }}
-                            {% endif %}
-                            <i class="fs-3 {% get_card_logo default_payment_method.card.brand %}"></i>
-                            ending in <span class="font-monospace">{{ default_payment_method.card.last4 }}</span>
-                            (Expires: {{ default_payment_method.card.exp_month }}/{{ default_payment_method.card.exp_year }})
+                            data-id="{{ default_payment_method.id }}">
+                            <i class="fs-3 {% get_card_logo default_payment_method.brand %}"></i>
+                            {{ default_payment_method.last4 }}
                         {% else %}
-                            <i class="fas fa-plus"></i> Add a New Payment Method
+                            data-id="NEW">
+                            <i class="fas fa-plus fs-3"></i> Add a New Payment Method
                         {% endif %}
                     </button>
                     <ul class="dropdown-menu w-100" id="paymentmethodsdropdown">
                         {% for method in payment_methods %}
-                        <li><a class="dropdown-item {% if method.id == default_payment_method.id %}active{% endif %}">
-                            {% if method.card.wallet %}
-                                {{ method.card.wallet.type }}
-                            {% endif %}
-                            <i class="fs-3 {% get_card_logo method.card.brand %}"></i>
-                            ending in <span class="font-monospace">{{ method.card.last4 }}</span>
-
-                            (Expires: {{ method.card.exp_month }}/{{ method.card.exp_year }})
+                        <li><a class="dropdown-item {% if method.id == default_payment_method.id %}active{% endif %}" data-id="{{ method.id }}">
+                            <i class="fs-3 {% get_card_logo method.brand %}"></i>
+                            {{ method.last4 }}
                         </a></li>
                         {% endfor %}
-                        <li><a class="dropdown-item"><i class="fas fa-plus"></i> Add a New Payment Method</a></li>
+                        <li><a class="dropdown-item" data-id="NEW"><i class="fas fa-plus fs-3"></i> Add a New Payment Method</a></li>
                     </ul>
-
                 </div>
             </div>
             <div class="text-center">
-                <button class="btn btn-success">Submit</button>
+                <i class="fa-solid fa-spinner fa-spin text-warning me-1 d-none" id="checkoutloading"></i>
+                <button class="btn btn-success" id="checkoutbtn">Go to Checkout</button>
             </div>
         </div>
     </div>

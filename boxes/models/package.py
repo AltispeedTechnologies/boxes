@@ -23,6 +23,7 @@ class Package(models.Model):
     current_state = models.PositiveSmallIntegerField(choices=PACKAGE_STATES, default=0)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     comments = models.CharField(max_length=256, null=True)
+    paid = models.BooleanField(default=False)
 
 
 class PackageLedger(models.Model):

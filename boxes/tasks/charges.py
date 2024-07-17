@@ -88,7 +88,8 @@ def assess_regular_charges(start_time, end_time=None, exclude_package_types=None
 
     charges_query = AccountLedger.objects.filter(
         timestamp__gte=start_time,
-        package_id__isnull=False
+        package_id__isnull=False,
+        account__billable=True,
     ).select_related("package")
 
     if end_time:
@@ -100,7 +101,7 @@ def assess_regular_charges(start_time, end_time=None, exclude_package_types=None
     existing_charges = charges_query.values_list("package_id", flat=True)
 
     checked_in_query = PackageLedger.objects.filter(
-        timestamp__gte=start_time, state=1
+        timestamp__gte=start_time, state=1, package__account__billable=True,
     ).select_related("package")
 
     if end_time:
@@ -111,7 +112,8 @@ def assess_regular_charges(start_time, end_time=None, exclude_package_types=None
 
     checked_in_packages_ids = checked_in_query.values_list("package_id", flat=True)
 
-    matching_ids = Q(id__in=checked_in_packages_ids) & ~Q(id__in=existing_charges) & Q(current_state=1) & ~Q(price=0.00)
+    matching_ids = (Q(id__in=checked_in_packages_ids) & ~Q(id__in=existing_charges) &
+                    Q(current_state=1) & ~Q(price=0.00) & Q(paid=False))
     packages_needing_charge = Package.objects.filter(matching_ids).values_list("id", "account_id", "price")
     checked_in_packages = checked_in_query.values_list("package_id", "timestamp")
 
@@ -141,7 +143,8 @@ def assess_custom_charges(endpoint_date, check_in_date, package_type_id, frequen
 
     # Retrieve the checked-in packages once
     checked_in_query = PackageLedger.objects.filter(
-        timestamp__lte=timezone.now(), state=1, package__package_type=package_type_id
+        timestamp__lte=timezone.now(), state=1, package__package_type=package_type_id,
+        package__account__billable=True,
     ).select_related("package")
 
     checked_in_packages = checked_in_query.values_list("package_id", "package__account_id", "timestamp")
@@ -202,10 +205,14 @@ def total_accounts(account_id=None):
                 defaults={"regular_balance": new_regular_balance, "late_balance": new_late_balance}
             )
 
-            if (new_regular_balance != account_balance.regular_balance or
-                    new_late_balance != account_balance.late_balance):
-                account_balance.regular_balance = new_regular_balance
-                account_balance.late_balance = new_late_balance
+            # We do not reflect positive balances in AccountBalance
+            normal_regular_balance = min(new_regular_balance, 0)
+            normal_late_balance = min(new_late_balance, 0)
+
+            if (normal_regular_balance != account_balance.regular_balance or
+                    normal_late_balance != account_balance.late_balance):
+                account_balance.regular_balance = normal_regular_balance
+                account_balance.late_balance = normal_late_balance
                 account_balance.save()
 
             account.balance = new_regular_balance + new_late_balance

@@ -1,0 +1,43 @@
+{% block content %}
+<div class="modal fade" id="overNeededPaymentAmountModal" tabindex="-1" aria-labelledby="overNeededPaymentAmountModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="overNeededPaymentAmountModalLabel">Create Credit Balance?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container">
+                <p>
+                    The amount specified ($<span id="specifiedamount"></span>) exceeds the balance due ($<span id="dueamount"></span>).
+                    Would you like to add a credit balance of $<span id="creditamount"></span>? This will be applied towards future purchases.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary">No</button>
+                <button type="button" class="btn btn-primary">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="overNeededPaymentAmountModal" tabindex="-1" aria-labelledby="overNeededPaymentAmountModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="overNeededPaymentAmountModalLabel">Create Credit Balance?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body container">
+                <p>
+                    The amount specified ($<span id="specifiedamount"></span>) exceeds the balance due ($<span id="dueamount"></span>).
+                    Would you like to add a credit balance of $<span id="creditamount"></span>? This will be applied towards future purchases.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary">No</button>
+                <button type="button" class="btn btn-primary">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
