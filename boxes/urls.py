@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponseForbidden
+from django.shortcuts import redirect, reverse
 from django.urls import path, URLPattern, URLResolver
 from boxes.views import *
 from boxes.views.mgmt import *
@@ -10,7 +11,9 @@ from boxes.views.reports import *
 
 def is_staff(view_func):
     def wrapped_view(request, *args, **kwargs):
-        if not request.user.is_authenticated or not request.user.is_staff():
+        if not request.user.is_authenticated:
+            return redirect(f"{reverse('login')}?next={request.path}")
+        elif not request.user.is_staff():
             return HttpResponseForbidden()
         return view_func(request, *args, **kwargs)
     return wrapped_view
@@ -18,7 +21,9 @@ def is_staff(view_func):
 
 def is_customer(view_func):
     def wrapped_view(request, *args, **kwargs):
-        if not request.user.is_authenticated or not request.user.is_customer():
+        if not request.user.is_authenticated:
+            return redirect(f"{reverse('login')}?next={request.path}")
+        elif not request.user.is_customer():
             return HttpResponseForbidden()
         return view_func(request, *args, **kwargs)
     return wrapped_view
@@ -34,14 +39,14 @@ def decorate_urlpatterns(urlpatterns, decorator):
 
 
 public_urlpatterns = [
-    path("", index, name="home"),
     path("login/", sign_in, name="login"),
-    path("logout/", sign_out, name="logout"),
     path("webhooks/stripe", stripe_webhooks, name="stripe_webhooks"),
 ]
 
 
 customer_urlpatterns = [
+    path("", index, name="home"),
+    path("logout/", sign_out, name="logout"),
     path("customer/payments", customer_make_payment, name="customer_make_payment"),
     path("customer/payments/portal", customer_payment_methods, name="customer_payment_methods"),
     path("customer/payments/portal/redir", customer_billing_portal, name="customer_billing_portal"),
