@@ -11,6 +11,18 @@
     {% include "accounts/_accountbox.html" %}
     {% include "_messages.html" %}
 
+    <div class="container d-flex align-items-center ml-2">
+        <div class="form-check form-switch mr-2">
+            <input class="form-check-input" type="checkbox" role="switch" id="billable" data-id="{{ account.id }}" 
+                {% if account.billable %}checked{% endif %}></input>
+            <label class="form-check-label ml-2" for="billable">Track individual charges for this account</label>
+        </div>
+        <div class="ms-2">
+            <i id="savingiconbillable" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+            <i id="successiconbillable" class="fas fa-check-circle text-success" style="display: none;"></i>
+        </div>
+    </div>
+
     {% if page_obj %}
     {% include "_paginate.html" %}
 

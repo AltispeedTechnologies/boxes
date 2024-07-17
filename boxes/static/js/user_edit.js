@@ -2,8 +2,6 @@ function init_user_edit_page() {
     window.alias_internal_id = 1;
     window.email_internal_id = 1;
 
-    let initial_billable_val = $("#billable").prop("checked");
-
     $("#aliasesinput").off("mouseenter mouseleave", ".col-md-3").on("mouseenter mouseleave", ".col-md-3", function(event) {
         $(this).find(".fa-trash").toggle(event.type === "mouseenter");
     });
@@ -150,8 +148,6 @@ function init_user_edit_page() {
             form_data[item.name] = item.value;
         });
 
-        let billable = $("#billable").prop("checked");
-
         var payload = {};
         payload[user_id] = form_data;
 
@@ -161,32 +157,11 @@ function init_user_edit_page() {
             payload: JSON.stringify(payload),
             content_type: "application/json",
             on_success: function(response) {
-                if (billable != initial_billable_val) {
-                    let account_id = $("#accountnotes").attr("data-id");
-                    let acct_payload = {billable: billable};
-                    initial_billable_val = billable;
-
-                    window.ajax_request({
-                        type: "POST",
-                        url: "/accounts/" + account_id + "/update",
-                        payload: JSON.stringify(acct_payload),
-                        content_type: "application/json",
-                        on_success: function(response) {
-                            window.display_error_message();
-                            $("#savingicondetails").hide();
-                            $("#successicondetails").show();
-                            setTimeout(function() {
-                                $("#successicondetails").fadeOut();
-                            }, 3000);
-                        }
-                    });
-                } else {
-                    $("#savingicondetails").hide();
-                    $("#successicondetails").show();
-                    setTimeout(function() {
-                        $("#successicondetails").fadeOut();
-                    }, 3000);
-                }
+                $("#savingicondetails").hide();
+                $("#successicondetails").show();
+                setTimeout(function() {
+                    $("#successicondetails").fadeOut();
+                }, 3000);
             },
             on_response: function(response) {
                 $form.find(".is-invalid").removeClass("is-invalid");

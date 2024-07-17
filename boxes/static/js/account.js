@@ -17,6 +17,33 @@ function init_account_page() {
             }
         });
     }, 500));
+
+    if ($("input#billable").length === 1) {
+        $("input#billable").off("change").on("change", function() {
+            let $input = $(this);
+            $input.prop("disabled", true);
+            $("#savingiconbillable").show();
+
+            let acct_payload = {billable: $(this).prop("checked")};
+            let account_id = $(this).attr("data-id");
+
+            window.ajax_request({
+                type: "POST",
+                url: "/accounts/" + account_id + "/update",
+                payload: JSON.stringify(acct_payload),
+                content_type: "application/json",
+                on_success: function(response) {
+                    $input.prop("disabled", false);
+                    window.display_error_message();
+                    $("#savingiconbillable").hide();
+                    $("#successiconbillable").show();
+                    setTimeout(function() {
+                        $("#successiconbillable").fadeOut();
+                    }, 1000);
+                }
+            });
+        });
+    }
 }
 
 window.manage_init_func("textarea#accountnotes", "account", init_account_page);
