@@ -28,13 +28,17 @@
         Today at a Glance
     </a>
 {% elif request.user.is_customer %}
-    <a href="" role="button" class="btn btn-primary btn-lg btn-verylarge mx-2">
+    <a href="{% url 'customer_parcels' %}" role="button" class="btn btn-primary btn-lg btn-verylarge mx-2">
         <i class="fa-solid fa-cube mb-3" style="font-size: 6rem;"></i>
         My Parcels
     </a>
-    <a href="{% url 'customer_payment_methods' %}" role="button" class="btn btn-success btn-lg btn-verylarge mx-2">
+    <a href="{% url 'customer_make_payment' %}" role="button" class="btn btn-success btn-lg btn-verylarge mx-2">
         <i class="fa-solid fa-money-bill mb-3" style="font-size: 6rem;"></i>
         Make a Payment
+    </a>
+    <a href="{% url 'customer_payment_methods' %}" role="button" class="btn btn-primary btn-lg btn-verylarge mx-2">
+        <i class="fa-solid fa-wallet mb-3" style="font-size: 6rem;"></i>
+        Payment Methods
     </a>
 {% endif %}
 </div>

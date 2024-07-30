@@ -60,7 +60,7 @@
                             <a class="text-decoration-none text-reset">${{ package.price }}</a>
                         </td>
                         <td data-type="carrier" data-id="{{ package.carrier_id }}">{{ package.carrier__name }}</td>
-                        <td data-type="package_type" data-id="{{ package.package_type_id }}" class="mutableData">{{ package.package_type__description }}</td>
+                        <td data-type="package_type" data-id="{{ package.package_type_id }}">{{ package.package_type__description }}</td>
                         <td data-type="inside" data-id="{{ package.inside }}" class="text-center fs-4">
                             {% if package.inside %}
                             <i class="fas fa-check-circle text-warning"></i>
@@ -68,7 +68,7 @@
                             <i class="fas fa-times-circle text-info"></i>
                             {% endif %}
                         </td>
-                        <td data-type="comments" class="mutableData">{{ package.comments|default:"" }}</td>
+                        <td data-type="comments">{{ package.comments|default:"" }}</td>
                         <td>
                             <button class="btn btn-warning" data-bs-target="#print">
                                 <i class="fas fa-print"></i>

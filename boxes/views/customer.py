@@ -2,12 +2,14 @@ import json
 import stripe
 from boxes.backend import invoice
 from boxes.management.exception_catcher import exception_catcher
-from boxes.models import Account, Invoice, StripePaymentMethod, UserAccount
+from boxes.models import Account, AccountLedger, Invoice, Package, StripePaymentMethod, UserAccount
 from django.conf import settings
+from django.core.paginator import Paginator
+from django.db.models import Case, DecimalField, F, OuterRef, Max, Subquery, Sum, When, Value
+from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import redirect, render, reverse
 from django.views.decorators.http import require_http_methods
-from urllib.parse import urlencode
 
 
 # Set the stripe API key from our local configuration
@@ -108,6 +110,61 @@ def customer_view_invoice(request, pk):
     return render(request, "customer/view_invoice.html", {"invoice": invoice_payload})
 
 
+@require_http_methods(["GET"])
+def customer_cancel_invoice(request, pk):
+    invoice = Invoice.objects.get(pk=pk)
+    if invoice.current_state in [0, 1, 4]:
+        if invoice.payment_intent_id:
+            stripe.PaymentIntent.cancel(invoice.payment_intent_id)
+
+    return redirect(reverse("customer_make_payment"))
+
+
+@require_http_methods(["GET"])
+def customer_parcels(request):
+    account_id = UserAccount.objects.get(user_id=request.user.id).account_id
+
+    packages = Package.objects.select_related(
+        "carrier", "packagetype", "packagepicklist"
+    ).annotate(
+        check_in_time=Max(Case(
+            When(packageledger__state=1, then="packageledger__timestamp")
+        )),
+        check_out_time=Max(Case(
+            When(packageledger__state=2, then="packageledger__timestamp")
+        )),
+        cost=F("price"),
+        picklist_id=F("packagepicklist__picklist_id"),
+        picklist_date=F("packagepicklist__picklist__date")
+    ).values(
+        "id",
+        "picklist_id",
+        "carrier_id",
+        "package_type_id",
+        "current_state",
+        "paid",
+        "cost",
+        "carrier__name",
+        "package_type__description",
+        "picklist_date",
+        "tracking_code",
+        "check_in_time",
+        "check_out_time"
+    ).filter(account_id=account_id).order_by("current_state", "-check_in_time")
+
+    page_number = request.GET.get("page", 1)
+    per_page = request.GET.get("per_page", 10)
+
+    paginator = Paginator(packages, per_page)
+    page_obj = paginator.get_page(page_number)
+
+    selected_ids = request.GET.get("selected_ids", "")
+    selected = selected_ids.split(",") if selected_ids else []
+
+    return render(request, "customer/parcels.html", {"page_obj": page_obj,
+                                                     "selected": selected})
+
+
 @require_http_methods(["POST"])
 @exception_catcher()
 def customer_confirm_invoice(request, pk):
@@ -143,16 +200,6 @@ def customer_confirm_invoice(request, pk):
 
     invoice_data.save()
     return JsonResponse({"success": True, "url": redirect_url})
-
-
-@require_http_methods(["GET"])
-def customer_cancel_invoice(request, pk):
-    invoice = Invoice.objects.get(pk=pk)
-    if invoice.current_state in [0, 1, 4]:
-        if invoice.payment_intent_id:
-            stripe.PaymentIntent.cancel(invoice.payment_intent_id)
-
-    return redirect(reverse("customer_make_payment"))
 
 
 @require_http_methods(["POST"])

@@ -47,6 +47,7 @@ public_urlpatterns = [
 customer_urlpatterns = [
     path("", index, name="home"),
     path("logout/", sign_out, name="logout"),
+    path("customer/parcels", customer_parcels, name="customer_parcels"),
     path("customer/payments", customer_make_payment, name="customer_make_payment"),
     path("customer/payments/portal", customer_payment_methods, name="customer_payment_methods"),
     path("customer/payments/portal/redir", customer_billing_portal, name="customer_billing_portal"),

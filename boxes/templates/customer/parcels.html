@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/table_select.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container bg-body shadow-sm rounded p-3 col-md-10" id="customerparcels">
+    <div class="row bg-primary bg-gradient rounded mb-3">
+        <h2 class="text-center text-white py-2">My Parcels</h2>
+    </div>
+    {% include "_paginate.html" %}
+
+    <div class="table-responsive mt-3">
+        <table class="table table-hover table-bordered">
+            <thead class="thead-dark align-top">
+                <tr>
+                    <th style="width: 1%"></th>
+                    <th>Check In Time</br>Check Out Time</th>
+                    <th>Tracking Code</th>
+                    <th>Cost</th>
+                    <th>Carrier</th>
+                    <th>Type</th>
+                    <th>Pickup Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for package in page_obj %}
+                <tr
+                    data-row-id="{{ package.id }}"
+                    {% if package.current_state != 1 %}
+                    class="table-light"
+                    {% endif %}
+                    >
+                    <td style="width: 1%">
+                        <input class="form-check-input package-checkbox"
+                               type="checkbox"
+                               value=""
+                               id="package-{{ package.id }}"
+                               {% if package.id|stringformat:"s" in selected %}
+                                   checked
+                               {% endif %}>
+                    </td>
+                    <td>
+                        <p class="timestamp mb-0" data-timestamp="{{ package.check_in_time.isoformat|default_if_none:"" }}">
+                            {{ package.check_in_time|default_if_none:"" }}
+                        </p>
+                        {% if package.current_state == 2 %}
+                        <p class="timestamp mt-0 mb-0" data-timestamp="{{ package.check_out_time.isoformat|default_if_none:"" }}">
+                            {{ package.check_out_time|default_if_none:"" }}
+                        </p>
+                        {% endif %}
+                    </td>
+                    <td data-type="tracking_code">
+                        {{ package.tracking_code }}
+                    </td>
+                    <td data-type="cost" data-paid="{{ package.paid }}">
+                        <i class="fa-solid fa-money-bill {% if package.paid %}text-success{% else %}text-danger{% endif %}"></i>
+                        <a class="text-decoration-none text-reset">${{ package.cost }}</a>
+                    </td>
+                    <td data-type="carrier" data-id="{{ package.carrier_id }}">{{ package.carrier__name }}</td>
+                    <td data-type="package_type" data-id="{{ package.package_type_id }}">{{ package.package_type__description }}</td>
+                    <td data-type="pickup" data-id="{{ package.picklist_id|default_if_none:"" }}">
+                        {% if package.picklist_date %}
+                        {{ package.picklist_date|date:"D, F j, Y" }}
+                        {% else %}
+                        Not scheduled
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    window.selected_packages = new Set({{ selected|safe }});
+</script>
+{% endblock %}

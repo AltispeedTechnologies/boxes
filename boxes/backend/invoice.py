@@ -141,27 +141,19 @@ def generate_line_items(amount, user_id):
 
     # Subquery to calculate the net sum of debits and credits for late entries
     net_sum_late = AccountLedger.objects.filter(
-        package=OuterRef("pk"),
+        package_id=OuterRef("pk"),
         is_late=True
-    ).values("package").annotate(
-        net_sum=Sum(
-            Case(When(debit__isnull=False, then=F("debit")), default=Value(0), output_field=DecimalField())
-        ) - Sum(
-            Case(When(credit__isnull=False, then=F("credit")), default=Value(0), output_field=DecimalField())
-        )
-    ).values("net_sum")[:1]
+    ).values("package_id").annotate(
+        net_sum=Sum(F("debit")) - Sum(F("credit"))
+    ).values("net_sum")
 
     # Subquery to calculate the net sum of debits and credits for regular entries
     net_sum_regular = AccountLedger.objects.filter(
-        package=OuterRef("pk"),
+        package_id=OuterRef("pk"),
         is_late=False
-    ).values("package").annotate(
-        net_sum=Sum(
-            Case(When(debit__isnull=False, then=F("debit")), default=Value(0), output_field=DecimalField())
-        ) - Sum(
-            Case(When(credit__isnull=False, then=F("credit")), default=Value(0), output_field=DecimalField())
-        )
-    ).values("net_sum")[:1]
+    ).values("package_id").annotate(
+        net_sum=Sum(F("debit")) - Sum(F("credit"))
+    ).values("net_sum")
 
     # Filter and annotate packages
     packages = Package.objects.filter(
