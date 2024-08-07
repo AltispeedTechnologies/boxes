@@ -1,8 +1,8 @@
 import stripe
 from decimal import Decimal
 from django.conf import settings
-from boxes.models import (Account, AccountLedger, AccountStripeCustomer, Package, PackageLedger, StripePaymentMethod,
-                          UserAccount)
+from boxes.models import (Account, AccountLedger, AccountStripeCustomer, GlobalSettings, Package, PackageLedger,
+                          StripePaymentMethod, UserAccount)
 from django.db.models import Case, Count, DecimalField, F, IntegerField, OuterRef, Subquery, Sum, Value, When
 from django.db.models.functions import Coalesce
 
@@ -141,27 +141,19 @@ def generate_line_items(amount, user_id):
 
     # Subquery to calculate the net sum of debits and credits for late entries
     net_sum_late = AccountLedger.objects.filter(
-        package=OuterRef("pk"),
+        package_id=OuterRef("pk"),
         is_late=True
-    ).values("package").annotate(
-        net_sum=Sum(
-            Case(When(debit__isnull=False, then=F("debit")), default=Value(0), output_field=DecimalField())
-        ) - Sum(
-            Case(When(credit__isnull=False, then=F("credit")), default=Value(0), output_field=DecimalField())
-        )
-    ).values("net_sum")[:1]
+    ).values("package_id").annotate(
+        net_sum=Sum(F("debit")) - Sum(F("credit"))
+    ).values("net_sum")
 
     # Subquery to calculate the net sum of debits and credits for regular entries
     net_sum_regular = AccountLedger.objects.filter(
-        package=OuterRef("pk"),
+        package_id=OuterRef("pk"),
         is_late=False
-    ).values("package").annotate(
-        net_sum=Sum(
-            Case(When(debit__isnull=False, then=F("debit")), default=Value(0), output_field=DecimalField())
-        ) - Sum(
-            Case(When(credit__isnull=False, then=F("credit")), default=Value(0), output_field=DecimalField())
-        )
-    ).values("net_sum")[:1]
+    ).values("package_id").annotate(
+        net_sum=Sum(F("debit")) - Sum(F("credit"))
+    ).values("net_sum")
 
     # Filter and annotate packages
     packages = Package.objects.filter(
@@ -271,7 +263,7 @@ def generate_line_items(amount, user_id):
     return line_items
 
 
-def generate_checkout_line_items(line_items, tax_rate_id="txr_1PaKlH2NxJYbIf8PrzWrQ57E"):
+def generate_checkout_line_items(line_items, tax_rate_id):
     # We already generated these line items
     new_line_items = [
         {
@@ -289,7 +281,7 @@ def generate_checkout_line_items(line_items, tax_rate_id="txr_1PaKlH2NxJYbIf8Prz
                 }
             },
             "quantity": line_item["qty"],
-            "tax_rates": [tax_rate_id]
+            **({"tax_rates": [tax_rate_id]} if tax_rate_id else {})
         }
         for line_item in line_items if line_item["amt"] > 0
     ]

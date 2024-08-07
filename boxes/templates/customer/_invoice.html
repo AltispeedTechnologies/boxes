@@ -36,6 +36,7 @@
                 <td>{{ line_item.amt|mul:line_item.qty|format_negative }}</td>
             </tr>
             {% endfor %}
+            {% if invoice.balance.tax_rate %}
             <tr>
                 <td class="fw-bold">Subtotal</td>
                 <td></td>
@@ -43,11 +44,20 @@
                 <td>${{ invoice.balance.subtotal|floatformat:2 }}</td>
             </tr>
             <tr>
-                <td class="fw-bold">Tax (7.5%)</td>
+                <td class="fw-bold">Tax ({{ invoice.balance.tax_rate|floatformat:2 }}%)</td>
                 <td></td>
                 <td></td>
                 <td>${{ invoice.balance.tax|floatformat:2 }}</td>
             </tr>
+            {% endif %}
+            {% if invoice.balance.processing_fees %}
+            <tr>
+                <td class="fw-bold">Processing Fees</td>
+                <td></td>
+                <td></td>
+                <td>${{ invoice.balance.processing_fees|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
             <tr>
                 <td class="fw-bold">Total Due</td>
                 <td></td>

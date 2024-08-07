@@ -2,12 +2,14 @@ import json
 import stripe
 from boxes.backend import invoice
 from boxes.management.exception_catcher import exception_catcher
-from boxes.models import Account, Invoice, StripePaymentMethod, UserAccount
+from boxes.models import Account, AccountLedger, GlobalSettings, Invoice, Package, StripePaymentMethod, UserAccount
 from django.conf import settings
+from django.core.paginator import Paginator
+from django.db.models import Case, DecimalField, F, OuterRef, Max, Subquery, Sum, When, Value
+from django.db.models.functions import Coalesce
 from django.http import JsonResponse
 from django.shortcuts import redirect, render, reverse
 from django.views.decorators.http import require_http_methods
-from urllib.parse import urlencode
 
 
 # Set the stripe API key from our local configuration
@@ -17,11 +19,27 @@ stripe.api_key = settings.STRIPE_API_KEY
 @require_http_methods(["GET"])
 def customer_make_payment(request):
     account_id = UserAccount.objects.get(user_id=request.user.id).account_id
+    globalsettings, _ = GlobalSettings.objects.get_or_create(id=1)
 
     subtotal = float(Account.objects.get(pk=account_id).balance * -1)
-    tax = round(subtotal * 0.075, 2)
+    tax_rate = float(globalsettings.tax_rate / 100) if globalsettings.taxes else 0.00
+    tax = round(subtotal * tax_rate, 2)
     total = subtotal + tax
-    balance = {"subtotal": subtotal, "tax": tax, "total": total}
+
+    # Calculate processing fees
+    processing_fees = None
+    if globalsettings.pass_on_fees:
+        # Do Stripe fees recursively until we're adding less than a cent
+        processing_fees = ((total * 0.029) + 0.30)
+        cur_proc_fees = processing_fees * 0.029
+        while round(cur_proc_fees, 2) >= 0.01:
+            processing_fees += cur_proc_fees
+            cur_proc_fees = cur_proc_fees * 0.029
+
+        total += round(processing_fees, 2)
+
+    balance = {"subtotal": subtotal, "tax": tax, "tax_rate": tax_rate * 100, "total": total,
+               "processing_fees": processing_fees}
 
     payment_methods, default_method = invoice.get_payment_methods(request.user.id)
     line_items = invoice.generate_line_items(subtotal, request.user.id)
@@ -100,12 +118,76 @@ def customer_view_invoice(request, pk):
         payment_method = stripe.PaymentMethod.retrieve(payment_method)
         payment_method = invoice.get_payment_method_json(payment_method, None)
 
-    total = invoice_data.subtotal + invoice_data.tax
-    balance = {"subtotal": invoice_data.subtotal, "tax": invoice_data.tax, "total": total}
+    if invoice_data.tax and invoice_data.tax > 0:
+        total = invoice_data.subtotal + invoice_data.tax
+        tax_rate = ((invoice_data.tax / invoice_data.subtotal) * 100)
+    else:
+        total = invoice_data.subtotal
+        tax_rate = None
+
+    if invoice_data.processing_fees:
+        total += invoice_data.processing_fees
+    balance = {"subtotal": invoice_data.subtotal, "tax": invoice_data.tax, "tax_rate": tax_rate, "total": total,
+               "processing_fees": invoice_data.processing_fees}
     invoice_payload = {"balance": balance, "current_state": invoice_data.current_state, "id": invoice_data.id,
                        "line_items": invoice_data.line_items, "payment_method": payment_method}
 
     return render(request, "customer/view_invoice.html", {"invoice": invoice_payload})
+
+
+@require_http_methods(["GET"])
+def customer_cancel_invoice(request, pk):
+    invoice = Invoice.objects.get(pk=pk)
+    if invoice.current_state in [0, 1, 4]:
+        if invoice.payment_intent_id:
+            stripe.PaymentIntent.cancel(invoice.payment_intent_id)
+
+    return redirect(reverse("customer_make_payment"))
+
+
+@require_http_methods(["GET"])
+def customer_parcels(request):
+    account_id = UserAccount.objects.get(user_id=request.user.id).account_id
+
+    packages = Package.objects.select_related(
+        "carrier", "packagetype", "packagepicklist"
+    ).annotate(
+        check_in_time=Max(Case(
+            When(packageledger__state=1, then="packageledger__timestamp")
+        )),
+        check_out_time=Max(Case(
+            When(packageledger__state=2, then="packageledger__timestamp")
+        )),
+        cost=F("price"),
+        picklist_id=F("packagepicklist__picklist_id"),
+        picklist_date=F("packagepicklist__picklist__date")
+    ).values(
+        "id",
+        "picklist_id",
+        "carrier_id",
+        "package_type_id",
+        "current_state",
+        "paid",
+        "cost",
+        "carrier__name",
+        "package_type__description",
+        "picklist_date",
+        "tracking_code",
+        "check_in_time",
+        "check_out_time"
+    ).filter(account_id=account_id).order_by("current_state", "-check_in_time")
+
+    page_number = request.GET.get("page", 1)
+    per_page = request.GET.get("per_page", 10)
+
+    paginator = Paginator(packages, per_page)
+    page_obj = paginator.get_page(page_number)
+
+    selected_ids = request.GET.get("selected_ids", "")
+    selected = selected_ids.split(",") if selected_ids else []
+
+    return render(request, "customer/parcels.html", {"page_obj": page_obj,
+                                                     "selected": selected})
 
 
 @require_http_methods(["POST"])
@@ -145,21 +227,13 @@ def customer_confirm_invoice(request, pk):
     return JsonResponse({"success": True, "url": redirect_url})
 
 
-@require_http_methods(["GET"])
-def customer_cancel_invoice(request, pk):
-    invoice = Invoice.objects.get(pk=pk)
-    if invoice.current_state in [0, 1, 4]:
-        if invoice.payment_intent_id:
-            stripe.PaymentIntent.cancel(invoice.payment_intent_id)
-
-    return redirect(reverse("customer_make_payment"))
-
-
 @require_http_methods(["POST"])
 @exception_catcher()
 def customer_new_invoice(request):
     account_id = UserAccount.objects.get(user_id=request.user.id).account_id
     customer_id = invoice.get_customer_id(request.user.id)
+
+    globalsettings, _ = GlobalSettings.objects.get_or_create(id=1)
 
     data = json.loads(request.body)
     method = data["method"]
@@ -169,8 +243,20 @@ def customer_new_invoice(request):
         raise ValueError
     line_items = invoice.generate_line_items(subtotal, request.user.id)
 
-    tax = round(subtotal * 0.075, 2)
-    total = round((subtotal + tax) * 100)
+    tax_rate = float(globalsettings.tax_rate / 100) if globalsettings.taxes else 0.00
+    tax = round(subtotal * tax_rate, 2) if globalsettings.taxes else None
+    total = round((subtotal + tax) * 100) if tax else round(subtotal * 100)
+
+    processing_fees = None
+    if globalsettings.pass_on_fees:
+        fee_subtotal = tax + subtotal if tax else subtotal
+        processing_fees = ((fee_subtotal * 0.029) + 0.30)
+        cur_proc_fees = processing_fees * 0.029
+        while round(cur_proc_fees, 2) >= 0.01:
+            processing_fees += cur_proc_fees
+            cur_proc_fees = cur_proc_fees * 0.029
+
+        total += round(processing_fees * 100)
 
     payment_intent_id, url = None, None
     if method not in ["ONETIME", "NEW"]:
@@ -188,13 +274,14 @@ def customer_new_invoice(request):
 
     invoice_data = Invoice.objects.create(account_id=account_id, user_id=request.user.id,
                                           payment_intent_id=payment_intent_id, line_items=line_items,
-                                          subtotal=subtotal, tax=tax)
+                                          subtotal=subtotal, tax=tax, processing_fees=processing_fees)
     invoice_url = request.build_absolute_uri(reverse("customer_view_invoice", kwargs={"pk": invoice_data.id}))
     success_url = invoice_url + "?session_id={CHECKOUT_SESSION_ID}"
     cancel_url = f"{invoice_url}/cancel"
 
     if method == "ONETIME":
-        line_items, discount = invoice.generate_checkout_line_items(line_items)
+        tax_rate_id = globalsettings.tax_stripe_id if globalsettings.taxes else None
+        line_items, discount = invoice.generate_checkout_line_items(line_items, tax_rate_id)
 
         if discount:
             coupon = stripe.Coupon.create(amount_off=discount, currency="usd", name="Account Credit")

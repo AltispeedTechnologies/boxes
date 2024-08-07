@@ -20,6 +20,7 @@ class Invoice(models.Model):
 
     line_items = models.JSONField()
     subtotal = models.DecimalField(max_digits=8, decimal_places=2)
-    tax = models.DecimalField(max_digits=8, decimal_places=2)
+    tax = models.DecimalField(max_digits=8, decimal_places=2, null=True)
+    processing_fees = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     stripe_fee = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     deposit_total = models.DecimalField(max_digits=8, decimal_places=2, null=True)
