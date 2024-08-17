@@ -1,4 +1,5 @@
 import json
+import pytz
 import stripe
 from boxes.backend import invoice
 from boxes.management.exception_catcher import exception_catcher
@@ -7,9 +8,11 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Case, DecimalField, F, OuterRef, Max, Subquery, Sum, When, Value
 from django.db.models.functions import Coalesce
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render, reverse
+from django.template.loader import render_to_string
 from django.views.decorators.http import require_http_methods
+from weasyprint import HTML
 
 
 # Set the stripe API key from our local configuration
@@ -78,7 +81,8 @@ def customer_view_invoice(request, pk):
         if checkout_session["mode"] == "setup":
             setup_intent = stripe.SetupIntent.retrieve(checkout_session["setup_intent"])
             payment_method = setup_intent["payment_method"]
-            amount = round((invoice_data.subtotal + invoice_data.tax) * 100)
+            prelim_amount = invoice_data.subtotal + invoice_data.tax if invoice_data.tax else invoice_data.subtotal
+            amount = round(prelim_amount * 100)
             payment_intent = stripe.PaymentIntent.create(
                 amount=amount,
                 payment_method=payment_method,
@@ -133,6 +137,56 @@ def customer_view_invoice(request, pk):
                        "line_items": invoice_data.line_items, "payment_method": payment_method}
 
     return render(request, "customer/view_invoice.html", {"invoice": invoice_payload})
+
+
+@require_http_methods(["GET"])
+def customer_view_pdf(request, pk):
+    invoice_data = Invoice.objects.get(pk=pk)
+
+    payment_intent = stripe.PaymentIntent.retrieve(invoice_data.payment_intent_id)
+    payment_method = payment_intent["payment_method"]
+    if not payment_method and payment_intent["last_payment_error"]:
+        if payment_intent["last_payment_error"]["payment_method"]:
+            payment_method = payment_intent["last_payment_error"]["payment_method"]["id"]
+    if payment_method:
+        payment_method = stripe.PaymentMethod.retrieve(payment_method)
+        payment_method = invoice.get_payment_method_json(payment_method, None)
+    if invoice_data.tax and invoice_data.tax > 0:
+        total = invoice_data.subtotal + invoice_data.tax
+        tax_rate = ((invoice_data.tax / invoice_data.subtotal) * 100)
+    else:
+        total = invoice_data.subtotal
+        tax_rate = None
+
+    if invoice_data.processing_fees:
+        total += invoice_data.processing_fees
+
+    balance = {"subtotal": invoice_data.subtotal, "tax": invoice_data.tax, "tax_rate": tax_rate, "total": total,
+               "processing_fees": invoice_data.processing_fees}
+    invoice_payload = {"balance": balance, "current_state": invoice_data.current_state, "id": invoice_data.id,
+                       "line_items": invoice_data.line_items, "payment_method": payment_method}
+
+    globalsettings, _ = GlobalSettings.objects.get_or_create(id=1)
+    logo_path = f"file://{globalsettings.login_image.path}"
+
+    current_tz = pytz.timezone("America/Chicago")
+    hr_timestamp = invoice_data.timestamp.astimezone(current_tz).strftime("%m/%d/%Y %I:%M:%S %p")
+
+    # Render HTML content using the template
+    html_string = render_to_string("customer/pdf_invoice.html", {"invoice": invoice_payload, "logo_path": logo_path,
+                                                                 "business_name": globalsettings.name,
+                                                                 "rendering_pdf": True,
+                                                                 "timestamp": hr_timestamp})
+
+    # Convert the HTML to a PDF
+    html = HTML(string=html_string)
+    pdf = html.write_pdf()
+
+    # Create a response object
+    response = HttpResponse(pdf, content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="invoice_{pk}.pdf"'
+
+    return response
 
 
 @require_http_methods(["GET"])

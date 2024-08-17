@@ -55,6 +55,7 @@ customer_urlpatterns = [
     path("invoice/<int:pk>", customer_view_invoice, name="customer_view_invoice"),
     path("invoice/<int:pk>/cancel", customer_cancel_invoice, name="customer_cancel_invoice"),
     path("invoice/<int:pk>/confirm", customer_confirm_invoice, name="customer_confirm_invoice"),
+    path("invoice/<int:pk>/pdf", customer_view_pdf, name="customer_view_pdf"),
 ]
 
 

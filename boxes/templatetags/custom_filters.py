@@ -41,6 +41,11 @@ def is_timestamp(dictionary, key):
     return isinstance(dictionary.get(key), datetime)
 
 
+@register.filter(name="get_item")
+def get_item(dictionary, key):
+    return dictionary.get(key, "Unknown")
+
+
 @register.simple_tag(takes_context=True)
 def query_string(context, per_page=None):
     per_page = per_page or context["request"].GET.get("per_page") or 10
@@ -88,3 +93,34 @@ def chart_tab_is_selected(context, freq):
     set_class += "active" if frequency == freq else "bg-light"
 
     return set_class
+
+
+@register.simple_tag
+def card_brand_display(brand):
+    if brand in ["cashapp", "amazon_pay", "bank"]:
+        return ""
+
+    card_brands = {
+        "amex": "American Express",
+        "diners": "Diners Club",
+        "discover": "Discover",
+        "eftpos_au": "Eftpos AU",
+        "jcb": "JCB",
+        "mastercard": "MasterCard",
+        "unionpay": "UnionPay",
+        "visa": "Visa",
+        "unknown": "Unknown"
+    }
+    return card_brands.get(brand, "Unknown")
+
+
+@register.simple_tag
+def invoice_state_display(state):
+    invoice_states = {
+        0: "Requires Confirmation",
+        1: "Requires Action",
+        2: "Processing",
+        3: "Succeeded",
+        4: "Failed"
+    }
+    return invoice_states.get(state, "Unknown")

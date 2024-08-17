@@ -1,0 +1,193 @@
+{% block content %}
+{% load custom_filters %}
+
+<div id="page-logo">
+    <img src="{{ logo_path }}" alt="Header Image">
+</div>
+
+<div id="page-title">
+    <h1>{{ business_name }}</h1>
+    <br />
+    <h2>Invoice #{{ invoice.id|default_if_none:0|stringformat:"08d" }}</h2>
+</div>
+
+{% include "customer/_invoice.html" %}
+
+<div id="main-content-container">
+    <div id="totals-payment-container">
+        {% if invoice.balance.tax_rate or invoice.balance.processing_fees %}
+        <div class="spaced-layout">
+            <h3>Subtotal</h3>
+            <h3>${{ invoice.balance.subtotal|floatformat:2 }}</h3>
+        </div>
+        {% endif %}
+        {% if invoice.balance.tax_rate %}
+        <div class="spaced-layout">
+            <h3>Tax ({{ invoice.balance.tax_rate|floatformat:2 }}%)</h3>
+            <h3>${{ invoice.balance.tax|floatformat:2 }}</h3>
+        </div>
+        {% endif %}
+        {% if invoice.balance.processing_fees %}
+        <div class="spaced-layout">
+            <h3>Processing Fees</h3>
+            <p>${{ invoice.balance.processing_fees|floatformat:2 }}</p>
+        </div>
+        {% endif %}
+        <div class="spaced-layout total-due">
+            <h2>Total Due</h2>
+            <h2>${{ invoice.balance.total|floatformat:2 }}</h2>
+        </div>
+        <div class="spaced-layout">
+            <h3>Payment Method</h3>
+            <p>
+                {% card_brand_display invoice.payment_method.brand %}
+                {{ invoice.payment_method.last4 }}
+            </p>
+        </div>
+        <div class="spaced-layout">
+            <h3>Status</h3>
+            <p>{% invoice_state_display invoice.current_state %}</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    @page {
+        margin-top: 30mm;
+        margin-bottom: 30mm;
+        {% if report_headers|length > 10 %}
+        size: A4 landscape;
+        {% else %}
+        size: A4;
+        {% endif %}
+
+        @top-left {
+            content: element(page-logo);
+        }
+
+        @top-right {
+            content: element(page-title);
+        }
+
+        @bottom-right {
+            content: "Page " counter(page) "/" counter(pages);
+        }
+
+        @bottom-left {
+            content: "Generated: {{ timestamp }}";
+        }
+    }
+
+    body, h1, h2 {
+        margin: 0;
+        padding: 0;
+    }
+
+    #page-logo {
+        position: running(page-logo);
+    }
+
+    #page-title {
+        text-align: center;
+        position: running(page-title);
+    }
+
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 12px;
+        color: #333;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px; /* Slightly larger font for better readability */
+    }
+
+    th, td {
+        padding: 12px 10px; /* Increased padding for better spacing */
+        text-align: left;
+        border-bottom: 1px solid #ddd; /* Subtle border for rows */
+    }
+
+    th {
+        background-color: #f7f7f7; /* Light gray background for header */
+        color: #333;
+        font-weight: bold;
+        border-bottom: 2px solid #ccc; /* Slightly thicker bottom border for header */
+    }
+
+    tr:nth-child(even) {
+        background-color: #f9f9f9; /* Alternating row color for better readability */
+    }
+
+    tr:hover {
+        background-color: #f1f1f1; /* Highlight row on hover for better user experience */
+    }
+
+    td {
+        color: #555; /* Slightly darker text color for better contrast */
+    }
+
+    th:first-child, td:first-child {
+        padding-left: 20px; /* Extra padding on the left side for the first column */
+    }
+
+    th:last-child, td:last-child {
+        padding-right: 20px; /* Extra padding on the right side for the last column */
+    }
+
+    #main-content-container {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f7f7f7;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    #totals-payment-container {
+        display: grid;
+        gap: 20px; /* Increased gap for better spacing */
+    }
+
+    .spaced-layout {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 15px;
+        background: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        font-size: 14px;
+        border: 1px solid #dedede;
+    }
+
+    .spaced-layout h3 {
+        margin: 0;
+        color: #444;
+        font-weight: normal;
+        font-size: 14px;
+    }
+
+    .spaced-layout p {
+        margin: 0;
+        color: #666;
+        text-align: right;
+        font-size: 14px;
+        word-wrap: break-word;
+        word-break: break-word;
+    }
+
+    .total-due {
+        background: #f2f2f2;
+        border: 2px solid #c2c2c2;
+        padding: 20px;
+    }
+
+    .total-due h2 {
+        font-size: 20px;
+        color: #111;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
