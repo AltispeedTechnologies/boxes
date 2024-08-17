@@ -1,16 +1,8 @@
+{% extends "_pdf.html" %}
+{% block header %}
+{{ report_name }}
+{% endblock %}
 {% block content %}
-{% if rendering_pdf %}
-<div id="page-logo">
-    <img src="{{ logo_path }}" alt="Header Image">
-</div>
-
-<div id="page-title">
-    <h1>{{ business_name }}</h1>
-    <br />
-    <h2>{{ report_name }}</h2>
-</div>
-{% endif %}
-
 <div class="table-responsive mt-3">
     <table class="table table-hover table-bordered">
         <thead class="thead-dark align-top">
@@ -24,99 +16,12 @@
             {% load custom_filters %}
             {% for line in page_obj %}
             <tr>
-                {% if rendering_pdf %}
-                    {% for key, _ in report_headers.items %}
-                    <td>{{ line|get_pdf:key }}</td>
-                    {% endfor %}
-                {% else %}
-                    {% for key, _ in report_headers.items %}
-                    <td {% if line|is_timestamp:key %}
-                        class="timestamp"
-                        data-timestamp="{{ line|get:key }}"
-                        {% endif %}>
-                        {{ line|get:key }}
-                    </td>
-                    {% endfor %}
-                {% endif %}
+                {% for key, _ in report_headers.items %}
+                <td>{{ line|get_pdf:key }}</td>
+                {% endfor %}
             </td>
             {% endfor %}
         </tbody>
     </table>
 </div>
-
-{% if rendering_pdf %}
-<style>
-    @page {
-        margin-top: 25mm;
-        margin-bottom: 25mm;
-        /* Landscape mode must be used when there are more than 10 headers */
-        {% if report_headers|length > 10 %}
-        size: A4 landscape;
-        {% else %}
-        size: A4;
-        {% endif %}
-
-        /* Logo */
-        @top-left {
-            content: element(page-logo);
-        }
-
-        /* Title */
-        @top-right {
-            content: element(page-title);
-        }
-
-        /* Page numbers */
-        @bottom-right {
-            content: "Page " counter(page) "/" counter(pages);
-        }
-
-        /* Timestamp */
-        @bottom-left {
-            content: "Generated: {{ timestamp }}";
-        }
-    }
-
-    body, h1, h2 {
-        margin: 0;
-        padding: 0;
-    }
-
-    #page-logo {
-        position: running(page-logo);
-    }
-
-    #page-title {
-        vertical-align: middle;
-        text-align: center;
-        position: running(page-title);
-    }
-
-    /* Set a consistent font and font size */
-    body {
-        font-family: Arial, sans-serif;
-        font-size: 10px;
-    }
-    /* Ensure tables are larger, and borders work as expected*/
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    /* Table cell borders, padding, and alignment */
-    th, td {
-        border: 1px solid #000;
-        padding: 8px;
-        text-align: left;
-    }
-    /* Different color for headers */
-    th {
-        background-color: #f2f2f2;
-    }
-
-    /* Avoid page breaks in the middle of a row */
-    tr {
-        page-break-inside: avoid;
-    }
-</style>
-{% endif %}
 {% endblock %}
