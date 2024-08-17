@@ -32,7 +32,6 @@ class PDFLoggingHandler(logging.Handler):
 def _html_table(pk, timestamp):
     # Grab the full report data
     report_name, report_headers, query = reports.generate_full_report(pk)
-    print(query)
 
     # Get the human-readable timestamp
     current_tz = pytz.timezone("America/Chicago")
