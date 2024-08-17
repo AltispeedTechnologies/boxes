@@ -24,4 +24,4 @@ pycodestyle==2.12.1
 Faker==27.0.0
 
 # Payment processing
-stripe==10.7.0
+stripe==10.8.0
