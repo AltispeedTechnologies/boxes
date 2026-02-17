@@ -1,8 +1,5 @@
 // Global Utility Functions
 
-/// Show Turbo view transition all the time
-Turbo.setProgressBarDelay(50)
-
 /// Generic cookie function, currently only used for CSRF tokens
 window.get_cookie = function(name) {
     var cookie_value = null;
