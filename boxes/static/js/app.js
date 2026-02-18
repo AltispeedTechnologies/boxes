@@ -277,46 +277,9 @@ window.ajax_request = function({ type, url, payload = null, content_type = "appl
     });
 };
 
-/// Keep track of JS files, given Turbo and its caching
-window.manage_init_func = function(identifying_element, namespace, init_func) {
-    $(document).on(`turbo:load.${namespace}`, function() {
-        if ($(identifying_element).length !== 0) {
-            init_func();
-        }
-    });
-
-    $(document).on(`turbo:before-render.${namespace}`, function(event) {
-        // Define the regex for a given JS file
-        const regex = new RegExp(`${namespace}(\\.[a-z0-9]{8,})?\\.js`);
-
-        // If the target element is not found, remove the bindings and script elements
-        if (!$(event.detail.newBody).find(identifying_element).length) {
-            $(document).off(`turbo:load.${namespace}`);
-            $(document).off(`turbo:before-render.${namespace}`);
-
-            $("script").filter(function() {
-                return regex.test(this.src);
-            }).remove();
-        } else {
-            // Find all scripts matching (should only be one)
-            const scripts = $("script").filter(function() {
-                return regex.test(this.src);
-            });
-            if (scripts.length > 1) {
-                window.location.reload();
-            }
-        }
-    });
-};
-
 /// Functionality to run once the content has fully loaded
 function init_page(event) {
     var context = document;
-    if (event && event.type === "turbo:before-render") {
-        var context = event.detail.newBody;
-    } else if (event && event.type === "turbo:before-frame-render") {
-        var context = event.detail.newFrame;
-    }
 
     // Timestamps are stored in the database as UTC, this does the conversion
     // client-side to the current browser time
@@ -333,35 +296,6 @@ function init_page(event) {
     var tooltip_list = tooltip_trigger_list.map(function (tooltip_trigger_el) {
         return new bootstrap.Tooltip(tooltip_trigger_el)
     })
-
-    // Specific links are within a Turbo Frame but have a response not containing the current Turbo Frame
-    // Allow an override for this, so Turbo Drive can kick in
-    $(context).off("click", "a[data-bypass-frame]").on("click", "a[data-bypass-frame]", function(event) {
-        event.preventDefault();
-        var url = $(this).attr("href");
-        Turbo.visit(url);
-    });
-
-    // Regex for app.js file
-    const regex = new RegExp(`app(\\.[a-z0-9]{8,})?\\.js`);
-    // Find all scripts matching (should only be one)
-    const scripts = $("script").filter(function() {
-        return regex.test(this.src);
-    });
-
-    if (scripts.length > 1) {
-        window.location.reload();
-    }
 }
 
-$(document).on({
-    "turbo:load": init_page,
-    "turbo:before-render": function(event) {
-        init_page(event);
-    }
-});
-
-$(document).off("turbo:visit").on("turbo:visit", function() {
-    // Set the last visited URL
-    sessionStorage.setItem("last_visited_url", window.location.href);
-});
+$(init_page);

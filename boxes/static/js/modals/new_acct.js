@@ -29,4 +29,4 @@ function new_acct() {
     });
 }
 
-window.manage_init_func("#createNewCustomerModal", "new_acct", new_acct);
+$(new_acct);

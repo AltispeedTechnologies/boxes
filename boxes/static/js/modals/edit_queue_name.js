@@ -26,4 +26,4 @@ function edit_queue_name() {
     });
 }
 
-window.manage_init_func("#editQueueNameModal", "edit_queue_name", edit_queue_name);
+$(edit_queue_name);

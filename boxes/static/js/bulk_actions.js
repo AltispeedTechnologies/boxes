@@ -167,4 +167,4 @@ $(document).off("selectedPackagesUpdated").on("selectedPackagesUpdated", functio
     $("#bulkactionsdropdown").toggle(!no_selected_packages);
 });
 
-window.manage_init_func("div#bulkactions", "bulk_actions", setup_bulk_actions);
+$(setup_bulk_actions);

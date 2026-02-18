@@ -59,4 +59,4 @@ function init_checkbox() {
     });
 }
 
-window.manage_init_func(".package-checkbox", "table_select", init_checkbox);
+$(init_checkbox);

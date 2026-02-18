@@ -20,4 +20,4 @@ function init_report_list() {
     });
 }
 
-window.manage_init_func("div#reportlist", "index", init_report_list);
+$(init_report_list);

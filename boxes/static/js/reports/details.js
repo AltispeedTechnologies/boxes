@@ -290,4 +290,4 @@ function init_report_details_page() {
     });
 }
 
-window.manage_init_func("div#reportdetailspage", "details", init_report_details_page);
+$(init_report_details_page);

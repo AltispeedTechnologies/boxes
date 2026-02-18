@@ -21,4 +21,4 @@ function init_account_mgmt_page() {
     });
 }
 
-window.manage_init_func("div#accountmgmt", "accounts", init_account_mgmt_page);
+$(init_account_mgmt_page);

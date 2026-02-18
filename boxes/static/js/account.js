@@ -46,4 +46,4 @@ function init_account_page() {
     }
 }
 
-window.manage_init_func("textarea#accountnotes", "account", init_account_page);
+$(init_account_page);

@@ -20,4 +20,4 @@ function init_invoice_page() {
     });
 }
 
-window.manage_init_func("div#invoice", "make_payment", init_invoice_page);
+$(init_invoice_page);

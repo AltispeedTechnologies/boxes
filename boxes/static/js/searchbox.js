@@ -81,4 +81,4 @@ function init_searchbox_page() {
     });
 }
 
-window.manage_init_func("div#searchbox", "searchbox", init_searchbox_page);
+$(init_searchbox_page);

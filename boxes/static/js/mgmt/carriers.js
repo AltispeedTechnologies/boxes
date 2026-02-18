@@ -87,4 +87,4 @@ function init_carrier_mgmt_page() {
     });
 }
 
-window.manage_init_func("div#carriermgmt", "carriers", init_carrier_mgmt_page);
+$(init_carrier_mgmt_page);

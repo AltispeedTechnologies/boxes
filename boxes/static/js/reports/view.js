@@ -80,4 +80,4 @@ function init_report_view_page() {
     });
 }
 
-window.manage_init_func("div#reportviewpage", "view", init_report_view_page);
+$(init_report_view_page);

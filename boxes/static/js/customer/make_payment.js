@@ -61,4 +61,4 @@ function init_customer_payment_page() {
     });
 }
 
-window.manage_init_func("div#customercharges", "make_payment", init_customer_payment_page);
+$(init_customer_payment_page);

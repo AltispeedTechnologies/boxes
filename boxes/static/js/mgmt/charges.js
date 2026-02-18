@@ -111,4 +111,4 @@ function init_charges_mgmt_page() {
     });
 }
 
-window.manage_init_func("div#chargesmgmt", "charges", init_charges_mgmt_page);
+$(init_charges_mgmt_page);

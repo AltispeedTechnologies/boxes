@@ -238,4 +238,4 @@ function init_create_page() {
     });
 }
 
-window.manage_init_func("div#checkinpage", "create", init_create_page);
+$(init_create_page);

@@ -48,4 +48,4 @@ function init_general_mgmt_page() {
     });
 }
 
-window.manage_init_func("div#generalmgmt", "general", init_general_mgmt_page);
+$(init_general_mgmt_page);
