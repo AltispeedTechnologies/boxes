@@ -6,7 +6,7 @@ function search_accounts() {
     var params = new URLSearchParams(url.search);
     params.set("q", search_query);
     url.search = params.toString();
-    Turbo.visit(url.href);
+    window.location.href = url.href;
 }
 
 function init_account_mgmt_page() {

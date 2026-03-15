@@ -13,7 +13,7 @@ function init_invoice_page() {
                 if (response.url) {
                     window.location.href = response.url;
                 } else {
-                    Turbo.visit("/invoice/" + invoice_id, {"action": "replace"});
+                    window.location.href = "/invoice/" + invoice_id;
                 }
             }
         });
