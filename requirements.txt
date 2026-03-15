@@ -38,13 +38,13 @@ click-repl==0.3.0
     # via celery
 cssselect2==0.9.0
     # via weasyprint
-django==6.0.2
+django==6.0.3
     # via -r requirements.in
-django-environ==0.12.1
+django-environ==0.13.0
     # via -r requirements.in
 django-mathfilters==1.0.0
     # via -r requirements.in
-faker==40.4.0
+faker==40.11.0
     # via -r requirements.in
 fonttools[woff]==4.61.1
     # via weasyprint
@@ -75,7 +75,7 @@ pillow==12.1.1
     #   weasyprint
 prompt-toolkit==3.0.47
     # via click-repl
-psycopg==3.3.2
+psycopg==3.3.3
     # via -r requirements.in
 psycopg-pool==3.3.0
     # via -r requirements.in
@@ -89,7 +89,7 @@ pyphen==0.16.0
     # via weasyprint
 python-dateutil==2.9.0.post0
     # via celery
-pytz==2025.2
+pytz==2026.1.post1
     # via -r requirements.in
 reportlab==4.4.10
     # via -r requirements.in
@@ -103,7 +103,7 @@ soupsieve==2.6
     # via beautifulsoup4
 sqlparse==0.5.1
     # via django
-stripe==14.3.0
+stripe==14.4.1
     # via -r requirements.in
 tinycss2==1.5.1
     # via
