@@ -13,7 +13,7 @@ This software is known to work on Ubuntu 22.04 LTS, but is not actively tested.
 ## Credits and License
 
 ```
-Copyright 2024 Altispeed Technologies
+Copyright 2024-2026 Altispeed Technologies
 Author: Simon Quigley <squigley@altispeed.com>
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
