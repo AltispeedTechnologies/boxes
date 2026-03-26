@@ -22,12 +22,12 @@ class NotificationRule(models.Model):
 
 
 class EmailQueue(models.Model):
-    package = models.ForeignKey("Package", on_delete=models.RESTRICT)
-    template = models.ForeignKey(EmailTemplate, on_delete=models.RESTRICT)
+    package = models.ForeignKey("Package", on_delete=models.CASCADE)
+    template = models.ForeignKey(EmailTemplate, on_delete=models.CASCADE)
 
 
 class SentEmail(models.Model):
-    account = models.ForeignKey("Account", on_delete=models.RESTRICT)
+    account = models.ForeignKey("Account", on_delete=models.CASCADE)
     subject = models.CharField()
     email = models.CharField()
     timestamp = models.DateTimeField(default=timezone.now)
@@ -36,15 +36,15 @@ class SentEmail(models.Model):
 
 
 class SentEmailContents(models.Model):
-    sent_email = models.ForeignKey(SentEmail, on_delete=models.RESTRICT)
+    sent_email = models.ForeignKey(SentEmail, on_delete=models.CASCADE)
     html = models.TextField()
 
 
 class SentEmailPackage(models.Model):
-    sent_email = models.ForeignKey(SentEmail, on_delete=models.RESTRICT)
+    sent_email = models.ForeignKey(SentEmail, on_delete=models.CASCADE)
     package = models.ForeignKey("Package", on_delete=models.RESTRICT)
 
 
 class SentEmailResult(models.Model):
-    sent_email = models.ForeignKey(SentEmail, on_delete=models.RESTRICT)
+    sent_email = models.ForeignKey(SentEmail, on_delete=models.CASCADE)
     response = models.JSONField()

@@ -7,7 +7,7 @@ class Report(models.Model):
 
 
 class ReportResult(models.Model):
-    report = models.OneToOneField(Report, on_delete=models.RESTRICT)
+    report = models.OneToOneField(Report, on_delete=models.CASCADE)
     pdf_path = models.CharField(max_length=512, blank=True, null=True)
     last_success = models.DateTimeField(null=True)
 

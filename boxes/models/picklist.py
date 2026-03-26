@@ -16,5 +16,5 @@ class Picklist(models.Model):
 
 
 class PackagePicklist(models.Model):
-    package = models.OneToOneField("Package", on_delete=models.RESTRICT)
-    picklist = models.ForeignKey(Picklist, on_delete=models.RESTRICT)
+    package = models.OneToOneField("Package", on_delete=models.CASCADE)
+    picklist = models.ForeignKey(Picklist, on_delete=models.CASCADE)

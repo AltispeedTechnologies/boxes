@@ -3,7 +3,7 @@ from django.utils import timezone
 
 
 class Account(models.Model):
-    user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
+    user = models.ForeignKey("CustomUser", on_delete=models.SET(1))
     name = models.CharField(max_length=64)
     balance = models.DecimalField(max_digits=8, decimal_places=2)
     billable = models.BooleanField()
@@ -57,12 +57,12 @@ class AccountLedger(models.Model):
 
 
 class UserAccount(models.Model):
-    user = models.ForeignKey("CustomUser", on_delete=models.RESTRICT)
-    account = models.ForeignKey(Account, on_delete=models.RESTRICT)
+    user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
 
 
 class AccountAlias(models.Model):
-    account = models.ForeignKey(Account, on_delete=models.RESTRICT)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     alias = models.CharField(max_length=64)
     primary = models.BooleanField()
 
@@ -76,16 +76,16 @@ class AccountChargeSettings(models.Model):
 
     days = models.IntegerField(null=True)
     price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
-    package_type = models.ForeignKey("PackageType", on_delete=models.RESTRICT, null=True)
+    package_type = models.ForeignKey("PackageType", on_delete=models.CASCADE, null=True)
     frequency = models.CharField(max_length=1, choices=FREQUENCY_CHOICES, null=True)
     endpoint = models.IntegerField(null=True)
 
 
 class AccountStripeCustomer(models.Model):
-    account = models.ForeignKey(Account, on_delete=models.RESTRICT)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     customer_id = models.CharField(null=True)
 
 
 class StripePaymentMethod(models.Model):
-    customer = models.ForeignKey(AccountStripeCustomer, on_delete=models.RESTRICT)
+    customer = models.ForeignKey(AccountStripeCustomer, on_delete=models.CASCADE)
     payment_method_id = models.CharField()

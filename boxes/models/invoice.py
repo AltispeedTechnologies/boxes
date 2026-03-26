@@ -11,8 +11,8 @@ PAYMENT_INTENT_STATES = [
 
 
 class Invoice(models.Model):
-    account = models.ForeignKey("Account", on_delete=models.RESTRICT)
-    user = models.ForeignKey("CustomUser", on_delete=models.RESTRICT)
+    account = models.ForeignKey("Account", on_delete=models.CASCADE)
+    user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     payment_intent_id = models.CharField(null=True)
