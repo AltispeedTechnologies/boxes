@@ -1,27 +1,30 @@
 $(document).ready(function() {
-    $("#content").summernote({
-        airMode: false,
-        width: "100%",
-        height: 480,
-        toolbar: [
-            ["style", ["style"]],
-            ["font", ["bold", "italic", "underline", "clear"]],
-            ["color", ["color"]],
-            ["fontname", ["fontname"]],
-            ["para", ["ul", "ol", "paragraph"]],
-            ["insert", ["link", "custom_block"]],
-            ["view", ["fullscreen", "help"]],
+    const make_btn = (name, text) => ({
+        name: name,
+        text: text, 
+        tooltip: "Insert " + text,
+        exec: (editor) => {
+            editor.selection.insertHTML(`<span contenteditable="false" style="user-select: none;" class="custom-block bg-light mx-1 p-2">${text}</span>`);
+        }
+    });
+
+    const editor = Jodit.make("#content-editor", {
+        height: 400,
+        toolbarAdaptive: false,
+        buttons: [
+            "bold", "italic", "underline", "strikethrough", "|",
+            "link", "|",
+            "first_name", "last_name", "full_name", "tracking_code", "carrier", "comment", "|",
+            "eraser"
         ],
-        popover: {
-            air: [
-                ["color", ["color"]],
-                ["font", ["bold", "underline", "clear"]]
-            ]
-        },
-        disableDragAndDrop: true,
-        lang: "en-US",
-        dialogsInBody: true,
-        dialogsFade: true,
+        controls: {
+            first_name: make_btn("first_name", "First Name"),
+            last_name: make_btn("last_name", "Last Name"),
+            full_name: make_btn("full_name", "Full Name"),
+            tracking_code: make_btn("tracking_code", "Tracking Code"),
+            carrier: make_btn("carrier", "Carrier"),
+            comment: make_btn("comment", "Comment")
+        }
     });
 });
 
@@ -37,7 +40,7 @@ function init_email_template_mgmt_page() {
             url: "/mgmt/email/templates/fetch",
             payload: {"id": id},
             on_success: function(response) {
-                $("#content").summernote("code", response.content);
+                $(".jodit-wysiwyg")[0].innerHTML = response.content;
                 $("#email_subject").val(response.subject);
             }
         });
@@ -46,7 +49,7 @@ function init_email_template_mgmt_page() {
     $("#save-btn").off("click").on("click", function() {
         $("#savingicon").show();
         var template_id = $("#template-selector").val();
-        var content = $("#content").summernote("code");
+        var content = $("#content-editor").val();
         var subject = $("#email_subject").val();
         var payload = {
             "id": template_id,
