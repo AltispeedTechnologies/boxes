@@ -139,6 +139,7 @@ def remove_picklist(request, pk):
                 queue_id = queue.queue_id
                 PackageQueue.objects.filter(queue_id=queue_id).delete()
                 queue.delete()
+                Queue.objects.filter(pk=queue_id).delete()
 
         # Delete the picklist
         Picklist.objects.filter(pk=pk).delete()
@@ -175,28 +176,6 @@ def picklist_list(request, pk=None):
     ).order_by("is_date_null", "date", "description")
 
     return render(request, "picklists/picklist_list.html", {"picklists": picklists})
-
-
-@require_http_methods(["GET"])
-def picklist_show(request, pk=None):
-    picklist = get_object_or_404(Picklist, pk=pk)
-
-    package_ids = PackagePicklist.objects.filter(picklist_id=picklist.id).values_list("package_id", flat=True)
-
-    page_number = request.GET.get("page", 1)
-    per_page = request.GET.get("per_page", 10)
-
-    packages = _get_packages(per_page=per_page, id__in=package_ids)
-    page_obj = packages.get_page(page_number)
-
-    picklist_title = picklist.date if picklist.date else picklist.description
-
-    return render(request, "picklists/packages.html", {"page_obj": page_obj,
-                                                       "picklists": True,
-                                                       "view_type": "packages",
-                                                       "picklist_data": _picklist_data(exclude=picklist.id),
-                                                       "picklist_title": picklist_title,
-                                                       "picklist_id": picklist.id})
 
 
 @require_http_methods(["GET"])
