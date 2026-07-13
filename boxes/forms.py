@@ -1,7 +1,6 @@
-from boxes.models import *
+from boxes.models import CustomUser, Package
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from django.core.exceptions import ValidationError
+from django.contrib.auth.forms import UserCreationForm
 from django.core.validators import MaxLengthValidator, RegexValidator
 
 
@@ -12,14 +11,14 @@ class RegisterForm(UserCreationForm):
                   "password1", "password2"]
 
 
-class CustomUserForm(UserChangeForm):
+class CustomUserForm(forms.ModelForm):
     class Meta:
         model = CustomUser
         fields = ["prefix", "first_name", "middle_name", "last_name", "suffix", "company", "phone_number",
                   "mobile_number", "username"]
 
     def __init__(self, *args, **kwargs):
-        super(CustomUserForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
             model_field = self.Meta.model._meta.get_field(field_name)
             if model_field.null or model_field.blank:
