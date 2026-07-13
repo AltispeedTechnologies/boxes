@@ -1,6 +1,5 @@
 import logging
 import os
-import pytz
 import sys
 from boxes.models import GlobalSettings, ReportResult
 from boxes.backend import reports
@@ -34,8 +33,7 @@ def _html_table(pk, timestamp):
     report_name, report_headers, query = reports.generate_full_report(pk)
 
     # Get the human-readable timestamp
-    current_tz = pytz.timezone("America/Chicago")
-    hr_timestamp = timestamp.astimezone(current_tz).strftime("%m/%d/%Y %I:%M:%S %p")
+    hr_timestamp = timezone.localtime(timestamp).strftime("%m/%d/%Y %I:%M:%S %p")
 
     # Get the logo image path
     globalsettings = GlobalSettings.objects.first()

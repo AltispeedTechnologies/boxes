@@ -3,9 +3,10 @@ import stripe
 from boxes.models import AccountLedger, Invoice, Package
 from boxes.tasks.charges import total_accounts
 from celery import shared_task
-from datetime import datetime, timedelta
+from datetime import timedelta
 from decimal import Decimal
 from django.db import transaction
+from django.utils import timezone
 
 
 def process_successful_invoice(user_id, account_id, invoice_id, subtotal, line_items):
@@ -54,7 +55,7 @@ def handle_stripe_webhook(payment_intent, user_id):
 
 @shared_task
 def remove_old_coupons():
-    day_ago_epoch = (datetime.now() - timedelta(days=1)).strftime("%s")
+    day_ago_epoch = str(int((timezone.now() - timedelta(days=1)).timestamp()))
     coupon_ids = []
     coupons = stripe.Coupon.list(created={"lte": day_ago_epoch})
 

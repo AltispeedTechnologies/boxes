@@ -89,8 +89,6 @@ pyphen==0.17.2
     # via weasyprint
 python-dateutil==2.9.0.post0
     # via celery
-pytz==2026.2
-    # via -r requirements.in
 reportlab==5.0.0
     # via -r requirements.in
 requests==2.34.2

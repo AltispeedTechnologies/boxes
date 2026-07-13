@@ -1,4 +1,3 @@
-import pytz
 from datetime import datetime
 from django import template
 from django.utils import timezone
@@ -29,8 +28,7 @@ def get_item_pdf(dictionary, key):
     elif key == "price":
         item = "$" + str(item)
     elif isinstance(item, datetime):
-        new_tz = pytz.timezone("America/Chicago")
-        local_dt = item.astimezone(new_tz)
+        local_dt = timezone.localtime(item)
         item = local_dt.strftime("%b %d, %Y %I:%M:%S %p")
 
     return item

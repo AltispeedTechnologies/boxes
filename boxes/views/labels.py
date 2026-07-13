@@ -1,9 +1,8 @@
-import datetime
 import os
-import pytz
 import re
 from boxes.models import *
 from django.conf import settings
+from django.utils import timezone
 from django.http import HttpResponse
 from django.shortcuts import render
 from reportlab.graphics.barcode import createBarcodeDrawing
@@ -94,10 +93,7 @@ def generate_label(request):
         "account").values_list(
         "account__name", "tracking_code", "inside")
 
-    central_timezone = pytz.timezone("America/Chicago")
-    now_utc = datetime.datetime.now(pytz.utc)
-    now_central = now_utc.astimezone(central_timezone)
-    label_date = now_central.strftime("%Y-%m-%d %I:%M:%S %p")
+    label_date = timezone.localtime(timezone.now()).strftime("%Y-%m-%d %I:%M:%S %p")
     for desc, tracking, inside in packages:
         first_name, last_name = desc.split(" ", 1) if " " in desc else ("", desc)
         draw_label(p, first_name, last_name, tracking, label_date, inside)

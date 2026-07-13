@@ -1,8 +1,4 @@
-import pytz
-from datetime import datetime
 from django import template
-from django.utils import timezone
-from django.utils.safestring import mark_safe
 
 
 register = template.Library()

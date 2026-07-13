@@ -1,5 +1,5 @@
+from django.utils import timezone
 import json
-import pytz
 import stripe
 from boxes.backend import invoice
 from boxes.management.exception_catcher import exception_catcher
@@ -169,8 +169,7 @@ def customer_view_pdf(request, pk):
     globalsettings, _ = GlobalSettings.objects.get_or_create(id=1)
     logo_path = f"file://{globalsettings.login_image.path}"
 
-    current_tz = pytz.timezone("America/Chicago")
-    hr_timestamp = invoice_data.timestamp.astimezone(current_tz).strftime("%m/%d/%Y %I:%M:%S %p")
+    hr_timestamp = timezone.localtime(invoice_data.timestamp).strftime("%m/%d/%Y %I:%M:%S %p")
 
     # Render HTML content using the template
     html_string = render_to_string("customer/pdf_invoice.html", {"invoice": invoice_payload, "logo_path": logo_path,
