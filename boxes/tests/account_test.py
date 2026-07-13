@@ -1,5 +1,5 @@
 from django.test import TestCase
-from boxes.models import *
+from boxes.models import Account, AccountLedger, CustomUser, UserAccount
 
 
 class AccountTest(TestCase):

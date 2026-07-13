@@ -1,6 +1,6 @@
 from django.contrib.auth.models import Group, Permission, ContentType
 from django.test import TestCase
-from boxes.models import *
+from boxes.models import CustomUser
 
 
 class CustomUserTest(TestCase):

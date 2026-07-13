@@ -1,16 +1,16 @@
 import json
 import re
 from boxes.management.exception_catcher import exception_catcher
-from boxes.models import *
+from boxes.models import Package, PackagePicklist, PackageQueue, Picklist, PicklistQueue, Queue
 from .common import _get_packages
 from datetime import datetime
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import *
+from django.db.models import BooleanField, Case, Count, F, IntegerField, OuterRef, Subquery, Value, When
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
 from django.urls import reverse
 from django.utils.timezone import localtime

@@ -1,5 +1,5 @@
 from boxes.backend.account import create_user_from_account
-from boxes.models import *
+from boxes.models import Account, CustomUser, Package, SentEmail, UserAccount
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
 from django.db.models import Case, Exists, When, Max, F, OuterRef, Value, CharField, Q

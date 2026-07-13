@@ -1,6 +1,6 @@
 import os
 import re
-from boxes.models import *
+from boxes.models import GlobalSettings, Package
 from django.conf import settings
 from django.utils import timezone
 from django.http import HttpResponse
