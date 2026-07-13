@@ -14,7 +14,7 @@
 </style>
 
 <div class="d-flex justify-content-center align-items-center">
-{% if request.user.is_staff %}
+{% if request.user.has_staff_role %}
     <a href="{% url 'account_mgmt' %}" role="button" class="btn btn-primary btn-lg btn-verylarge mx-2">
         <i class="fa-solid fa-user-group mb-3" style="font-size: 6rem;"></i>
         Accounts

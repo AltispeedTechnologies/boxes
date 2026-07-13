@@ -6,7 +6,7 @@
                 <img src="/media/images/navbar_logo.png" alt="Logo" />
                 <span class="navbar-text fw-bold">Hello, {{ request.user.first_name | title }}!</span>
             </div>
-            {% if request.user.is_staff %}
+            {% if request.user.has_staff_role %}
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item">
                         <a class="nav-link fw-bold" href="{% url 'home' %}">Home</a>

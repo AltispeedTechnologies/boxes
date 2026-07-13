@@ -13,7 +13,7 @@ def is_staff(view_func):
     def wrapped_view(request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect(f"{reverse('login')}?next={request.path}")
-        elif not request.user.is_staff():
+        elif not request.user.has_staff_role():
             return HttpResponseForbidden()
         return view_func(request, *args, **kwargs)
     return wrapped_view

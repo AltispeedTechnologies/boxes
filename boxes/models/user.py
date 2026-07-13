@@ -16,7 +16,11 @@ class CustomUser(AbstractUser):
     def is_admin(self):
         return self.groups.filter(name="Admin").exists()
 
-    def is_staff(self):
+    def has_staff_role(self):
+        """True if the user is in the Staff group.
+
+        Named to avoid shadowing AbstractUser.is_staff (boolean field).
+        """
         return self.groups.filter(name="Staff").exists()
 
     def is_customer(self):
