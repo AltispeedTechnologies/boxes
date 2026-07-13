@@ -29,7 +29,7 @@
                         {% endif %}
                     </div>
                     {% endfor %}
-                    <input type="hidden" name="next" value="{{ request.GET.next|default:request.POST.next }}">
+                    <input type="hidden" name="next" value="{% firstof request.POST.next request.GET.next %}">
                     <div class="text-center">
                         <button type="submit" class="btn btn-primary">Login</button>
                     </div>
