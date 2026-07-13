@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/profile.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="bg-body shadow rounded p-3" id="profilepage">
+    <div class="row bg-primary bg-gradient rounded mb-3">
+        <h2 class="text-center text-white py-2">My Profile</h2>
+    </div>
+
+    {% include "_messages.html" %}
+
+    <div class="mb-3">
+        {% if custom_user.is_admin %}
+            <span class="badge bg-danger">Admin</span>
+        {% endif %}
+        {% if custom_user.is_staff %}
+            <span class="badge bg-warning text-dark">Staff</span>
+        {% endif %}
+        {% if custom_user.is_customer %}
+            <span class="badge bg-info text-dark">Customer</span>
+        {% endif %}
+        <span class="text-muted ms-2">Signed in as <strong>{{ custom_user.username }}</strong></span>
+    </div>
+
+    {% if linked_accounts %}
+    <div class="container mt-2 mb-4">
+        <h4>Linked Account{% if linked_accounts|length != 1 %}s{% endif %}</h4>
+        <p class="text-muted small mb-2">
+            Your login is separate from billing accounts. Packages and charges belong to an account;
+            your profile is your personal login identity.
+            {% if linked_accounts|length == 1 %}
+            Saving name changes also updates this account&rsquo;s display name.
+            {% endif %}
+        </p>
+        <div class="list-group">
+            {% for account in linked_accounts %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ account.name }}</strong>
+                    {% if account.billable %}
+                        <span class="badge bg-secondary ms-1">Billable</span>
+                    {% else %}
+                        <span class="badge bg-light text-dark border ms-1">Non-billable</span>
+                    {% endif %}
+                </div>
+                <span class="text-nowrap">
+                    {% if account.balance > 0 %}Credit {% endif %}Balance{% if account.balance < 0 %} Due{% endif %}:
+                    {{ account.hr_balance }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <hr />
+    {% endif %}
+
+    <div class="container mt-4">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h4>Notification Emails</h4>
+            <div>
+                <i id="savingiconemails" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+                <i id="successiconemails" class="fas fa-check-circle text-success" style="display: none;"></i>
+                <button type="button" id="saveemailbtn" class="btn btn-success">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button type="button" id="newemailbtn" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> New
+                </button>
+            </div>
+        </div>
+        <p class="text-muted small">These addresses receive package notifications for accounts linked to this login.</p>
+        <div id="emailsinput" class="row">
+            {% for email in emails %}
+                <div class="col-md-4 d-flex align-items-center position-relative mb-2">
+                    <input type="email" class="form-control" data-id="{{ email.id }}" value="{{ email.email }}">
+                    <i class="fas fa-trash position-absolute end-0 me-4 text-danger" style="display: none; cursor: pointer;"></i>
+                </div>
+            {% empty %}
+                <div class="col-12 text-muted mb-2" id="noemailsmsg">No notification emails yet.</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="container mt-4">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <h4>Details</h4>
+            <div>
+                <i id="savingicondetails" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+                <i id="successicondetails" class="fas fa-check-circle text-success" style="display: none;"></i>
+                <button type="button" id="savedetailsbtn" class="btn btn-success">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+
+        <form id="profileform">
+            <div class="row">
+                <div class="col-md-1 mb-3">
+                    <label for="prefix" class="form-label">Prefix</label>
+                    <input type="text" class="form-control" id="prefix" name="prefix" value="{{ custom_user.prefix|default:'' }}" maxlength="16">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="first_name" class="form-label">First Name</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" value="{{ custom_user.first_name|default:'' }}" maxlength="150">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="middle_name" class="form-label">Middle Name</label>
+                    <input type="text" class="form-control" id="middle_name" name="middle_name" value="{{ custom_user.middle_name|default:'' }}" maxlength="64">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="last_name" class="form-label">Last Name</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" value="{{ custom_user.last_name|default:'' }}" maxlength="150">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label for="suffix" class="form-label">Suffix</label>
+                    <input type="text" class="form-control" id="suffix" name="suffix" value="{{ custom_user.suffix|default:'' }}" maxlength="16">
+                    <div class="invalid-feedback"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" value="{{ custom_user.username }}" maxlength="150">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="company" class="form-label">Company</label>
+                    <input type="text" class="form-control" id="company" name="company" value="{{ custom_user.company|default:'' }}" maxlength="128">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="phone_number" class="form-label">Phone Number</label>
+                    <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ custom_user.phone_number|default:'' }}" maxlength="20">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="mobile_number" class="form-label">Mobile Number</label>
+                    <input type="text" class="form-control" id="mobile_number" name="mobile_number" value="{{ custom_user.mobile_number|default:'' }}" maxlength="20">
+                    <div class="invalid-feedback"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <h6 class="border-bottom pb-2">Change Password</h6>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="new_password1" class="form-label">New Password <small class="text-muted">(leave blank to keep current)</small></label>
+                    <input type="password" class="form-control" id="new_password1" name="new_password1" autocomplete="new-password">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="new_password2" class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-control" id="new_password2" name="new_password2" autocomplete="new-password">
+                    <div class="invalid-feedback"></div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

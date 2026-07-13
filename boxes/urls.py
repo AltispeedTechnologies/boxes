@@ -156,9 +156,17 @@ staff_urlpatterns = [
     path("reports/stats/chart", report_stats_chart, name="report_stats_chart")
 ]
 
+# Shared routes for any authenticated user (staff or customer login)
+authenticated_urlpatterns = [
+    path("profile/", profile_user, name="profile_user"),
+    path("profile/update", update_profile, name="update_profile"),
+    path("profile/emails/update", update_profile_emails, name="update_profile_emails"),
+]
+
 staff_urlpatterns = decorate_urlpatterns(staff_urlpatterns, is_staff)
 customer_urlpatterns = decorate_urlpatterns(customer_urlpatterns, is_customer)
+authenticated_urlpatterns = decorate_urlpatterns(authenticated_urlpatterns, login_required)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-] + public_urlpatterns + staff_urlpatterns + customer_urlpatterns
+] + public_urlpatterns + authenticated_urlpatterns + staff_urlpatterns + customer_urlpatterns
