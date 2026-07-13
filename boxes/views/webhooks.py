@@ -22,11 +22,11 @@ def stripe_webhooks(request):
         )
     # Invalid payload
     except ValueError as e:
-        print("Error parsing payload: {}".format(str(e)))
+        print(f"Error parsing payload: {e}")
         return HttpResponse(status=400)
     # Invalid signature
     except stripe.error.SignatureVerificationError as e:
-        print("Error verifying webhook signature: {}".format(str(e)))
+        print(f"Error verifying webhook signature: {e}")
         return HttpResponse(status=400)
 
     # This endpoint only supports PaymentIntent objects with specific events

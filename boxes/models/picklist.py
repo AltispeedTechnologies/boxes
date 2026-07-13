@@ -12,7 +12,7 @@ class Picklist(models.Model):
 
     def save(self, *args, **kwargs):
         self.clean()
-        super(Picklist, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
 
 class PackagePicklist(models.Model):
