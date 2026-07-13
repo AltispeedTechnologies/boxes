@@ -64,8 +64,9 @@ def check_in_packages(request):
     result = update_packages_util(request, state=1, debit_credit_switch=False)
     ids = request.POST.getlist("ids[]", [])
     check_in_template = EmailSettings.objects.values_list("check_in_template", flat=True).first()
-    for package_id in ids:
-        EmailQueue.objects.create(package_id=package_id, template_id=check_in_template)
+    if check_in_template is not None:
+        for package_id in ids:
+            EmailQueue.objects.create(package_id=package_id, template_id=check_in_template)
 
     if not result["success"]:
         return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occured."])})
