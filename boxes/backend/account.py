@@ -7,15 +7,19 @@ def create_user_from_account(account_id):
     try:
         account = Account.objects.get(pk=account_id)
     except Account.DoesNotExist:
-        return None, None
+        return None
 
-    # If no UserAccount entry exists, create a CustomUser
+    # If a UserAccount entry already exists, return that user
+    existing = UserAccount.objects.filter(account=account).first()
+    if existing:
+        return existing.user_id
+
     # Split the account.name into name parts
-    name_parts = account.name.split(" ")
+    name_parts = account.name.split()
 
     # If the account name is empty, do nothing
-    if len(name_parts) == 0:
-        return None, account
+    if not name_parts:
+        return None
 
     first_name, middle_name, last_name = name_parts[0], "", ""
 
@@ -27,8 +31,14 @@ def create_user_from_account(account_id):
         last_name = name_parts[1]
 
     # Create a CustomUser with a useless password and login disabled
+    # Use a unique random username; account names are not guaranteed unique
+    while True:
+        username = get_random_string(149)
+        if not CustomUser.objects.filter(username=username).exists():
+            break
+
     new_custom_user = CustomUser.objects.create(
-        username=account.name[:150],
+        username=username,
         first_name=first_name,
         middle_name=middle_name,
         last_name=last_name,
@@ -38,5 +48,5 @@ def create_user_from_account(account_id):
     )
     # Create a UserAccount with the new CustomUser
     UserAccount.objects.create(user=new_custom_user, account=account)
-    # Return the new CustomUser object
+    # Return the new CustomUser id
     return new_custom_user.id

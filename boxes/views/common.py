@@ -1,5 +1,5 @@
+from boxes.backend.account import create_user_from_account
 from boxes.models import *
-from boxes.tasks import create_user_from_account
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
 from django.db.models import Case, Exists, When, Max, F, OuterRef, Value, CharField, Q
@@ -141,5 +141,5 @@ def _get_matching_users(account_id):
             # Return all CustomUser objects that match the account
             return custom_users, account
     else:
-        creation_result = create_user_from_account.delay(account_id)
-        return CustomUser.objects.get(pk=creation_result.get()), account
+        user_id = create_user_from_account(account_id)
+        return CustomUser.objects.get(pk=user_id), account
