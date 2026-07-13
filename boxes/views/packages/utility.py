@@ -1,6 +1,6 @@
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import (Account, AccountLedger, Carrier, Package, PackageLedger, PackagePicklist, PackageQueue,
-                          PackageType, UserAccount)
+                          PackageType)
 from boxes.tasks import total_accounts
 from collections import defaultdict
 from decimal import Decimal
@@ -27,6 +27,9 @@ def update_packages_fields(package_ids, package_data, user, no_ledger=False):
 
     accounts = {}
     account_ledger = []
+    # package_id -> new account_id for packages whose account is changing
+    account_moves = {}
+    affected_accounts = set()
 
     for package in packages:
         for field, type_func in fields_to_update.items():
@@ -40,25 +43,10 @@ def update_packages_fields(package_ids, package_data, user, no_ledger=False):
             if field == "account_id":
                 entity = Account.objects.get(id=field_data)
                 if package.account_id != entity.id:
-                    with transaction.atomic():
-                        # Bulk update AccountLedger objects
-                        AccountLedger.objects.filter(account_id=package.account_id).update(account_id=entity.id)
-
-                        # Store old and new user mappings, update PackageLedger accordingly
-                        old_users = UserAccount.objects.filter(
-                            account_id=package.account_id
-                        ).values_list(
-                            "user_id", flat=True
-                        )
-
-                        new_user = UserAccount.objects.filter(
-                            account_id=entity.id
-                        ).values_list(
-                            "user_id", flat=True
-                        ).first()
-
-                        PackageLedger.objects.filter(user_id__in=old_users).update(user_id=new_user)
-
+                    # Track the move so only this package's ledger rows are reassigned
+                    affected_accounts.add(package.account_id)
+                    affected_accounts.add(entity.id)
+                    account_moves[package.id] = entity.id
                     package.account = entity
             elif field == "carrier_id":
                 entity = Carrier.objects.get(id=field_data)
@@ -106,11 +94,19 @@ def update_packages_fields(package_ids, package_data, user, no_ledger=False):
         if updates:
             Package.objects.bulk_update(updates, fields_to_update.keys())
 
+        # Move only each reassigned package's account ledger entries
+        for package_id, new_account_id in account_moves.items():
+            AccountLedger.objects.filter(package_id=package_id).update(account_id=new_account_id)
+
         if accounts:
             Account.objects.bulk_update(accounts.values(), ["balance"])
 
         if account_ledger:
             AccountLedger.objects.bulk_create(account_ledger)
+
+    # Recalculate balances for accounts involved in package reassignment
+    for account_id in affected_accounts:
+        total_accounts.delay(account_id=account_id)
 
     if errors:
         return JsonResponse({"success": False, "errors": errors})
