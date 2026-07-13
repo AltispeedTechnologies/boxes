@@ -6,7 +6,7 @@ env = environ.Env(
     # set casting, default value
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(list, ['127.0.0.1',]),
-    TIME_ZONE=(str, "UTC"),
+    TIME_ZONE=(str, "America/Chicago"),
     SERVER_EMAIL=(str, "root@localhost"),
     DB_ENGINE=(str, "django.db.backends.sqlite3"),
     DB_NAME=(str, "db.sqlite3"),
