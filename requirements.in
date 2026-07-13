@@ -1,27 +1,27 @@
 # Core utilities
-Django==6.0.3
-django-environ==0.13.0
+Django==6.0.7
+django-environ==0.14.0
 django-mathfilters==1.0.0
-gunicorn==25.1.0
-psycopg==3.3.3
-psycopg-pool==3.3.0
-celery==5.6.2
+gunicorn==26.0.0
+psycopg==3.3.4
+psycopg-pool==3.3.1
+celery==5.6.3
 
 # Labels and reports
-Pillow==12.1.1
-pytz==2026.1.post1
-reportlab==4.4.10
-weasyprint==68.1
+Pillow==12.3.0
+pytz==2026.2
+reportlab==5.0.0
+weasyprint==69.0
 
 # Data sanitization
 html-sanitizer==2.6.0
 
 # Sending emails
-mailjet-rest==1.5.1
+mailjet-rest==1.7.0
 
 # Tooling and demo instance setup
 pycodestyle==2.14.0
-Faker==40.11.0
+Faker==40.28.1
 
 # Payment processing
-stripe==14.4.1
+stripe==15.3.0
