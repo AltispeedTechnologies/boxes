@@ -42,7 +42,7 @@ class SentEmailContents(models.Model):
 
 class SentEmailPackage(models.Model):
     sent_email = models.ForeignKey(SentEmail, on_delete=models.CASCADE)
-    package = models.ForeignKey("Package", on_delete=models.RESTRICT)
+    package = models.ForeignKey("Package", on_delete=models.CASCADE)
 
 
 class SentEmailResult(models.Model):

@@ -27,8 +27,8 @@ class Package(models.Model):
 
 
 class PackageLedger(models.Model):
-    user = models.ForeignKey("CustomUser", on_delete=models.RESTRICT)
-    package = models.ForeignKey(Package, on_delete=models.RESTRICT)
+    user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
+    package = models.ForeignKey(Package, on_delete=models.CASCADE)
     state = models.PositiveSmallIntegerField(choices=PACKAGE_STATES)
     timestamp = models.DateTimeField(auto_now_add=True)
 

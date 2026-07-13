@@ -24,5 +24,5 @@ class CustomUser(AbstractUser):
 
 
 class CustomUserEmail(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.RESTRICT)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     email = models.EmailField(blank=False, max_length=254)

@@ -27,7 +27,7 @@ class Account(models.Model):
 
 # Exists to denormalize AccountLedger entries
 class AccountBalance(models.Model):
-    account = models.OneToOneField(Account, on_delete=models.RESTRICT)
+    account = models.OneToOneField(Account, on_delete=models.CASCADE)
     regular_balance = models.DecimalField(max_digits=8, decimal_places=2)
     late_balance = models.DecimalField(max_digits=8, decimal_places=2)
 
@@ -51,8 +51,8 @@ class AccountLedger(models.Model):
     debit = models.DecimalField(max_digits=8, decimal_places=2)
     timestamp = models.DateTimeField(default=timezone.now)
     description = models.CharField(max_length=256, null=True)
-    package = models.ForeignKey("Package", on_delete=models.RESTRICT, null=True)
-    invoice = models.ForeignKey("Invoice", on_delete=models.RESTRICT, null=True)
+    package = models.ForeignKey("Package", on_delete=models.SET_NULL, null=True)
+    invoice = models.ForeignKey("Invoice", on_delete=models.SET_NULL, null=True)
     is_late = models.BooleanField()
 
 
