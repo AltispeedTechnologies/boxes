@@ -1,4 +1,3 @@
-import json
 import stripe
 from boxes.tasks.stripe import handle_stripe_webhook
 from django.conf import settings
@@ -7,25 +6,19 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 
-# Set the stripe API key from our local configuration
-stripe.api_key = settings.STRIPE_API_KEY
-
-
 @require_http_methods(["POST"])
 @csrf_exempt
 def stripe_webhooks(request):
-    sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
+    sig_header = request.META.get("HTTP_STRIPE_SIGNATURE", "")
 
     try:
-        event = stripe.Event.construct_from(
-            json.loads(request.body), sig_header, settings.STRIPE_ENDPOINT_SECRET
+        event = stripe.Webhook.construct_event(
+            request.body, sig_header, settings.STRIPE_ENDPOINT_SECRET
         )
-    # Invalid payload
     except ValueError as e:
         print(f"Error parsing payload: {e}")
         return HttpResponse(status=400)
-    # Invalid signature
-    except stripe.error.SignatureVerificationError as e:
+    except stripe.SignatureVerificationError as e:
         print(f"Error verifying webhook signature: {e}")
         return HttpResponse(status=400)
 

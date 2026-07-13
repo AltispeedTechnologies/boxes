@@ -1,14 +1,10 @@
 import stripe
 from decimal import Decimal
-from django.conf import settings
 from boxes.models import (Account, AccountLedger, AccountStripeCustomer, GlobalSettings, Package, PackageLedger,
                           StripePaymentMethod, UserAccount)
 from django.db.models import Case, Count, DecimalField, F, IntegerField, OuterRef, Subquery, Sum, Value, When
 from django.db.models.functions import Coalesce
 
-
-# Set the stripe API key from our local configuration
-stripe.api_key = settings.STRIPE_API_KEY
 
 
 def get_customer_id(user_id):

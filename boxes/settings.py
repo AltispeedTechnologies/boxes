@@ -179,7 +179,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "mathfilters",
-    "boxes",
+    "boxes.apps.BoxesConfig",
 ]
 
 TEMPLATES = [

@@ -15,9 +15,6 @@ from django.views.decorators.http import require_http_methods
 from weasyprint import HTML
 
 
-# Set the stripe API key from our local configuration
-stripe.api_key = settings.STRIPE_API_KEY
-
 
 @require_http_methods(["GET"])
 def customer_make_payment(request):
@@ -257,7 +254,7 @@ def customer_confirm_invoice(request, pk):
 
     try:
         payment_intent = stripe.PaymentIntent.confirm(invoice_data.payment_intent_id, return_url=invoice_url)
-    except stripe.error.InvalidRequestError as e:
+    except stripe.InvalidRequestError as e:
         if "already succeeded" in str(e):
             invoice_data.current_state = 3
             invoice_data.save()

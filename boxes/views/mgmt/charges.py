@@ -8,9 +8,6 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
 
-# Set the stripe API key from our local configuration
-stripe.api_key = settings.STRIPE_API_KEY
-
 
 @require_http_methods(["GET"])
 def charge_settings(request):
