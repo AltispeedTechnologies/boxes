@@ -59,6 +59,9 @@
 
                 <input type="checkbox" class="btn-check" id="tracking_code" autocomplete="off">
                 <label class="btn btn-outline-primary" for="tracking_code">Tracking Code</label>
+
+                <input type="checkbox" class="btn-check" id="email_status" autocomplete="off">
+                <label class="btn btn-outline-primary" for="email_status">Email Status</label>
             </div>
 
             <h6 class="mb-2 mt-3">Sort by field:</h6>
@@ -116,11 +119,18 @@
         <div class="invalid-feedback"></div>
     </div>
     <div class="filter_subselection" id="select_relative_date_range" style="display: none;">
-        <div class="input-group">
-            <input class="form-control" type="text" id="relative_date_range_from">
+        <div class="input-group mb-2">
+            <input class="form-control" type="number" min="0" max="3650" id="relative_date_range_from" placeholder="from (days ago)">
             <span class="input-group-text">days to</span>
-            <input class="form-control" type="text" id="relative_date_range_to">
+            <input class="form-control" type="number" min="0" max="3650" id="relative_date_range_to" placeholder="to (blank = over N days)">
             <span class="input-group-text">days ago</span>
+        </div>
+        <div id="relative_presets" class="btn-group btn-group-sm mb-1" role="group">
+            <button type="button" class="btn btn-outline-secondary" data-days="7">Last 7</button>
+            <button type="button" class="btn btn-outline-secondary" data-days="30">Last 30</button>
+            <button type="button" class="btn btn-outline-secondary" data-days="90">Last 90</button>
+            <button type="button" class="btn btn-outline-secondary" data-days="180">Last 180</button>
+            <button type="button" class="btn btn-outline-secondary" data-days="180" data-open-ended="true">Over 180</button>
         </div>
         <div class="invalid-feedback"></div>
     </div>

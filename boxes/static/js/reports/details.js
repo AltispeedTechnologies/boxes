@@ -51,10 +51,23 @@ function prepare_json_payload() {
         config["filter"]["type"] = filter_by_date;
 
         let relative_date_range_from = Number($("#relative_date_range_from").val());
-        let relative_date_range_to = Number($("#relative_date_range_to").val());
-        if (relative_date_range_to <= relative_date_range_from) {
+        let relative_to_raw = ($("#relative_date_range_to").val() || "").trim();
+        if (!Number.isFinite(relative_date_range_from) || relative_date_range_from < 0) {
             $("#select_relative_date_range").find(".form-control").addClass("is-invalid");
-            $("#select_relative_date_range").find(".invalid-feedback").text("Start value must be greater than end value").show();
+            $("#select_relative_date_range").find(".invalid-feedback").text("Enter a valid number of days (0–180+)").show();
+            return;
+        }
+
+        // Empty "to" = open-ended "over N days" (start only; backend ages check-ins)
+        if (relative_to_raw === "") {
+            config["filter"]["start"] = relative_date_range_from;
+            break;
+        }
+
+        let relative_date_range_to = Number(relative_to_raw);
+        if (!Number.isFinite(relative_date_range_to) || relative_date_range_to <= relative_date_range_from) {
+            $("#select_relative_date_range").find(".form-control").addClass("is-invalid");
+            $("#select_relative_date_range").find(".invalid-feedback").text("End (days ago) must be greater than start, or leave blank for over N days").show();
             return;
         }
 
@@ -217,6 +230,22 @@ function init_report_details_page() {
         }
     });
 
+    // Relative range presets (includes 180-day window and open-ended over 180)
+    $("#relative_presets").off("click", "button").on("click", "button", function() {
+        let days = Number($(this).data("days"));
+        let openEnded = String($(this).data("open-ended")) === "true";
+        $("#relative_date_range").prop("checked", true).trigger("change");
+        if (openEnded) {
+            // Over N days: start=N, empty end
+            $("#relative_date_range_from").val(days);
+            $("#relative_date_range_to").val("");
+        } else {
+            // Last N days: start=0 (now) through end=N days ago
+            $("#relative_date_range_from").val(0);
+            $("#relative_date_range_to").val(days);
+        }
+    });
+
     // Set up the dynamic filter selection for the add modal
     $("input[name=\"filter_by_date\"]").off("change").on("change", function() {
         // One of: all_entries, date_range, relative_date_range, time_period
@@ -258,7 +287,11 @@ function init_report_details_page() {
             break;
         case "relative_date_range":
             $("#relative_date_range_from").val(config["filter"]["start"]);
-            $("#relative_date_range_to").val(config["filter"]["end"]);
+            if (Object.prototype.hasOwnProperty.call(config["filter"], "end")) {
+                $("#relative_date_range_to").val(config["filter"]["end"]);
+            } else {
+                $("#relative_date_range_to").val("");
+            }
             break;
         case "time_period":
             $("input[name=\"time_period\"][id=\"time_period_" + config["filter"]["frequency"] + "\"]").click();
