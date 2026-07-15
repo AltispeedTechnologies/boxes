@@ -6,7 +6,7 @@
 |------|-------|
 | Container | LXD `boxes-dev` |
 | User | `www-data` |
-| Tree | `/var/www/mikes-boxes` |
+| Tree | `/var/www/mikes-boxes` (main checkout) |
 | Site | `http://boxes.tsimonq2.internal/` |
 | Env file | `/etc/boxes.env` |
 
@@ -20,7 +20,23 @@ source env/bin/activate
 '
 ```
 
-Git author in container: **Simon Quigley \<squigley@altispeed.com\>**.
+Git author in container: **Simon Quigley <squigley@altispeed.com>**.
+
+### Feature worktrees
+
+Parallel feature branches may live as sibling checkouts under `/var/www/wt-<name>`
+(for example `/var/www/wt-polish` on `feat/polish`). Use the same env file and
+the shared virtualenv when convenient:
+
+```bash
+lxc exec boxes-dev -- sudo -u www-data bash -lc '
+cd /var/www/wt-polish
+set -a && . /etc/boxes.env && set +a
+PYTHONPATH=/var/www/wt-polish /var/www/mikes-boxes/env/bin/python manage.py check
+'
+```
+
+Keep commits inside the worktree; do not mix uncommitted work across trees.
 
 ---
 
@@ -44,10 +60,23 @@ Created via `./setup.sh dev` → `seeddata` → `populate_seed_data` Celery task
 | Command | Actions |
 |---------|---------|
 | `./setup.sh prod` | pip install, migrate, loaddata, processjs |
-| `./setup.sh dev` | prod steps + `seeddata` |
+| `./setup.sh dev` | prod steps + dev deps + `seeddata` |
 | `./setup.sh update` | pip upgrade from requirements.txt, migrate, processjs |
 | `./setup.sh check` | `manage.py check --deploy` |
+| `./setup.sh test` | install dev deps, run `manage.py test boxes.tests` |
+| `./setup.sh test-coverage` | same under coverage with `--fail-under=40` |
 | optional 2nd arg | virtualenv directory name (default `env`) |
+
+Local equivalents:
+
+```bash
+./setup.sh test
+./setup.sh test-coverage
+# or with an existing env:
+./env/bin/python manage.py test boxes.tests
+./env/bin/coverage run manage.py test boxes.tests
+./env/bin/coverage report --fail-under=40
+```
 
 ---
 
@@ -67,10 +96,43 @@ source env/bin/activate
 # Dependency bump
 # 1) edit requirements.in
 ./env/bin/pip-compile --upgrade --output-file=requirements.txt requirements.in
+# Dev/CI tools: edit requirements-dev.in then
+./env/bin/pip-compile --upgrade --output-file=requirements-dev.txt requirements-dev.in
 ./setup.sh update
 ```
 
 System packages for full stack: `nginx`, `postgresql`, `rabbitmq-server`, `python3-virtualenv`, `libpango1.0-dev` (WeasyPrint).
+
+---
+
+## User invite activation (stub)
+
+Portal users created from an account (`create_user_from_account`) start
+**inactive** with a random/unusable password. Full invite token email is **not**
+implemented (Mailjet is used for package notifications, not Django auth mail).
+
+Staff workflow today:
+
+1. Prepare or re-lock a login:
+
+   ```bash
+   ./env/bin/python manage.py prepare_invite <username_or_id>
+   ```
+
+   Sets `is_active=False` and an unusable password (use `--keep-password` to
+   only deactivate).
+
+2. In **Django admin** → Users: set a password for the user.
+
+3. Activate:
+
+   ```bash
+   ./env/bin/python manage.py prepare_invite --activate <username_or_id>
+   ```
+
+   or tick **Active** in admin.
+
+4. Share credentials out of band until a password-reset token email is built.
 
 ---
 
@@ -101,7 +163,7 @@ System packages for full stack: `nginx`, `postgresql`, `rabbitmq-server`, `pytho
 | Doc | Contents |
 |-----|----------|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | System design |
-| [SETUP.md](SETUP.md) | Production install |
+| [SETUP.md](SETUP.md) | Production install (includes Stripe + Mailjet env vars) |
 | [SETTINGS.md](SETTINGS.md) | Env vars |
 | [DATABASE.md](DATABASE.md) | Models |
 | [DATABASE_SETTINGS.md](DATABASE_SETTINGS.md) | Settings stored in DB |
@@ -116,7 +178,13 @@ Python modules also carry docstrings on classes and functions; keep them updated
 
 ## CI
 
-`.gitlab-ci.yml` defines pipeline checks used on GitLab. Local ESLint via `package.json` is optional.
+`.gitlab-ci.yml` defines pipeline checks used on GitLab:
+
+- `lint_pycodestyle` / unit tests install **`requirements-dev.txt`**
+- unit tests run under **coverage** with `--fail-under=40`
+- `lint_bootstrap_version` requires a single Bootstrap CDN version in templates
+
+Local ESLint via `package.json` is optional.
 
 ## API documentation
 
