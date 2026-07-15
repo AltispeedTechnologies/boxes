@@ -1,3 +1,4 @@
+"""Mailjet notification sending from EmailQueue."""
 import os
 import json
 import re
@@ -12,6 +13,7 @@ from mailjet_rest import Client
 
 
 def _fetch_candidates():
+    """Select EmailQueue rows ready to process."""
     candidates = {}
     template_objs = {}
 
@@ -35,6 +37,7 @@ def _fetch_candidates():
 
 
 def _send_email(email_data):
+    """Send one email payload via Mailjet; record SentEmail* rows."""
     email_payload = {
         "Messages": [
             {
@@ -75,6 +78,7 @@ def _send_email(email_data):
 
 
 def _prepare_email_content(user, template, tracking_code, carrier_name, comment):
+    """Render template subject/body for a user and package context."""
     hr_name = f"{user.first_name} {user.last_name}"
     email_html = template.content
 
@@ -92,6 +96,7 @@ def _prepare_email_content(user, template, tracking_code, carrier_name, comment)
 
 
 def _send_users(users, email_data):
+    """Send prepared content to each user notification address."""
     for user in users:
         hr_name, email_html, email_text = _prepare_email_content(user, email_data["template"],
                                                                  email_data["tracking_code"],
@@ -111,6 +116,7 @@ def _send_users(users, email_data):
 @shared_task
 def send_emails():
     # Do not proceed if email sending is disabled
+    """Celery beat: drain queue if GlobalSettings.email_sending is enabled."""
     global_settings, _ = GlobalSettings.objects.get_or_create(id=1)
     if not global_settings.email_sending:
         return

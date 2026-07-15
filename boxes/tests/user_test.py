@@ -1,10 +1,13 @@
+"""Unit tests for CustomUser."""
 from django.contrib.auth.models import Group, Permission, ContentType
 from django.test import TestCase
 from boxes.models import CustomUser
 
 
 class CustomUserTest(TestCase):
+    """TestCase for user creation."""
     def setUp(self):
+        """Prepare user test fixtures."""
         self.user = CustomUser.objects.create(
             username="testuser",
             company="Test Company",
@@ -17,6 +20,7 @@ class CustomUserTest(TestCase):
         self.user.save()
 
     def test_user_creation(self):
+        """CustomUser can be created with expected defaults."""
         self.assertEqual(self.user.username, "testuser")
         self.assertTrue(self.user.check_password("testpassword"))
         self.assertEqual(self.user.company, "Test Company")

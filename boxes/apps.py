@@ -1,12 +1,15 @@
+"""Django AppConfig for the boxes application."""
 from django.apps import AppConfig
 
 
 class BoxesConfig(AppConfig):
+    """App configuration; sets Stripe API key on ready()."""
     default_auto_field = "django.db.models.BigAutoField"
     name = "boxes"
 
     def ready(self):
         # Configure Stripe once at app startup instead of per-module import side effects
+        """Import signal-free startup hooks; assign ``stripe.api_key`` from settings."""
         from django.conf import settings
         import stripe
 

@@ -1,3 +1,4 @@
+"""Management command: collectstatic and prune stale hashed JS."""
 import os
 import re
 from collections import defaultdict
@@ -7,9 +8,11 @@ from django.core.management import call_command
 
 
 class Command(BaseCommand):
+    """Run collectstatic then remove obsolete JS artifacts under STATIC_ROOT."""
     help = "Runs collectstatic and cleans up old files"
 
     def handle(self, *args, **options):
+        """Execute collectstatic and JS cleanup for DEBUG vs production hashing."""
         self.stdout.write("Running collectstatic")
         call_command("collectstatic", interactive=False)
         self.stdout.write("collectstatic complete")

@@ -1,3 +1,4 @@
+"""Customer-portal template helpers for cards and money formatting."""
 from django import template
 
 
@@ -16,6 +17,7 @@ CARD_TYPE_LENGTHS = {
 
 @register.simple_tag
 def get_card_logo(brand):
+    """Font Awesome class string for a payment brand."""
     icon_name = "fa-brands "
 
     match brand:
@@ -45,6 +47,7 @@ def get_card_logo(brand):
 
 @register.simple_tag
 def get_card_number(card_type, last_four):
+    """Masked card number display for brand + last four."""
     total_length = CARD_TYPE_LENGTHS.get(card_type, 16)
     num_asterisks = total_length - 4
 
@@ -58,6 +61,7 @@ def get_card_number(card_type, last_four):
 
 @register.filter
 def format_negative(value):
+    """Format number as currency; negatives as ``$(x.xx)``."""
     decimal_places = 2
     try:
         value = float(value)

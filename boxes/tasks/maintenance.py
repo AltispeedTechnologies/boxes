@@ -1,3 +1,4 @@
+"""Picklist aging, seed data, and report refresh tasks."""
 import random
 from boxes.backend import reports as reports_backend
 from boxes.backend.account import create_user_from_account
@@ -15,6 +16,7 @@ from faker import Faker
 
 @shared_task
 def age_picklists():
+    """Celery beat: age or clean up old picklists."""
     today = timezone.now().date()
     future_date = today + timedelta(days=14)
 
@@ -67,6 +69,7 @@ def age_picklists():
 
 @shared_task
 def populate_seed_data():
+    """Create demo users/accounts/packages for development."""
     fake = Faker()
 
     # Generate unique names and tracking codes
@@ -136,6 +139,7 @@ def populate_seed_data():
 
 @shared_task
 def regenerate_report_data():
+    """Celery beat: refresh chart/report cached data."""
     with transaction.atomic():
         for freq, _ in CHART_FREQUENCIES:
             # Grab the chart data

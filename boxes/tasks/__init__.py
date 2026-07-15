@@ -1,3 +1,4 @@
+"""Auto-import Celery task modules."""
 from pathlib import Path
 
 views_directory = Path(__file__).parent

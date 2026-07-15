@@ -1,3 +1,4 @@
+"""Report query building, config cleaning, and chart data generation."""
 import json
 import re
 from boxes.models import Package, PackageLedger, Report, SentEmail
@@ -10,6 +11,7 @@ from django.utils import timezone
 
 
 def _datetime_from_period(period):
+    """Convert a period token into a datetime bound for filtering."""
     today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
     new_period = None
 
@@ -34,6 +36,7 @@ def _datetime_from_period(period):
 
 
 def generate_full_report(pk):
+    """Execute report ``pk`` config against the ORM and return tabular result data."""
     report = Report.objects.filter(pk=pk).first()
     config = report.config
 
@@ -144,6 +147,7 @@ def generate_full_report(pk):
 
 def clean_config(config):
     # Ensure the top-level keys are present
+    """Normalize and validate a report config dict from the UI."""
     for main_key in ["fields", "sort_by", "filter", "state"]:
         if main_key not in config:
             return False
@@ -232,6 +236,7 @@ def clean_config(config):
 
 
 def report_chart_generate(timeframe_filter):
+    """Build chart series data for the given timeframe filter."""
     today, starting_point, days = _datetime_from_period(timeframe_filter)
 
     # Prepare date list for x-axis

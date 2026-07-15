@@ -1,3 +1,4 @@
+"""Celery application instance for Boxes."""
 import os
 from celery import Celery
 

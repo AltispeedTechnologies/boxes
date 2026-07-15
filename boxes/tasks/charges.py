@@ -1,3 +1,4 @@
+"""Aging storage fees and account balance totals."""
 from boxes.models import Account, AccountBalance, AccountChargeSettings, AccountLedger, Package, PackageLedger
 from celery import shared_task
 from collections import defaultdict
@@ -22,6 +23,7 @@ def get_frequency_delta(frequency):
 
 @shared_task
 def age_charges():
+    """Celery beat: apply AccountChargeSettings rules to eligible packages."""
     charge_rules = AccountChargeSettings.objects.filter(
         days__isnull=False,
         package_type_id__isnull=True,
@@ -83,6 +85,7 @@ def age_charges():
 
 @shared_task
 def assess_regular_charges(start_time, end_time=None, exclude_package_types=None, rule_days=None):
+    """Create ledger debits for packages in a check-in time window."""
     start_time = timezone.datetime.fromtimestamp(start_time)
     end_time = timezone.datetime.fromtimestamp(end_time) if end_time else None
 
@@ -137,6 +140,7 @@ def assess_regular_charges(start_time, end_time=None, exclude_package_types=None
 
 @shared_task
 def assess_custom_charges(endpoint_date, check_in_date, package_type_id, frequency_seconds, initial_days, price):
+    """Apply frequency-based custom charge for a package type."""
     endpoint_date = timezone.make_aware(timezone.datetime.fromtimestamp(endpoint_date))
     check_in_date = timezone.make_aware(timezone.datetime.fromtimestamp(check_in_date))
     frequency = timedelta(seconds=frequency_seconds)
@@ -175,6 +179,7 @@ def assess_custom_charges(endpoint_date, check_in_date, package_type_id, frequen
 
 @shared_task
 def total_accounts(account_id=None):
+    """Recompute account balances (all accounts or one ``account_id``)."""
     if account_id is not None:
         accounts = Account.objects.filter(id=account_id)
     else:

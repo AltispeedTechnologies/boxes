@@ -1,3 +1,4 @@
+"""Stripe customer, payment methods, and invoice line-item construction."""
 import stripe
 from decimal import Decimal
 from boxes.models import (Account, AccountLedger, AccountStripeCustomer, GlobalSettings, Package, PackageLedger,
@@ -8,6 +9,7 @@ from django.db.models.functions import Coalesce
 
 
 def get_customer_id(user_id):
+    """Return Stripe customer id for the account linked to ``user_id``, creating if needed."""
     account_id = UserAccount.objects.get(user_id=user_id).account_id
     _customer, _ = AccountStripeCustomer.objects.get_or_create(account_id=account_id)
 
@@ -28,6 +30,7 @@ def get_customer_id(user_id):
 
 
 def get_payment_method_json(pm, pm_id):
+    """Map a Stripe payment method object to a light UI dict (id, brand, last4)."""
     match pm["type"]:
         case "card":
             last4 = f"ending in {pm['card']['last4']} (Expires: {pm['card']['exp_month']}/{pm['card']['exp_year']})"
@@ -59,6 +62,7 @@ def get_payment_method_json(pm, pm_id):
 
 def get_payment_methods(user_id):
     # Stripe-formatted customer ID
+    """Sync DB payment methods with Stripe and return (list, default_method)."""
     customer_id = get_customer_id(user_id)
     # DB customer ID
     customer_pk = AccountStripeCustomer.objects.get(customer_id=customer_id).pk
@@ -105,6 +109,7 @@ def get_payment_methods(user_id):
 
 
 def get_billing_portal_id():
+    """Return Stripe Billing Portal configuration id, creating a default if absent."""
     config_list = stripe.billing_portal.Configuration.list(limit=1)
     if len(config_list["data"]) == 0:
         billing_portal = stripe.billing_portal.Configuration.create(
@@ -124,6 +129,10 @@ def get_billing_portal_id():
 
 
 def generate_line_items(amount, user_id):
+    """Allocate a payment ``amount`` across unpaid checked-in packages for the user.
+
+    Returns structured line items (package id, amount, partial/late flags) or None if amount <= 0.
+    """
     if amount <= 0:
         return None
 
@@ -261,6 +270,7 @@ def generate_line_items(amount, user_id):
 
 def generate_checkout_line_items(line_items, tax_rate_id):
     # We already generated these line items
+    """Convert internal line items into Stripe checkout/PaymentIntent line structure."""
     new_line_items = [
         {
             "price_data": {

@@ -1,3 +1,4 @@
+"""General template filters and tags for tables, charts, and invoices."""
 from datetime import datetime
 from django import template
 from django.utils import timezone
@@ -9,6 +10,7 @@ register = template.Library()
 
 @register.filter(name="get")
 def get_item(dictionary, key):
+    """Dictionary lookup filter; formats price and datetimes for display (or Unknown default)."""
     item = dictionary.get(key)
     if item is None:
         item = ""
@@ -22,6 +24,7 @@ def get_item(dictionary, key):
 
 @register.filter(name="get_pdf")
 def get_item_pdf(dictionary, key):
+    """Dictionary lookup formatted for PDF (localized timestamps)."""
     item = dictionary.get(key)
     if item is None:
         item = ""
@@ -36,16 +39,19 @@ def get_item_pdf(dictionary, key):
 
 @register.filter(name="is_timestamp")
 def is_timestamp(dictionary, key):
+    """Return True if dictionary[key] is a datetime."""
     return isinstance(dictionary.get(key), datetime)
 
 
 @register.filter(name="get_item")
 def get_item(dictionary, key):
+    """Dictionary lookup filter; formats price and datetimes for display (or Unknown default)."""
     return dictionary.get(key, "Unknown")
 
 
 @register.simple_tag(takes_context=True)
 def query_string(context, per_page=None):
+    """Build pagination query string preserving q/filter/frequency/chart/per_page."""
     per_page = per_page or context["request"].GET.get("per_page") or 10
     query_string = f"&per_page={per_page}"
 
@@ -68,6 +74,7 @@ def query_string(context, per_page=None):
 
 @register.simple_tag(takes_context=True)
 def chart_is_selected(context, freq):
+    """Bootstrap button class for selected chart frequency."""
     frequency = context.get("frequency")
     set_class = "btn "
     set_class += "btn-primary" if frequency == freq else "btn-light"
@@ -77,6 +84,7 @@ def chart_is_selected(context, freq):
 
 @register.simple_tag(takes_context=True)
 def data_tab_is_selected(context, chart):
+    """Nav link class for active data tab."""
     current_chart = context.get("chart")
     set_class = "flex-sm-fill text-sm-center nav-link "
     set_class += "active" if chart == current_chart else "bg-light"
@@ -86,6 +94,7 @@ def data_tab_is_selected(context, chart):
 
 @register.simple_tag(takes_context=True)
 def chart_tab_is_selected(context, freq):
+    """Nav link class for active chart frequency tab."""
     frequency = context.get("frequency")
     set_class = "flex-sm-fill text-sm-center nav-link "
     set_class += "active" if frequency == freq else "bg-light"
@@ -95,6 +104,7 @@ def chart_tab_is_selected(context, freq):
 
 @register.simple_tag
 def card_brand_display(brand):
+    """Human label for a card brand code."""
     if brand in ["cashapp", "amazon_pay", "bank"]:
         return ""
 
@@ -114,6 +124,7 @@ def card_brand_display(brand):
 
 @register.simple_tag
 def invoice_state_display(state):
+    """Human label for invoice PaymentIntent state int."""
     invoice_states = {
         0: "Requires Confirmation",
         1: "Requires Action",

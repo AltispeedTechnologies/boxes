@@ -1,3 +1,4 @@
+"""Django forms for auth and package entry."""
 from boxes.models import CustomUser, Package
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
@@ -5,19 +6,24 @@ from django.core.validators import MaxLengthValidator, RegexValidator
 
 
 class RegisterForm(UserCreationForm):
+    """User registration form (if used)."""
     class Meta:
+        """Form metadata (model and fields)."""
         model = CustomUser
         fields = ["username", "email", "company", "prefix", "first_name", "middle_name", "last_name", "suffix",
                   "password1", "password2"]
 
 
 class CustomUserForm(forms.ModelForm):
+    """Form for CustomUser field editing."""
     class Meta:
+        """Form metadata (model and fields)."""
         model = CustomUser
         fields = ["prefix", "first_name", "middle_name", "last_name", "suffix", "company", "phone_number",
                   "mobile_number", "username"]
 
     def __init__(self, *args, **kwargs):
+        """Initialize form with optional instance/user kwargs."""
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
             model_field = self.Meta.model._meta.get_field(field_name)
@@ -28,6 +34,7 @@ class CustomUserForm(forms.ModelForm):
 
 
 class PackageForm(forms.ModelForm):
+    """Form for creating/editing package fields."""
     tracking_code = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
     comments = forms.CharField(widget=forms.Textarea(attrs={"rows": 2, "cols": 2}),
                                validators=[MaxLengthValidator(256)],
@@ -42,5 +49,6 @@ class PackageForm(forms.ModelForm):
                                ])
 
     class Meta:
+        """Form metadata (model and fields)."""
         model = Package
         fields = ["tracking_code", "price", "account_id", "carrier_id", "package_type_id", "inside", "comments"]

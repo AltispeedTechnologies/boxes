@@ -1,14 +1,18 @@
+"""Unit tests for Account-related models."""
 from django.test import TestCase
 from boxes.models import Account, AccountLedger, CustomUser, UserAccount
 
 
 class AccountTest(TestCase):
+    """TestCase covering account, ledger, and UserAccount relationships."""
     def setUp(self):
+        """Create baseline fixtures for account tests."""
         self.user = CustomUser()
         self.user.save()
 
     def test_create_account(self):
         # Create an Account instance
+        """Creating an Account succeeds with expected fields."""
         account = Account.objects.create(
             user=self.user,
             balance=100.00,
@@ -27,6 +31,7 @@ class AccountTest(TestCase):
 
     def test_create_account_ledger(self):
         # Create an Account instance
+        """Ledger rows can be created for an account."""
         account = Account.objects.create(
             user=self.user,
             balance=100.00,
@@ -54,6 +59,7 @@ class AccountTest(TestCase):
         self.assertEqual(retrieved_entry.description, "Credit entry")
 
     def test_create_user_account(self):
+        """UserAccount links user and account."""
         account = Account.objects.create(
             user=self.user,
             balance=100.00,
@@ -71,6 +77,7 @@ class AccountTest(TestCase):
 
     def test_account_ledger_relationship(self):
         # Create an Account instance
+        """Ledger relates to account as expected."""
         account = Account.objects.create(
             user=self.user,
             balance=100.00,
@@ -96,6 +103,7 @@ class AccountTest(TestCase):
 
     def test_user_account_relationships(self):
         # Create an Account instance
+        """UserAccount relationships resolve correctly."""
         account = Account.objects.create(
             user=self.user,
             balance=100.00,

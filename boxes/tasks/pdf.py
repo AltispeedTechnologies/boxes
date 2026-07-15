@@ -1,3 +1,4 @@
+"""WeasyPrint report PDF generation."""
 import logging
 import os
 import sys
@@ -14,11 +15,14 @@ from weasyprint import HTML
 
 # Handler for setting the progress level
 class PDFLoggingHandler(logging.Handler):
+    """Logging handler that updates ReportResult progress from log records."""
     def __init__(self, result, level=logging.NOTSET):
+        """Attach handler to a ReportResult instance."""
         super().__init__(level)
         self.result = result
 
     def emit(self, record):
+        """Update progress field from log record messages."""
         if record.getMessage().startswith("Step"):
             step_number = int(record.getMessage().split(" ")[1])
             new_progress = round(((step_number + 1) / 9) * 100)
@@ -30,6 +34,7 @@ class PDFLoggingHandler(logging.Handler):
 # Returns the rendered HTML table given a report ID
 def _html_table(pk, timestamp):
     # Grab the full report data
+    """Render report HTML table fragment for PDF."""
     report_name, report_headers, query = reports.generate_full_report(pk)
 
     # Get the human-readable timestamp
@@ -51,6 +56,7 @@ def _html_table(pk, timestamp):
 
 def _gen_and_save_pdf(pk):
     # Grab the current timestamp, this will be used both in the report and when storing the result
+    """Generate PDF bytes and save under SECURE_ROOT; update ReportResult."""
     timestamp = timezone.now()
     html_table = _html_table(pk, timestamp)
 
@@ -75,6 +81,7 @@ def _gen_and_save_pdf(pk):
 @shared_task
 def generate_report_pdf(pk):
     # Generating reports is extremely expensive; only generate one at a time
+    """Celery task: generate PDF for report primary key ``pk``."""
     acquire_lock = cache.add("generate_report_pdf_lock", "true", (60 * 60))
 
     if not acquire_lock:

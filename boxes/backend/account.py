@@ -1,9 +1,15 @@
+"""Account-related non-HTTP helpers."""
 from boxes.models import Account, CustomUser, UserAccount
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 
 
 def create_user_from_account(account_id):
+    """Create an inactive CustomUser linked to an account via UserAccount.
+
+    Returns the user id, or an existing linked user id, or None if the account is missing/empty name.
+    Synchronous — not a Celery task. Username is a random unique string.
+    """
     try:
         account = Account.objects.get(pk=account_id)
     except Account.DoesNotExist:
