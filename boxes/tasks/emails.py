@@ -12,6 +12,26 @@ from html import unescape
 from mailjet_rest import Client
 
 
+TOKEN_KEYS = (
+    "first_name",
+    "last_name",
+    "full_name",
+    "tracking_code",
+    "carrier",
+    "comment",
+)
+
+# Legacy chip labels (display text) mapped to token keys
+_LEGACY_LABEL_TO_TOKEN = {
+    "first_name": "first_name",
+    "last_name": "last_name",
+    "full_name": "full_name",
+    "tracking_code": "tracking_code",
+    "carrier": "carrier",
+    "comment": "comment",
+}
+
+
 def _fetch_candidates():
     """Select EmailQueue rows ready to process."""
     candidates = {}
@@ -44,7 +64,7 @@ def _send_email(email_data):
                 "From": {"Email": email_data["email_settings"].sender_email,
                          "Name": email_data["email_settings"].sender_name},
                 "To": [{"Email": email_data["recipient_email"], "Name": email_data["hr_name"]}],
-                "Subject": email_data["template"].subject,
+                "Subject": email_data["subject"],
                 "TextPart": email_data["email_text"],
                 "HTMLPart": email_data["email_html"]
             }
@@ -63,7 +83,7 @@ def _send_email(email_data):
     # Create main SentEmail object
     sent_email = SentEmail.objects.create(
         account_id=email_data["account_id"],
-        subject=email_data["template"].subject,
+        subject=email_data["subject"],
         email=email_data["recipient_email"],
         success=success,
         message_uuid=message_uuid
@@ -77,37 +97,112 @@ def _send_email(email_data):
     SentEmailResult.objects.create(sent_email=sent_email, response=json_result)
 
 
-def _prepare_email_content(user, template, tracking_code, carrier_name, comment):
-    """Render template subject/body for a user and package context."""
-    hr_name = f"{user.first_name} {user.last_name}"
-    email_html = template.content
+def _token_replacements(user, tracking_code, carrier_name, comment):
+    """Build explicit token → value map for safe substitution."""
+    first_name = user.first_name or ""
+    last_name = user.last_name or ""
+    full_name = f"{first_name} {last_name}".strip()
+    return {
+        "first_name": first_name,
+        "last_name": last_name,
+        "full_name": full_name,
+        "tracking_code": tracking_code or "",
+        "carrier": carrier_name or "",
+        "comment": comment or "",
+    }
 
-    pattern = r'<span [^>]*class="custom-block[^"]*"[^>]*>([^<]+)</span>'
-    email_html = re.sub(pattern, lambda m: f'{{{m.group(1).lower().replace(" ", "_")}}}', email_html)
-    email_html = email_html.format(first_name=user.first_name, last_name=user.last_name, tracking_code=tracking_code,
-                                   carrier=carrier_name, comment=comment)
 
-    # Remove all HTML tags and replace <br> and <br/> with newlines
-    email_text = re.sub(r"<[^>]+>", "", email_html)
+def _apply_token_replacements(text, replacements):
+    """Substitute template tokens without str.format (braces-safe).
+
+    Supports:
+    - Chips with data-token="first_name"
+    - Legacy custom-block chips whose inner text is a display label
+    - Literal {token} placeholders in subject/body
+    """
+    if not text:
+        return ""
+
+    def chip_data_token(match):
+        token = match.group(1)
+        if token in replacements:
+            return str(replacements[token])
+        return match.group(0)
+
+    # Prefer stable data-token chips
+    text = re.sub(
+        r'<span\b[^>]*\bdata-token=["\']([a-z_]+)["\'][^>]*>.*?</span>',
+        chip_data_token,
+        text,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+
+    def legacy_chip(match):
+        label = match.group(1).strip().lower().replace(" ", "_")
+        token = _LEGACY_LABEL_TO_TOKEN.get(label)
+        if token and token in replacements:
+            return str(replacements[token])
+        return match.group(0)
+
+    # Legacy chips: class contains custom-block, inner text is the label
+    text = re.sub(
+        r'<span\b[^>]*class=["\'][^"\']*custom-block[^"\']*["\'][^>]*>([^<]+)</span>',
+        legacy_chip,
+        text,
+        flags=re.IGNORECASE,
+    )
+
+    # Explicit placeholder replace — never str.format on full HTML
+    for key in TOKEN_KEYS:
+        text = text.replace("{" + key + "}", str(replacements[key]))
+
+    return text
+
+
+def _html_to_plaintext(email_html):
+    """Convert HTML body to plain text; br/p become newlines before tag strip."""
+    email_text = email_html or ""
     email_text = re.sub(r"<br\s*/?>", "\n", email_text, flags=re.IGNORECASE)
+    email_text = re.sub(r"</p\s*>", "\n", email_text, flags=re.IGNORECASE)
+    email_text = re.sub(r"<p\b[^>]*>", "", email_text, flags=re.IGNORECASE)
+    email_text = re.sub(r"<[^>]+>", "", email_text)
     email_text = unescape(email_text)
+    return email_text
 
-    return hr_name, email_html, email_text
+
+def _prepare_email_content(user, template, tracking_code, carrier_name, comment):
+    """Render template subject/body for a user and package context.
+
+    Returns (hr_name, email_html, email_text, subject) with tokens substituted
+    in both subject and HTML body. Plain text is derived after br/p → newlines.
+    """
+    replacements = _token_replacements(user, tracking_code, carrier_name, comment)
+    hr_name = replacements["full_name"] or f"{user.first_name} {user.last_name}".strip()
+
+    email_html = _apply_token_replacements(template.content, replacements)
+    subject = _apply_token_replacements(template.subject, replacements)
+    email_text = _html_to_plaintext(email_html)
+
+    return hr_name, email_html, email_text, subject
 
 
 def _send_users(users, email_data):
     """Send prepared content to each user notification address."""
     for user in users:
-        hr_name, email_html, email_text = _prepare_email_content(user, email_data["template"],
-                                                                 email_data["tracking_code"],
-                                                                 email_data["carrier_name"],
-                                                                 email_data["comment"])
+        hr_name, email_html, email_text, subject = _prepare_email_content(
+            user,
+            email_data["template"],
+            email_data["tracking_code"],
+            email_data["carrier_name"],
+            email_data["comment"],
+        )
 
         for recipient_email_obj in CustomUserEmail.objects.filter(user=user):
             email_data.update({
                 "hr_name": hr_name,
                 "email_html": email_html,
                 "email_text": email_text,
+                "subject": subject,
                 "recipient_email": recipient_email_obj.email,
             })
             _send_email(email_data)
