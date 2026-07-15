@@ -12,7 +12,7 @@ NGINX + PostgreSQL + Celery/RabbitMQ + Stripe + Mailjet.
 | Business logic (sync) | `boxes/backend/` |
 | Background jobs | `boxes/tasks/` |
 | Domain models | `boxes/models/` |
-| URL access tiers | `boxes/urls.py` (`public` / `authenticated` / `staff` / `customer`) |
+| URL access tiers | `boxes/urls.py` (`public` / `authenticated` / `delivery` / `staff` / `customer`) |
 | Config (secrets/infra) | `/etc/boxes.env` → `boxes/settings.py` |
 | Config (business) | PostgreSQL — see [DATABASE_SETTINGS.md](DATABASE_SETTINGS.md) |
 
@@ -22,15 +22,17 @@ modules via `__init__.py` so `from boxes.views import *` works for URL wiring.
 ## Identity model (critical)
 
 - **CustomUser** — login (`AUTH_USER_MODEL`); roles are **groups** (`Staff`,
-  `Customer`, `Admin`) via `has_staff_role()` / `is_customer()` / `is_admin()`.
+  `Customer`, `Admin`, `Delivery`) via `has_staff_role()` / `is_customer()` /
+  `is_admin()` / `has_delivery_role()`.
 - **Account** — billing/parcel entity. `Account.user` is creator/owner
   (`on_delete=SET(1)`), **not** the customer portal link.
 - **UserAccount** — login ↔ account for the customer portal.
 - **CustomUserEmail** — notification addresses (Mailjet), not only `User.email`.
 
 URL decorator `is_staff` checks **group** membership (`has_staff_role`), not
-Django's boolean `user.is_staff` (admin flag). Decorators set
-`access_tier` metadata for introspection and generated docs.
+Django's boolean `user.is_staff` (admin flag). `is_delivery` allows Delivery or
+Staff for warehouse-floor routes. Decorators set `access_tier` metadata for
+introspection and generated docs.
 
 ## Generated API reference
 

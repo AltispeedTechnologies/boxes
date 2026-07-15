@@ -10,10 +10,14 @@ Read this before changing auth, balances, packages, or payments.
    - `CustomUser.has_staff_role()` → group `Staff`
    - `CustomUser.is_customer()` → group `Customer`
    - `CustomUser.is_admin()` → group `Admin`
+   - `CustomUser.has_delivery_role()` → group `Delivery`
 2. **`has_staff_role` is intentionally not named `is_staff`** so it does not shadow `AbstractUser.is_staff` (boolean used by Django admin).
 3. URL decorator `is_staff` in `urls.py` checks **`has_staff_role()`**, not `user.is_staff`.
-4. Demo users are often in **both** Staff and Customer so staff can open customer routes.
-5. **Django admin** still uses the boolean `is_staff` / superuser flags.
+4. URL decorator `is_delivery` allows **Delivery or Staff** for floor routes
+   (`delivery_urlpatterns`: check-in, search, picklist add). Delivery cannot reach
+   mgmt, account edit, checkout, or customer payments.
+5. Demo users are often in **both** Staff and Customer so staff can open customer routes.
+6. **Django admin** still uses the boolean `is_staff` / superuser flags.
 
 ---
 

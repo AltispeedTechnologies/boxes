@@ -33,6 +33,7 @@ Password for all: `changem3`
 | `sysadmin` | Admin + Staff + Customer |
 | `staff` | Staff + Customer |
 | `customer` | Customer |
+| *(assign Delivery group)* | Delivery (limited floor role) |
 
 Created via `./setup.sh dev` → `seeddata` → `populate_seed_data` Celery task (requires worker).
 
