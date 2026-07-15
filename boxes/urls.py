@@ -93,14 +93,21 @@ def decorate_urlpatterns(urlpatterns, decorator):
 public_urlpatterns = [
     path("login/", sign_in, name="login"),
     path("webhooks/stripe", stripe_webhooks, name="stripe_webhooks"),
+    path("webhooks/mailjet", mailjet_webhooks, name="mailjet_webhooks"),
 ]
 
 
 customer_urlpatterns = [
+    path("session/account", session_set_active_account, name="session_set_active_account"),
+    path("customer/select-account", customer_select_account, name="customer_select_account"),
     path("customer/parcels", customer_parcels, name="customer_parcels"),
+    path("customer/parcels/reserve", customer_reserve_pickup, name="customer_reserve_pickup"),
+    path("customer/pickup/open", customer_open_pickup_days, name="customer_open_pickup_days"),
     path("customer/payments", customer_make_payment, name="customer_make_payment"),
     path("customer/payments/portal", customer_payment_methods, name="customer_payment_methods"),
     path("customer/payments/portal/redir", customer_billing_portal, name="customer_billing_portal"),
+    path("customer/invoices", customer_invoices, name="customer_invoices"),
+    path("customer/ledger", customer_ledger, name="customer_ledger"),
     path("invoice/new", customer_new_invoice, name="customer_new_invoice"),
     path("invoice/<int:pk>", customer_view_invoice, name="customer_view_invoice"),
     path("invoice/<int:pk>/cancel", customer_cancel_invoice, name="customer_cancel_invoice"),
@@ -170,7 +177,16 @@ staff_urlpatterns = [
     path("accounts/<int:pk>/emails", account_emails, name="account_emails"),
     path("accounts/<int:pk>/ledger", account_ledger, name="account_ledger"),
     path("accounts/<int:pk>/update", update_account, name="update_account"),
+    path("accounts/<int:pk>/members/link", account_members_link, name="account_members_link"),
+    path("accounts/<int:pk>/members/disassociate", account_members_disassociate, name="account_members_disassociate"),
+    path("accounts/<int:pk>/waiver", account_fee_waiver, name="account_fee_waiver"),
     path("accounts/aliases/update", update_account_aliases, name="update_account_aliases"),
+
+    # Pickup day management
+    path("mgmt/pickup", pickup_mgmt, name="pickup_mgmt"),
+    path("mgmt/pickup/open", pickup_open_days, name="pickup_open_days"),
+    path("mgmt/pickup/rules/update", update_pickup_rules, name="update_pickup_rules"),
+    path("mgmt/pickup/days/update", update_pickup_days, name="update_pickup_days"),
 
     # Backend endpoints
     path("emails/<int:pk>/contents", get_email_contents, name="get_email_contents"),
@@ -212,7 +228,8 @@ staff_urlpatterns = [
     path("reports/<int:pk>/remove", report_remove, name="report_remove"),
     path("reports/<int:pk>/update", report_update, name="report_update"),
     path("reports/<int:pk>/view", report_view, name="report_view"),
-    path("reports/stats/chart", report_stats_chart, name="report_stats_chart")
+    path("reports/stats/chart", report_stats_chart, name="report_stats_chart"),
+    path("reports/stripe-totals", stripe_totals, name="stripe_totals"),
 ]
 
 # Shared routes for any authenticated user (staff, delivery, or customer login)
