@@ -13,7 +13,7 @@
             </tr>
         </thead>
         <tbody>
-            {% load custom_filters %}
+            {% load dict_filters %}
             {% for line in page_obj %}
             <tr>
                 {% for key, _ in report_headers.items %}

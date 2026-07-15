@@ -3,7 +3,7 @@
 Invoice #{{ invoice.id|default_if_none:0|stringformat:"08d" }}
 {% endblock %}
 {% block content %}
-{% load custom_filters %}
+{% load payment_filters %}
 {% include "customer/_invoice.html" %}
 
 <div id="main-content-container">
