@@ -22,6 +22,14 @@ List sent emails related to an account.
 
 Render or return ledger rows for an account.
 
+### `account_members_disassociate(request, pk)`
+
+POST (staff): soft-disassociate a user from this account by user_id.
+
+### `account_members_link(request, pk)`
+
+POST (staff): link a user to this account by user_id.
+
 ### `account_packages(request, pk)`
 
 List packages belonging to an account.
@@ -112,11 +120,14 @@ GET: return HTML body for a SentEmail primary key.
 
 ## `boxes.views.index`
 
-Customer home page.
+Site home page.
 
 ### `index(request)`
 
-Render customer landing page.
+Render customer home, or send staff-only users to packages.
+
+Users in the Customer group keep the customer landing page. Authenticated
+staff without Customer membership are redirected to the staff package list.
 
 ## `boxes.views.labels`
 

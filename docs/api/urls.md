@@ -80,7 +80,7 @@ Resolved from the live URLConf. Access tier uses decorator `access_tier` metadat
 | staff | `users/emails/update` | `update_user_emails` | `boxes.views.user.update_user_emails` | POST (staff): update notification emails for a target user. |
 | staff | `users/new` | `create_user` | `boxes.views.user.create_user` | POST (staff): create user, optional account link, set groups. |
 | staff | `users/update` | `update_user` | `boxes.views.user.update_user` | POST (staff): update a target user's profile fields. |
-| customer | `` | `home` | `boxes.views.index.index` | Render customer landing page. |
+| customer | `` | `home` | `boxes.views.index.index` | Render customer home, or send staff-only users to packages. |
 | customer | `customer/parcels` | `customer_parcels` | `boxes.views.customer.customer_parcels` | GET: customer's package list for linked account. |
 | customer | `customer/payments` | `customer_make_payment` | `boxes.views.customer.customer_make_payment` | GET: payment page with balance and methods. |
 | customer | `customer/payments/portal` | `customer_payment_methods` | `boxes.views.customer.customer_payment_methods` | GET: payment methods data for UI. |

@@ -6,6 +6,12 @@ Generate API reference docs under docs/api/ from the running codebase (routes, m
 
 Generate all API reference pages.
 
+## `manage.py prepare_invite`
+
+Set a user inactive (and optionally unusable password) so staff can finish invite activation via Django admin password set.
+
+Prepare or activate the named user.
+
 ## `manage.py processjs`
 
 Runs collectstatic and cleans up old files

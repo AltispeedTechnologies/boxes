@@ -10,9 +10,11 @@ Parsed from `boxes/static/js` file headers and `function` declarations.
 
 ## `app.js`
 
-@file app.js; @description Global AJAX helpers, CSRF, Select2 utilities, debounce, and page init.; @see docs/api/javascript.md
+@file app.js; @description Global AJAX helpers, CSRF, Select2 utilities, debounce,;              BoxesPage mount/unmount registry, and htmx app-shell hooks.; @see docs/api/javascript.md; htmx shell notes; ----------------; base.html boosts links/forms inside #app-main only (navbar stays mounted).; Page scripts in {% block javascript %} load on FULL document navigation.; On boosted navigations the head is not re-parsed, so:;   - Prefer BoxesPage.register("page-id", { mount, unmount });   - Set data-page / {% block page_id %} so afterSettle can remount;   - unmount should tear down listeners/widgets the module owns; Do not reintroduce Turbo.
 
-- `function init_page()` — Document-ready bootstrap for shared UI widgets.
+- `function init_page()` — Document-ready / afterSettle bootstrap for shared UI widgets. Safe to call on full load and after every htmx settle of #app-main.
+- `function update_navbar_active()` — Highlight navbar links from the current path (navbar is outside hx-boost).
+- `function boot_app_main()`
 - `window.get_cookie = function(...)`
 - `window.select2properheight = function(...)`
 - `window.initialize_async_select2 = function(...)`

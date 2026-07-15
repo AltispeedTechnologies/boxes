@@ -14,7 +14,7 @@ Billing and parcel entity for a customer.
 |-------|------|------|---------|---------|------|
 | `accountbalance` | OneToOneField | True |  | boxes.AccountBalance |  |
 | `accountledger` | ForeignKey | True |  | boxes.AccountLedger |  |
-| `useraccount` | ForeignKey | True |  | boxes.UserAccount |  |
+| `user_memberships` | ForeignKey | True |  | boxes.UserAccount |  |
 | `accountalias` | ForeignKey | True |  | boxes.AccountAlias |  |
 | `accountstripecustomer` | ForeignKey | True |  | boxes.AccountStripeCustomer |  |
 | `invoice` | ForeignKey | True |  | boxes.Invoice |  |
@@ -29,6 +29,8 @@ Billing and parcel entity for a customer.
 
 **Methods**
 
+- `amount_owed(self)` — Customer liability as a non-negative Decimal (0 if credit or zero).
+- `display_balance_amount(self)` — Absolute magnitude of balance for dollar formatting (always >= 0).
 - `ensure_primary_alias(self)` — Create or update the primary ``AccountAlias`` to match ``name``.
 - `hr_balance(self)` — Return a human-readable absolute dollar string for ``balance``.
 
@@ -153,7 +155,7 @@ Extends Django ``AbstractUser`` with warehouse profile fields. Role checks use *
 | `logentry` | ForeignKey | True |  | admin.LogEntry |  |
 | `account` | ForeignKey | True |  | boxes.Account |  |
 | `accountledger` | ForeignKey | True |  | boxes.AccountLedger |  |
-| `useraccount` | ForeignKey | True |  | boxes.UserAccount |  |
+| `account_memberships` | ForeignKey | True |  | boxes.UserAccount |  |
 | `invoice` | ForeignKey | True |  | boxes.Invoice |  |
 | `packageledger` | ForeignKey | True |  | boxes.PackageLedger |  |
 | `customuseremail` | ForeignKey | True |  | boxes.CustomUserEmail |  |
@@ -246,7 +248,8 @@ Reusable subject/body template for notifications.
 
 Warehouse identity, tax/fee toggles, email master switch, and logos.
 
-Typically row id=1. Edited via Management → General. See docs/DATABASE_SETTINGS.md.
+Prefer GlobalSettings.load() over hard-coded primary keys. Edited via
+Management -> General. See docs/DATABASE_SETTINGS.md.
 
 | Field | Type | Null | Default | Related | Help |
 |-------|------|------|---------|---------|------|
@@ -548,3 +551,6 @@ Join table linking a login (CustomUser) to a billing Account for portal access.
 | `id` | BigAutoField | False |  |  |  |
 | `user` | ForeignKey | False |  | boxes.CustomUser |  |
 | `account` | ForeignKey | False |  | boxes.Account |  |
+| `is_active` | BooleanField | False | True |  |  |
+| `role` | CharField | False | 'member' |  |  |
+| `created_at` | DateTimeField | True |  |  |  |

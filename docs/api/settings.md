@@ -11,7 +11,7 @@ Values from the loaded Django settings module. Secrets are redacted.
 | `AUTHENTICATION_BACKENDS` | `['django.contrib.auth.backends.ModelBackend']` |
 | `AUTH_PASSWORD_VALIDATORS` | `**[redacted]**` |
 | `AUTH_USER_MODEL` | `'boxes.CustomUser'` |
-| `BASE_DIR` | `'/var/www/mikes-boxes'` |
+| `BASE_DIR` | `'/var/www/wt-polish'` |
 | `BROKER_HOST` | `'localhost'` |
 | `BROKER_PASSWORD` | `**[redacted]**` |
 | `BROKER_USER` | `'boxes'` |
@@ -97,7 +97,7 @@ Values from the loaded Django settings module. Secrets are redacted.
 | `LOGIN_URL` | `'/login/'` |
 | `LOGOUT_REDIRECT_URL` | `None` |
 | `MANAGERS` | `[]` |
-| `MEDIA_ROOT` | `'/var/www/mikes-boxes/public/media'` |
+| `MEDIA_ROOT` | `'/var/www/wt-polish/public/media'` |
 | `MEDIA_URL` | `'/media/'` |
 | `MESSAGE_STORAGE` | `'django.contrib.messages.storage.fallback.FallbackStorage'` |
 | `MIDDLEWARE` | `['django.middleware.security.SecurityMiddleware', 'django.contrib.sessions.middleware.SessionMiddleware', 'django.mid...` |
@@ -120,7 +120,7 @@ Values from the loaded Django settings module. Secrets are redacted.
 | `SECURE_PROXY_SSL_HEADER` | `None` |
 | `SECURE_REDIRECT_EXEMPT` | `[]` |
 | `SECURE_REFERRER_POLICY` | `'no-referrer-when-downgrade'` |
-| `SECURE_ROOT` | `'/var/www/mikes-boxes/.secure_storage'` |
+| `SECURE_ROOT` | `'/var/www/wt-polish/.secure_storage'` |
 | `SECURE_SSL_HOST` | `None` |
 | `SECURE_SSL_REDIRECT` | `False` |
 | `SERVER_EMAIL` | `'root@localhost'` |
@@ -145,13 +145,13 @@ Values from the loaded Django settings module. Secrets are redacted.
 | `SILENCED_SYSTEM_CHECKS` | `[]` |
 | `STATICFILES_DIRS` | `[]` |
 | `STATICFILES_FINDERS` | `['django.contrib.staticfiles.finders.FileSystemFinder', 'django.contrib.staticfiles.finders.AppDirectoriesFinder']` |
-| `STATIC_ROOT` | `'/var/www/mikes-boxes/public/static'` |
+| `STATIC_ROOT` | `'/var/www/wt-polish/public/static'` |
 | `STATIC_URL` | `'/static/'` |
 | `STORAGES` | `{'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'}, 'staticfiles': {'BACKEND': 'django.contrib.st...` |
 | `STRIPE_API_KEY` | `**[redacted]**` |
 | `STRIPE_ENDPOINT_SECRET` | `**[redacted]**` |
 | `TASKS` | `{'default': {'BACKEND': 'django.tasks.backends.immediate.ImmediateBackend'}}` |
-| `TEMPLATES` | `[{'BACKEND': 'django.template.backends.django.DjangoTemplates', 'DIRS': ['/var/www/mikes-boxes/boxes/templates'], 'AP...` |
+| `TEMPLATES` | `[{'BACKEND': 'django.template.backends.django.DjangoTemplates', 'DIRS': ['/var/www/wt-polish/boxes/templates'], 'APP_...` |
 | `TEST_NON_SERIALIZED_APPS` | `[]` |
 | `TEST_RUNNER` | `'django.test.runner.DiscoverRunner'` |
 | `THOUSAND_SEPARATOR` | `','` |

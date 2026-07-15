@@ -14,8 +14,11 @@ Account-related non-HTTP helpers.
 
 Create an inactive CustomUser linked to an account via UserAccount.
 
-Returns the user id, or an existing linked user id, or None if the account is missing/empty name.
-Synchronous — not a Celery task. Username is a random unique string.
+Returns the user id when a single membership exists or a new user is
+created. Returns an existing linked user id only when there is exactly one
+membership. Returns None if the account is missing, has an empty name, or
+already has multiple linked users (ambiguous). Creates a user only when
+there are zero memberships.
 
 ## `boxes.backend.invoice`
 
@@ -47,6 +50,48 @@ Map a Stripe payment method object to a light UI dict (id, brand, last4).
 
 Sync DB payment methods with Stripe and return (list, default_method).
 
+## `boxes.backend.membership`
+
+CustomUser ↔ Account membership helpers (portal multi-account support).
+
+### `associate_user(account, user, role='member', actor=None)`
+
+Link ``user`` to ``account`` idempotently; reactivate if soft-disabled.
+
+``actor`` is reserved for future audit logging.
+
+### `disassociate_user(account, user, actor=None)`
+
+Soft-disable membership (``is_active=False``). No-op if missing.
+
+``actor`` is reserved for future audit logging. Returns the membership or None.
+
+### `get_active_account(request)`
+
+Resolve the request user active Account from session / memberships.
+
+Session key: ``active_account_id``. If missing/invalid and the user has
+exactly one active membership, that account is returned. If the user has
+multiple active memberships and no valid session selection, returns None.
+
+### `list_accounts_for_user(user, active_only=True)`
+
+Return accounts linked to ``user`` ordered by name.
+
+### `list_users_for_account(account, active_only=True)`
+
+Return users linked to ``account`` ordered by username.
+
+### `require_account_member(user, account)`
+
+Raise PermissionDenied unless ``user`` has an active membership on ``account``.
+
+### `set_active_account(request, account_id)`
+
+Set session active account after validating active membership.
+
+Returns the Account. Raises PermissionDenied if the user is not an active member.
+
 ## `boxes.backend.reports`
 
 Report query building, config cleaning, and chart data generation.
@@ -62,3 +107,23 @@ Execute report ``pk`` config against the ORM and return tabular result data.
 ### `report_chart_generate(timeframe_filter)`
 
 Build chart series data for the given timeframe filter.
+
+## `boxes.backend.system`
+
+Helpers for automated actors and singleton configuration rows.
+
+### `ensure_system_user()`
+
+Create the inactive ``system`` user if it does not exist yet.
+
+### `get_system_user()`
+
+Return the CustomUser used for automated ledger and system actions.
+
+Prefers an inactive user named ``system``. Falls back to the earliest
+superuser, then the earliest user by primary key. Creates the system
+user when the database has no users yet (migrations / empty installs).
+
+### `get_system_user_pk()`
+
+Primary key of the system user (for on_delete=SET callables).
