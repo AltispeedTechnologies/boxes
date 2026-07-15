@@ -1,3 +1,4 @@
+"""Auto-import all model modules in this package for ``from boxes.models import *``."""
 from pathlib import Path
 
 views_directory = Path(__file__).parent

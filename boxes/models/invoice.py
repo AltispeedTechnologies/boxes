@@ -1,3 +1,4 @@
+"""Customer payment invoices backed by Stripe PaymentIntents."""
 from django.db import models
 
 
@@ -11,6 +12,7 @@ PAYMENT_INTENT_STATES = [
 
 
 class Invoice(models.Model):
+    """Payment record with line items JSON and PaymentIntent state machine."""
     account = models.ForeignKey("Account", on_delete=models.CASCADE)
     user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)

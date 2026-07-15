@@ -1,3 +1,4 @@
+"""Singleton-style business configuration and branding images."""
 from boxes.management.custom_storage import OverwriteStorage
 from django.db import models
 from django.utils import timezone
@@ -5,6 +6,10 @@ from django.utils import timezone
 
 class GlobalSettings(models.Model):
     # General business information, for labels and invoices
+    """Warehouse identity, tax/fee toggles, email master switch, and logos.
+
+    Typically row id=1. Edited via Management → General. See docs/DATABASE_SETTINGS.md.
+    """
     name = models.CharField(max_length=32)
     address1 = models.CharField(max_length=64)
     address2 = models.CharField(max_length=64)
