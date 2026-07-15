@@ -23,7 +23,7 @@ def customer_make_payment(request):
     account_id = UserAccount.objects.get(user_id=request.user.id).account_id
     globalsettings = GlobalSettings.load()
 
-    subtotal = float(Account.objects.get(pk=account_id).balance * -1)
+    subtotal = float(Account.objects.get(pk=account_id).amount_owed())
     tax_rate = float(globalsettings.tax_rate / 100) if globalsettings.taxes else 0.00
     tax = round(subtotal * tax_rate, 2)
     total = subtotal + tax

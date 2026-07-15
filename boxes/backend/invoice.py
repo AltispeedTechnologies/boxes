@@ -180,7 +180,7 @@ def generate_line_items(amount, user_id):
 
     credit_amount = None
     total_charges = sum(p.sum_normal for p in packages) + sum(p.sum_late for p in packages)
-    current_balance = Account.objects.get(pk=account_id).balance * -1
+    current_balance = Account.objects.get(pk=account_id).amount_owed()
     if total_charges > current_balance:
         credit_amount = total_charges - current_balance
         amount += float(credit_amount)

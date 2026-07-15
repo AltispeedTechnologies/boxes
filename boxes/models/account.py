@@ -21,12 +21,26 @@ class Account(models.Model):
     billable = models.BooleanField()
     comments = models.CharField(max_length=256, null=True)
 
+    def amount_owed(self):
+        """Customer liability as a non-negative Decimal (0 if credit or zero).
+
+        Stored balance is negative when the customer owes money.
+        """
+        from decimal import Decimal
+        if self.balance is None or self.balance >= 0:
+            return Decimal("0.00")
+        return -self.balance
+
+    def display_balance_amount(self):
+        """Absolute magnitude of balance for dollar formatting (always >= 0)."""
+        from decimal import Decimal
+        if self.balance is None:
+            return Decimal("0.00")
+        return -self.balance if self.balance < 0 else self.balance
+
     def hr_balance(self):
         """Return a human-readable absolute dollar string for ``balance``."""
-        positive_balance = self.balance * -1 if self.balance < 0 else self.balance
-        balance = f"${positive_balance:.2f}"
-
-        return balance
+        return f"${self.display_balance_amount():.2f}"
 
     def ensure_primary_alias(self):
         """Create or update the primary ``AccountAlias`` to match ``name``."""
@@ -46,19 +60,19 @@ class AccountBalance(models.Model):
     regular_balance = models.DecimalField(max_digits=8, decimal_places=2)
     late_balance = models.DecimalField(max_digits=8, decimal_places=2)
 
+    def _magnitude(self, value):
+        from decimal import Decimal
+        if value is None:
+            return Decimal("0.00")
+        return -value if value < 0 else value
+
     def hr_regular_balance(self):
         """Human-readable regular balance string."""
-        positive_regular_balance = self.regular_balance * -1 if self.regular_balance < 0 else self.regular_balance
-        regular_balance = f"${positive_regular_balance:.2f}"
-
-        return regular_balance
+        return f"${self._magnitude(self.regular_balance):.2f}"
 
     def hr_late_balance(self):
         """Human-readable late balance string."""
-        positive_late_balance = self.late_balance * -1 if self.late_balance < 0 else self.late_balance
-        late_balance = f"${positive_late_balance:.2f}"
-
-        return late_balance
+        return f"${self._magnitude(self.late_balance):.2f}"
 
 
 class AccountLedger(models.Model):
