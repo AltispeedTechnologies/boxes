@@ -1,4 +1,4 @@
-"""URL routing with public, authenticated, staff, and customer tiers."""
+"""URL routing with public, authenticated, staff, delivery, and customer tiers."""
 from functools import wraps
 
 from django.contrib import admin
@@ -28,6 +28,26 @@ def is_staff(view_func):
     return wrapped_view
 
 
+def is_delivery(view_func):
+    """Decorator: require login and Delivery or Staff group, else 403.
+
+    Staff retains warehouse-floor access for routes moved into
+    ``delivery_urlpatterns``. Delivery-only users cannot reach staff-only paths.
+    """
+
+    @wraps(view_func)
+    def wrapped_view(request, *args, **kwargs):
+        """Delivery-or-staff gated view wrapper."""
+        if not request.user.is_authenticated:
+            return redirect(f"{reverse('login')}?next={request.path}")
+        user = request.user
+        if not (user.has_delivery_role() or user.has_staff_role()):
+            return HttpResponseForbidden()
+        return view_func(request, *args, **kwargs)
+
+    wrapped_view.access_tier = "delivery"
+    return wrapped_view
+
 
 def is_customer(view_func):
     """Decorator: require login and Customer group, else 403."""
@@ -45,9 +65,6 @@ def is_customer(view_func):
     return wrapped_view
 
 
-
-
-
 def _tag_access_tier(urlpatterns, tier):
     """Attach access_tier metadata to each pattern callback for introspection."""
     for pattern in urlpatterns:
@@ -62,6 +79,7 @@ def _tag_access_tier(urlpatterns, tier):
             _tag_access_tier(pattern.url_patterns, tier)
     return urlpatterns
 
+
 def decorate_urlpatterns(urlpatterns, decorator):
     """Apply a decorator to every URLPattern callback in a list (recursive)."""
     for i in range(len(urlpatterns)):
@@ -75,28 +93,56 @@ def decorate_urlpatterns(urlpatterns, decorator):
 public_urlpatterns = [
     path("login/", sign_in, name="login"),
     path("webhooks/stripe", stripe_webhooks, name="stripe_webhooks"),
-    path("webhooks/mailjet", mailjet_webhooks, name="mailjet_webhooks"),
 ]
 
 
 customer_urlpatterns = [
-    path("", index, name="home"),
-    path("logout/", sign_out, name="logout"),
-    path("session/account", session_set_active_account, name="session_set_active_account"),
-    path("customer/select-account", customer_select_account, name="customer_select_account"),
     path("customer/parcels", customer_parcels, name="customer_parcels"),
-    path("customer/parcels/reserve", customer_reserve_pickup, name="customer_reserve_pickup"),
-    path("customer/pickup/open", customer_open_pickup_days, name="customer_open_pickup_days"),
     path("customer/payments", customer_make_payment, name="customer_make_payment"),
     path("customer/payments/portal", customer_payment_methods, name="customer_payment_methods"),
     path("customer/payments/portal/redir", customer_billing_portal, name="customer_billing_portal"),
-    path("customer/invoices", customer_invoices, name="customer_invoices"),
-    path("customer/ledger", customer_ledger, name="customer_ledger"),
     path("invoice/new", customer_new_invoice, name="customer_new_invoice"),
     path("invoice/<int:pk>", customer_view_invoice, name="customer_view_invoice"),
     path("invoice/<int:pk>/cancel", customer_cancel_invoice, name="customer_cancel_invoice"),
     path("invoice/<int:pk>/confirm", customer_confirm_invoice, name="customer_confirm_invoice"),
     path("invoice/<int:pk>/pdf", customer_view_pdf, name="customer_view_pdf"),
+]
+
+
+# Warehouse-floor routes: Delivery group, and Staff (via is_delivery).
+# Not account edit, not payments, not mgmt settings.
+delivery_urlpatterns = [
+    # Check in
+    path("packages/checkin", check_in, name="check_in"),
+    path("packages/checkin/create", create_package, name="create_package"),
+    path("packages/checkin/submit", check_in_packages, name="check_in_packages"),
+    path("queues/<int:pk>/packages", queue_packages, name="queue_packages"),
+
+    # Select2 helpers for check-in / search
+    path("accounts/search", account_search, name="account_search"),
+    path("carriers/search", carrier_search, name="carrier_search"),
+    path("types/search", type_search, name="type_search"),
+
+    # Package search (read-only-ish) and detail
+    path("packages/", all_packages, name="packages"),
+    path("packages/search", search_packages, name="search_packages"),
+    path("packages/<int:pk>", package_detail, name="package_detail"),
+    path("accounts/<int:pk>/packages", account_packages, name="account_packages"),
+
+    # Labels after check-in
+    path("packages/label", show_label, name="show_label"),
+    path("packages/label/pdf", generate_label, name="generate_label"),
+
+    # Field fixes during check-in (not mgmt/account edit)
+    path("packages/<int:pk>/update", update_package, name="update_package"),
+    path("packages/update", update_packages, name="update_packages"),
+
+    # Picklists: list, view, add package
+    path("picklists/", picklist_list, name="picklists"),
+    path("picklists/query", picklist_query, name="picklist_query"),
+    path("picklists/modify", modify_package_picklist, name="modify_package_picklist"),
+    path("picklists/<int:pk>/packages", picklist_show, name="picklist_show"),
+    path("picklists/<int:pk>/packages/table", picklist_show_table, name="picklist_show_table"),
 ]
 
 
@@ -118,45 +164,19 @@ staff_urlpatterns = [
     path("mgmt/packages/carriers/update", update_carriers, name="update_carriers"),
     path("mgmt/packages/types", package_type_settings, name="package_type_settings"),
     path("mgmt/packages/types/update", update_package_types, name="update_package_types"),
-    path("mgmt/pickup", pickup_mgmt, name="pickup_mgmt"),
-    path("mgmt/pickup/open", pickup_open_days, name="pickup_open_days"),
-    path("mgmt/pickup/rules/update", update_pickup_rules, name="update_pickup_rules"),
-    path("mgmt/pickup/days/update", update_pickup_days, name="update_pickup_days"),
 
     # Accounts
     path("accounts/<int:pk>/edit", account_edit, name="account_edit"),
     path("accounts/<int:pk>/emails", account_emails, name="account_emails"),
     path("accounts/<int:pk>/ledger", account_ledger, name="account_ledger"),
-    path("accounts/<int:pk>/waiver", account_fee_waiver, name="account_fee_waiver"),
-    path("accounts/<int:pk>/packages", account_packages, name="account_packages"),
     path("accounts/<int:pk>/update", update_account, name="update_account"),
-    path("accounts/<int:pk>/members/link", account_members_link, name="account_members_link"),
-    path("accounts/<int:pk>/members/disassociate", account_members_disassociate, name="account_members_disassociate"),
     path("accounts/aliases/update", update_account_aliases, name="update_account_aliases"),
-    path("accounts/search", account_search, name="account_search"),
 
     # Backend endpoints
-    path("carriers/search", carrier_search, name="carrier_search"),
     path("emails/<int:pk>/contents", get_email_contents, name="get_email_contents"),
-    path("picklists/query", picklist_query, name="picklist_query"),
-    path("types/search", type_search, name="type_search"),
     path("modals/bulk", get_bulk_modals, name="get_bulk_modals"),
     path("modals/actions", get_actions_modals, name="get_actions_modals"),
     path("modals/picklistmgmt", get_picklist_mgmt_modals, name="get_picklist_mgmt_modals"),
-
-    # Generic package information
-    path("packages/", all_packages, name="packages"),
-    path("packages/<int:pk>", package_detail, name="package_detail"),
-    path("packages/<int:pk>/update", update_package, name="update_package"),
-    path("packages/update", update_packages, name="update_packages"),
-
-    # Search page
-    path("packages/search", search_packages, name="search_packages"),
-
-    # Check in page
-    path("packages/checkin", check_in, name="check_in"),
-    path("packages/checkin/create", create_package, name="create_package"),
-    path("packages/checkin/submit", check_in_packages, name="check_in_packages"),
 
     # Check out page
     path("packages/checkout", check_out, name="check_out"),
@@ -164,22 +184,13 @@ staff_urlpatterns = [
     path("packages/checkout/reverse", check_out_packages_reverse, name="check_out_packages_reverse"),
     path("packages/checkout/verify", verify_can_checkout, name="verify_can_checkout"),
 
-    # Picklists page
-    path("picklists/", picklist_list, name="picklists"),
+    # Picklist management beyond add-package
     path("picklists/<int:pk>/checkout", picklist_check_out, name="picklist_check_out"),
-    path("picklists/<int:pk>/packages", picklist_show, name="picklist_show"),
-    path("picklists/<int:pk>/packages/table", picklist_show_table, name="picklist_show_table"),
     path("picklists/<int:pk>/remove", remove_picklist, name="remove_picklist"),
     path("picklists/create", create_picklist, name="create_picklist"),
-    path("picklists/modify", modify_package_picklist, name="modify_package_picklist"),
     path("picklists/remove", remove_package_picklist, name="remove_package_picklist"),
 
-    # Label printing
-    path("packages/label", show_label, name="show_label"),
-    path("packages/label/pdf", generate_label, name="generate_label"),
-
-    # Basic queue data
-    path("queues/<int:pk>/packages", queue_packages, name="queue_packages"),
+    # Queue rename
     path("queues/<int:pk>/update", update_queue_name, name="update_queue_name"),
 
     # Users
@@ -201,18 +212,20 @@ staff_urlpatterns = [
     path("reports/<int:pk>/remove", report_remove, name="report_remove"),
     path("reports/<int:pk>/update", report_update, name="report_update"),
     path("reports/<int:pk>/view", report_view, name="report_view"),
-    path("reports/stats/chart", report_stats_chart, name="report_stats_chart"),
-    path("reports/stripe-totals", stripe_totals, name="stripe_totals")
+    path("reports/stats/chart", report_stats_chart, name="report_stats_chart")
 ]
 
-# Shared routes for any authenticated user (staff or customer login)
+# Shared routes for any authenticated user (staff, delivery, or customer login)
 authenticated_urlpatterns = [
+    path("", index, name="home"),
+    path("logout/", sign_out, name="logout"),
     path("profile/", profile_user, name="profile_user"),
     path("profile/update", update_profile, name="update_profile"),
     path("profile/emails/update", update_profile_emails, name="update_profile_emails"),
 ]
 
 staff_urlpatterns = decorate_urlpatterns(staff_urlpatterns, is_staff)
+delivery_urlpatterns = decorate_urlpatterns(delivery_urlpatterns, is_delivery)
 customer_urlpatterns = decorate_urlpatterns(customer_urlpatterns, is_customer)
 authenticated_urlpatterns = decorate_urlpatterns(authenticated_urlpatterns, login_required)
 _tag_access_tier(public_urlpatterns, "public")
@@ -220,4 +233,4 @@ _tag_access_tier(authenticated_urlpatterns, "authenticated")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-] + public_urlpatterns + authenticated_urlpatterns + staff_urlpatterns + customer_urlpatterns
+] + public_urlpatterns + authenticated_urlpatterns + delivery_urlpatterns + staff_urlpatterns + customer_urlpatterns

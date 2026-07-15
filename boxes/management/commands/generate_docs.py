@@ -102,6 +102,8 @@ class Command(BaseCommand):
             return "public"
         if name in names(urlconf.authenticated_urlpatterns):
             return "authenticated"
+        if name in names(urlconf.delivery_urlpatterns):
+            return "delivery"
         if name in names(urlconf.staff_urlpatterns):
             return "staff"
         if name in names(urlconf.customer_urlpatterns):
@@ -174,7 +176,7 @@ parent `docs/`.
             "| Tier | Path | Name | Callable | Summary |",
             "|------|------|------|----------|---------|",
         ]
-        order = {"public": 0, "authenticated": 1, "staff": 2, "customer": 3, "unknown": 9}
+        order = {"public": 0, "authenticated": 1, "delivery": 2, "staff": 3, "customer": 4, "unknown": 9}
         rows.sort(key=lambda r: (order.get(r["tier"], 9), r["path"]))
         for r in rows:
             summary = r["doc"].replace("|", "\\|")
