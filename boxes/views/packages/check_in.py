@@ -3,7 +3,7 @@ from boxes.forms import PackageForm
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import (Account, Carrier, EmailQueue, EmailSettings, Package, PackageQueue,
                           PackageSystemTrackingCode, PackageType, Queue)
-from boxes.views.packages.utility import update_packages_util
+from boxes.views.packages.utility import tracking_code_conflict, update_packages_util
 from django.db.models import F
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -15,7 +15,7 @@ def check_in(request):
     """GET: check-in page with queue selector."""
     form = PackageForm()
     queues = Queue.objects.filter(check_in=True)
-    prices = PackageType.objects.all().values_list("default_price", flat=True)
+    prices = PackageType.objects.filter(is_active=True).values_list("default_price", flat=True)
     return render(request, "packages/create.html", {"form": form,
                                                     "queues": queues,
                                                     "prices": prices})
@@ -47,6 +47,15 @@ def create_package(request):
         package.carrier = Carrier.objects.get(id=form.cleaned_data["carrier_id"])
         package.account = Account.objects.get(id=form.cleaned_data["account_id"])
         package.package_type = PackageType.objects.get(id=form.cleaned_data["package_type_id"])
+
+        conflict = tracking_code_conflict(
+            package.carrier, package.tracking_code
+        )
+        if conflict:
+            return JsonResponse({
+                "success": False,
+                "form_errors": {"tracking_code": [conflict]},
+            })
 
         package.save()
         PackageQueue.objects.create(package=package, queue_id=queue_id)

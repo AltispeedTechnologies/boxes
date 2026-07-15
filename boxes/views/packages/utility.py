@@ -10,6 +10,23 @@ from django.db import transaction
 from django.http import JsonResponse
 
 
+def tracking_code_conflict(carrier, tracking_code, exclude_package_id=None):
+    """Return an error message if tracking is a duplicate for this carrier, else None.
+
+    When ``carrier.allow_duplicate_tracking`` is True, duplicates are allowed.
+    """
+    if not tracking_code or carrier is None:
+        return None
+    if getattr(carrier, "allow_duplicate_tracking", False):
+        return None
+    qs = Package.objects.filter(carrier_id=carrier.id, tracking_code=tracking_code)
+    if exclude_package_id is not None:
+        qs = qs.exclude(pk=exclude_package_id)
+    if qs.exists():
+        return "Tracking code already exists for this carrier."
+    return None
+
+
 @exception_catcher()
 def update_packages_fields(package_ids, package_data, user, no_ledger=False):
     """Apply field changes to package ids; optional ledger suppression."""
@@ -90,7 +107,17 @@ def update_packages_fields(package_ids, package_data, user, no_ledger=False):
             else:
                 setattr(package, field, type_func(field_data))
 
+        conflict = tracking_code_conflict(
+            package.carrier, package.tracking_code, exclude_package_id=package.id
+        )
+        if conflict:
+            errors.append(f"Package {package.id}: {conflict}")
+            continue
+
         updates.append(package)
+
+    if errors:
+        return JsonResponse({"success": False, "errors": errors})
 
     with transaction.atomic():
         if updates:
