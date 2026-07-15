@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container bg-body shadow-sm rounded p-3 col-md-10">
+    <div class="row bg-primary bg-gradient rounded mb-3">
+        <h2 class="text-center text-white py-2">Account Activity{% if active_account %} — {{ active_account.name }}{% endif %}</h2>
+    </div>
+    {% if account %}
+    <p class="text-center">
+        <strong>{% if account.balance > 0 %}Credit {% endif %}Balance{% if account.balance < 0 %} Due{% endif %}:</strong>
+        {{ account.hr_balance }}
+    </p>
+    {% endif %}
+    {% if page_obj %}
+    {% include "_paginate.html" %}
+    <div class="table-responsive mt-3">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Payment</th>
+                    <th>Charge</th>
+                    <th>Description</th>
+                    <th>Timestamp</th>
+                    <th>Late Fee?</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in page_obj %}
+                <tr>
+                    <td>
+                        {% if entry.package__tracking_code %}
+                            {{ entry.package__tracking_code }}
+                        {% elif entry.invoice__id %}
+                            Invoice #{{ entry.invoice__id|stringformat:"08d" }}
+                        {% endif %}
+                    </td>
+                    <td>${{ entry.credit }}</td>
+                    <td>${{ entry.debit }}</td>
+                    <td>{{ entry.description|default_if_none:"" }}</td>
+                    <td class="timestamp" data-timestamp="{{ entry.timestamp.isoformat }}"></td>
+                    <td>{% if entry.is_late %}Yes{% else %}No{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted">No ledger entries.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-center text-muted">No ledger entries.</p>
+    {% endif %}
+</div>
+{% endblock %}

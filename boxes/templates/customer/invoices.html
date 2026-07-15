@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container bg-body shadow-sm rounded p-3 col-md-10">
+    <div class="row bg-primary bg-gradient rounded mb-3">
+        <h2 class="text-center text-white py-2">Payment History{% if active_account %} — {{ active_account.name }}{% endif %}</h2>
+    </div>
+    {% if page_obj %}
+    {% include "_paginate.html" %}
+    <div class="table-responsive mt-3">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Invoice</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Subtotal</th>
+                    <th>Tax</th>
+                    <th>Fees</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in page_obj %}
+                <tr>
+                    <td>
+                        <a href="{% url 'customer_view_invoice' inv.id %}">#{{ inv.id|stringformat:"08d" }}</a>
+                    </td>
+                    <td class="timestamp" data-timestamp="{{ inv.timestamp.isoformat }}"></td>
+                    <td>
+                        {% if inv.current_state == 0 %}Created
+                        {% elif inv.current_state == 1 %}Requires Action
+                        {% elif inv.current_state == 2 %}Processing
+                        {% elif inv.current_state == 3 %}Succeeded
+                        {% elif inv.current_state == 4 %}Failed
+                        {% else %}Unknown{% endif %}
+                    </td>
+                    <td>${{ inv.subtotal }}</td>
+                    <td>{% if inv.tax %}${{ inv.tax }}{% else %}—{% endif %}</td>
+                    <td>{% if inv.processing_fees %}${{ inv.processing_fees }}{% else %}—{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted">No invoices yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-center text-muted">No invoices yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
