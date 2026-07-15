@@ -2,15 +2,14 @@
 import stripe
 from decimal import Decimal
 from boxes.models import (Account, AccountLedger, AccountStripeCustomer, GlobalSettings, Package, PackageLedger,
-                          StripePaymentMethod, UserAccount)
+                          StripePaymentMethod)
 from django.db.models import Case, Count, DecimalField, F, IntegerField, OuterRef, Subquery, Sum, Value, When
 from django.db.models.functions import Coalesce
 
 
 
-def get_customer_id(user_id):
-    """Return Stripe customer id for the account linked to ``user_id``, creating if needed."""
-    account_id = UserAccount.objects.get(user_id=user_id).account_id
+def get_customer_id(account_id):
+    """Return Stripe customer id for ``account_id``, creating if needed."""
     _customer, _ = AccountStripeCustomer.objects.get_or_create(account_id=account_id)
 
     # If we are not storing a customer ID, create one
@@ -60,10 +59,10 @@ def get_payment_method_json(pm, pm_id):
             }
 
 
-def get_payment_methods(user_id):
+def get_payment_methods(account_id):
     # Stripe-formatted customer ID
     """Sync DB payment methods with Stripe and return (list, default_method)."""
-    customer_id = get_customer_id(user_id)
+    customer_id = get_customer_id(account_id)
     # DB customer ID
     customer_pk = AccountStripeCustomer.objects.get(customer_id=customer_id).pk
 
@@ -128,15 +127,13 @@ def get_billing_portal_id():
     return billing_portal["id"]
 
 
-def generate_line_items(amount, user_id):
-    """Allocate a payment ``amount`` across unpaid checked-in packages for the user.
+def generate_line_items(amount, account_id):
+    """Allocate a payment ``amount`` across unpaid checked-in packages for the account.
 
     Returns structured line items (package id, amount, partial/late flags) or None if amount <= 0.
     """
     if amount <= 0:
         return None
-
-    account_id = UserAccount.objects.get(user_id=user_id).account_id
 
     # Subquery to get the latest PackageLedger timestamp for each package with state 1
     latest_ledger_timestamp = PackageLedger.objects.filter(
