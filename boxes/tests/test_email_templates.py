@@ -145,7 +145,18 @@ class PrepareEmailContentTests(TestCase):
         self.assertIn("custom-block", cleaned)
 
 
-@override_settings(ALLOWED_HOSTS=["*"], SECURE_SSL_REDIRECT=False)
+@override_settings(
+    ALLOWED_HOSTS=["*"],
+    SECURE_SSL_REDIRECT=False,
+    STORAGES={
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    },
+)
 class EmailTemplateViewTests(TestCase):
     """Staff email template management endpoints."""
 
