@@ -35,7 +35,12 @@ def add_email_template(request):
 def email_template_content(request):
     """GET: fetch subject/body for a template id."""
     template_id = request.GET.get("id")
-    template = EmailTemplate.objects.get(id=template_id)
+    if not template_id:
+        return JsonResponse({"success": False, "errors": ["Template id is required"]})
+    try:
+        template = EmailTemplate.objects.get(id=template_id)
+    except (EmailTemplate.DoesNotExist, ValueError, TypeError):
+        return JsonResponse({"success": False, "errors": ["Template not found"]})
     return JsonResponse({
         "success": True,
         "content": template.content,
@@ -48,6 +53,8 @@ def email_template_content(request):
 def update_email_template(request):
     """POST: update template name/subject/content."""
     template_id = request.POST.get("id")
+    if not template_id:
+        return JsonResponse({"success": False, "errors": ["Template id is required"]})
     content = _clean_html(request.POST.get("content") or "")
     subject = request.POST.get("subject") or ""
 
