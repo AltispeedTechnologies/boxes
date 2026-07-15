@@ -6,12 +6,12 @@ Values from the loaded Django settings module. Secrets are redacted.
 |---------|-------|
 | `ABSOLUTE_URL_OVERRIDES` | `{}` |
 | `ADMINS` | `[]` |
-| `ALLOWED_HOSTS` | `['boxes.tsimonq2.internal']` |
+| `ALLOWED_HOSTS` | `['boxes.tsimonq2.internal', 'testserver']` |
 | `APPEND_SLASH` | `True` |
 | `AUTHENTICATION_BACKENDS` | `['django.contrib.auth.backends.ModelBackend']` |
 | `AUTH_PASSWORD_VALIDATORS` | `**[redacted]**` |
 | `AUTH_USER_MODEL` | `'boxes.CustomUser'` |
-| `BASE_DIR` | `'/var/www/wt-polish'` |
+| `BASE_DIR` | `'/var/www/mikes-boxes'` |
 | `BROKER_HOST` | `'localhost'` |
 | `BROKER_PASSWORD` | `**[redacted]**` |
 | `BROKER_USER` | `'boxes'` |
@@ -34,7 +34,7 @@ Values from the loaded Django settings module. Secrets are redacted.
 | `CSRF_HEADER_NAME` | `'HTTP_X_CSRFTOKEN'` |
 | `CSRF_TRUSTED_ORIGINS` | `[]` |
 | `CSRF_USE_SESSIONS` | `False` |
-| `DATABASES` | `{'default': {'ENGINE': 'django.db.backends.postgresql', 'NAME': 'boxes', 'USER': 'boxes', 'PASSWORD': 'changem3', 'HO...` |
+| `DATABASES` | `{'default': {'ENGINE': 'django.db.backends.postgresql', 'NAME': 'test_boxes', 'USER': 'boxes', 'PASSWORD': 'changem3'...` |
 | `DATABASE_ROUTERS` | `[]` |
 | `DATA_UPLOAD_MAX_MEMORY_SIZE` | `2621440` |
 | `DATA_UPLOAD_MAX_NUMBER_FIELDS` | `1000` |
@@ -43,7 +43,7 @@ Values from the loaded Django settings module. Secrets are redacted.
 | `DATETIME_INPUT_FORMATS` | `['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M', '%m/%d/%Y %H:%M:%S', '%m/%d/%Y %H:%M:%S.%f', '%m/%d/%...` |
 | `DATE_FORMAT` | `'N j, Y'` |
 | `DATE_INPUT_FORMATS` | `['%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y', '%b %d %Y', '%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y', '%B %d, %Y', '%d %...` |
-| `DEBUG` | `True` |
+| `DEBUG` | `False` |
 | `DEBUG_PROPAGATE_EXCEPTIONS` | `False` |
 | `DECIMAL_SEPARATOR` | `'.'` |
 | `DEFAULT_AUTO_FIELD` | `'django.db.models.BigAutoField'` |
@@ -54,7 +54,7 @@ Values from the loaded Django settings module. Secrets are redacted.
 | `DEFAULT_INDEX_TABLESPACE` | `''` |
 | `DEFAULT_TABLESPACE` | `''` |
 | `DISALLOWED_USER_AGENTS` | `[]` |
-| `EMAIL_BACKEND` | `'django.core.mail.backends.smtp.EmailBackend'` |
+| `EMAIL_BACKEND` | `'django.core.mail.backends.locmem.EmailBackend'` |
 | `EMAIL_HOST` | `'localhost'` |
 | `EMAIL_HOST_PASSWORD` | `**[redacted]**` |
 | `EMAIL_HOST_USER` | `''` |
@@ -96,8 +96,11 @@ Values from the loaded Django settings module. Secrets are redacted.
 | `LOGIN_REDIRECT_URL` | `'/profile/'` |
 | `LOGIN_URL` | `'/login/'` |
 | `LOGOUT_REDIRECT_URL` | `None` |
+| `MAILJET_WEBHOOK_PASSWORD` | `**[redacted]**` |
+| `MAILJET_WEBHOOK_SECRET` | `**[redacted]**` |
+| `MAILJET_WEBHOOK_USER` | `None` |
 | `MANAGERS` | `[]` |
-| `MEDIA_ROOT` | `'/var/www/wt-polish/public/media'` |
+| `MEDIA_ROOT` | `'/var/www/mikes-boxes/public/media'` |
 | `MEDIA_URL` | `'/media/'` |
 | `MESSAGE_STORAGE` | `'django.contrib.messages.storage.fallback.FallbackStorage'` |
 | `MIDDLEWARE` | `['django.middleware.security.SecurityMiddleware', 'django.contrib.sessions.middleware.SessionMiddleware', 'django.mid...` |
@@ -120,7 +123,7 @@ Values from the loaded Django settings module. Secrets are redacted.
 | `SECURE_PROXY_SSL_HEADER` | `None` |
 | `SECURE_REDIRECT_EXEMPT` | `[]` |
 | `SECURE_REFERRER_POLICY` | `'no-referrer-when-downgrade'` |
-| `SECURE_ROOT` | `'/var/www/wt-polish/.secure_storage'` |
+| `SECURE_ROOT` | `'/var/www/mikes-boxes/.secure_storage'` |
 | `SECURE_SSL_HOST` | `None` |
 | `SECURE_SSL_REDIRECT` | `False` |
 | `SERVER_EMAIL` | `'root@localhost'` |
@@ -145,13 +148,13 @@ Values from the loaded Django settings module. Secrets are redacted.
 | `SILENCED_SYSTEM_CHECKS` | `[]` |
 | `STATICFILES_DIRS` | `[]` |
 | `STATICFILES_FINDERS` | `['django.contrib.staticfiles.finders.FileSystemFinder', 'django.contrib.staticfiles.finders.AppDirectoriesFinder']` |
-| `STATIC_ROOT` | `'/var/www/wt-polish/public/static'` |
+| `STATIC_ROOT` | `'/var/www/mikes-boxes/public/static'` |
 | `STATIC_URL` | `'/static/'` |
 | `STORAGES` | `{'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'}, 'staticfiles': {'BACKEND': 'django.contrib.st...` |
 | `STRIPE_API_KEY` | `**[redacted]**` |
 | `STRIPE_ENDPOINT_SECRET` | `**[redacted]**` |
 | `TASKS` | `{'default': {'BACKEND': 'django.tasks.backends.immediate.ImmediateBackend'}}` |
-| `TEMPLATES` | `[{'BACKEND': 'django.template.backends.django.DjangoTemplates', 'DIRS': ['/var/www/wt-polish/boxes/templates'], 'APP_...` |
+| `TEMPLATES` | `[{'BACKEND': 'django.template.backends.django.DjangoTemplates', 'DIRS': ['/var/www/mikes-boxes/boxes/templates'], 'AP...` |
 | `TEST_NON_SERIALIZED_APPS` | `[]` |
 | `TEST_RUNNER` | `'django.test.runner.DiscoverRunner'` |
 | `THOUSAND_SEPARATOR` | `','` |

@@ -127,6 +127,8 @@ Shipping carrier (name, phone, website) selectable on packages.
 | `name` | CharField | False |  |  |  |
 | `phone_number` | CharField | False |  |  |  |
 | `website` | CharField | False |  |  |  |
+| `is_active` | BooleanField | False | True |  |  |
+| `allow_duplicate_tracking` | BooleanField | False | False |  |  |
 
 ## Chart
 
@@ -158,6 +160,7 @@ Extends Django ``AbstractUser`` with warehouse profile fields. Role checks use *
 | `account_memberships` | ForeignKey | True |  | boxes.UserAccount |  |
 | `invoice` | ForeignKey | True |  | boxes.Invoice |  |
 | `packageledger` | ForeignKey | True |  | boxes.PackageLedger |  |
+| `pickup_reservations` | ForeignKey | True |  | boxes.PackagePickupReservation |  |
 | `customuseremail` | ForeignKey | True |  | boxes.CustomUserEmail |  |
 | `id` | BigAutoField | False |  |  |  |
 | `password` | CharField | False |  |  |  |
@@ -182,6 +185,7 @@ Extends Django ``AbstractUser`` with warehouse profile fields. Role checks use *
 
 **Methods**
 
+- `has_delivery_role(self)` — True if the user is in the Delivery group.
 - `has_staff_role(self)` — True if the user is in the Staff group.
 - `is_admin(self)` — Return True if the user is in the Admin group.
 - `is_customer(self)` — Return True if the user is in the Customer group.
@@ -320,6 +324,7 @@ States: 0 Received, 1 Checked in, 2 Checked out, 3 Mis-placed. FKs to Account/Ca
 | `emailqueue` | ForeignKey | True |  | boxes.EmailQueue |  |
 | `sentemailpackage` | ForeignKey | True |  | boxes.SentEmailPackage |  |
 | `packageledger` | ForeignKey | True |  | boxes.PackageLedger |  |
+| `pickup_reservation` | OneToOneField | True |  | boxes.PackagePickupReservation |  |
 | `packagequeue` | OneToOneField | True |  | boxes.PackageQueue |  |
 | `packagepicklist` | OneToOneField | True |  | boxes.PackagePicklist |  |
 | `id` | BigAutoField | False |  |  |  |
@@ -359,6 +364,20 @@ Membership of a package on a picklist (one picklist per package).
 | `package` | OneToOneField | False |  | boxes.Package |  |
 | `picklist` | ForeignKey | False |  | boxes.Picklist |  |
 
+## PackagePickupReservation
+
+`boxes.PackagePickupReservation` — db table `boxes_packagepickupreservation`
+
+Customer reservation of a package for a specific pickup day.
+
+| Field | Type | Null | Default | Related | Help |
+|-------|------|------|---------|---------|------|
+| `id` | BigAutoField | False |  |  |  |
+| `package` | OneToOneField | False |  | boxes.Package |  |
+| `pickup_day` | ForeignKey | False |  | boxes.PickupDay |  |
+| `user` | ForeignKey | False |  | boxes.CustomUser |  |
+| `created_at` | DateTimeField | False |  |  |  |
+
 ## PackageQueue
 
 `boxes.PackageQueue` — db table `boxes_packagequeue`
@@ -397,6 +416,7 @@ Classification of a parcel (shortcode, description, default price).
 | `shortcode` | CharField | False |  |  |  |
 | `description` | CharField | False |  |  |  |
 | `default_price` | DecimalField | False |  |  |  |
+| `is_active` | BooleanField | False | True |  |  |
 
 ## Picklist
 
@@ -408,6 +428,7 @@ Requires at least one of ``date`` or ``description``.
 
 | Field | Type | Null | Default | Related | Help |
 |-------|------|------|---------|---------|------|
+| `pickup_days` | ForeignKey | True |  | boxes.PickupDay |  |
 | `picklistqueue` | OneToOneField | True |  | boxes.PicklistQueue |  |
 | `packagepicklist` | ForeignKey | True |  | boxes.PackagePicklist |  |
 | `id` | BigAutoField | False |  |  |  |
@@ -430,6 +451,45 @@ Associates a picklist with a queue (one-to-one each side).
 | `id` | BigAutoField | False |  |  |  |
 | `picklist` | OneToOneField | False |  | boxes.Picklist |  |
 | `queue` | OneToOneField | False |  | boxes.Queue |  |
+
+## PickupDay
+
+`boxes.PickupDay` — db table `boxes_pickupday`
+
+A concrete calendar day available (or disabled) for customer pickup.
+
+is_active=False overrides a schedule rule so the day is closed even if
+a weekly rule would otherwise open it. Optional link to a staff Picklist.
+
+| Field | Type | Null | Default | Related | Help |
+|-------|------|------|---------|---------|------|
+| `reservations` | ForeignKey | True |  | boxes.PackagePickupReservation |  |
+| `id` | BigAutoField | False |  |  |  |
+| `date` | DateField | False |  |  |  |
+| `picklist` | ForeignKey | True |  | boxes.Picklist |  |
+| `is_active` | BooleanField | False | True |  |  |
+| `notes` | TextField | True |  |  |  |
+
+## PickupScheduleRule
+
+`boxes.PickupScheduleRule` — db table `boxes_pickupschedulerule`
+
+Rule that generates open pickup days in a date window.
+
+recurrence:
+  - none: a single day on start_date (weekday ignored)
+  - weekly: every weekday from start_date through end_date (if set)
+weekday uses Python date.weekday() (0=Monday through 6=Sunday).
+
+| Field | Type | Null | Default | Related | Help |
+|-------|------|------|---------|---------|------|
+| `id` | BigAutoField | False |  |  |  |
+| `name` | CharField | False |  |  |  |
+| `recurrence` | CharField | False | 'none' |  |  |
+| `weekday` | PositiveSmallIntegerField | True |  |  |  |
+| `start_date` | DateField | False |  |  |  |
+| `end_date` | DateField | True |  |  |  |
+| `is_active` | BooleanField | False | True |  |  |
 
 ## Queue
 
@@ -484,6 +544,7 @@ Audit row for an attempted send (success, Mailjet uuid, recipient).
 | `sentemailcontents` | ForeignKey | True |  | boxes.SentEmailContents |  |
 | `sentemailpackage` | ForeignKey | True |  | boxes.SentEmailPackage |  |
 | `sentemailresult` | ForeignKey | True |  | boxes.SentEmailResult |  |
+| `events` | ForeignKey | True |  | boxes.SentEmailEvent |  |
 | `id` | BigAutoField | False |  |  |  |
 | `account` | ForeignKey | False |  | boxes.Account |  |
 | `subject` | CharField | False |  |  |  |
@@ -503,6 +564,25 @@ HTML body snapshot for a sent email.
 | `id` | BigAutoField | False |  |  |  |
 | `sent_email` | ForeignKey | False |  | boxes.SentEmail |  |
 | `html` | TextField | False |  |  |  |
+
+## SentEmailEvent
+
+`boxes.SentEmailEvent` — db table `boxes_sentemailevent`
+
+Mailjet delivery event (sent/open/click/bounce/etc.) for a sent message.
+
+Linked to SentEmail when Message_GUID matches ``message_uuid``; unmatched
+events are still stored for later reconciliation.
+
+| Field | Type | Null | Default | Related | Help |
+|-------|------|------|---------|---------|------|
+| `id` | BigAutoField | False |  |  |  |
+| `sent_email` | ForeignKey | True |  | boxes.SentEmail |  |
+| `event_type` | CharField | False |  |  |  |
+| `timestamp` | DateTimeField | False |  |  |  |
+| `message_uuid` | CharField | True |  |  |  |
+| `email` | CharField | True |  |  |  |
+| `payload` | JSONField | True |  |  |  |
 
 ## SentEmailPackage
 

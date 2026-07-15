@@ -4,7 +4,7 @@ Public callables discovered under `boxes.views`.
 
 ## `boxes.views`
 
-Auto-import top-level view modules.
+Explicit exports for top-level view modules.
 
 ## `boxes.views.account`
 
@@ -17,6 +17,13 @@ Render staff account edit page.
 ### `account_emails(request, pk)`
 
 List sent emails related to an account.
+
+### `account_fee_waiver(request, pk)`
+
+POST: staff credit waiver on account ledger (account_id from URL).
+
+Body (JSON or form): amount (required, > 0), description (optional).
+Creates an AccountLedger credit and recalculates balances.
 
 ### `account_ledger(request, pk)`
 
@@ -72,7 +79,7 @@ Shared helpers for package/email querysets used by multiple views.
 
 ## `boxes.views.customer`
 
-Customer portal: parcels, payments, invoices, billing portal.
+Customer portal: parcels, payments, invoices, billing portal, membership.
 
 ### `customer_billing_portal(request)`
 
@@ -86,6 +93,14 @@ GET: cancel an open invoice/PaymentIntent.
 
 POST: confirm and finalize payment for invoice.
 
+### `customer_invoices(request)`
+
+GET: past invoices for the active account.
+
+### `customer_ledger(request)`
+
+GET: ledger history for the active account.
+
 ### `customer_make_payment(request)`
 
 GET: payment page with balance and methods.
@@ -96,11 +111,15 @@ POST: create invoice/PaymentIntent for amount and method.
 
 ### `customer_parcels(request)`
 
-GET: customer's package list for linked account.
+GET: customer package list for linked account.
 
 ### `customer_payment_methods(request)`
 
 GET: payment methods data for UI.
+
+### `customer_select_account(request)`
+
+GET: list linked accounts. POST: set active account in session.
 
 ### `customer_view_invoice(request, pk)`
 
@@ -109,6 +128,26 @@ GET: invoice detail / confirmation page.
 ### `customer_view_pdf(request, pk)`
 
 GET: invoice PDF download/view.
+
+### `session_set_active_account(request)`
+
+POST: set session active account after membership check.
+
+## `boxes.views.customer_pickup`
+
+Customer pickup reservation endpoints.
+
+### `customer_open_pickup_days(request)`
+
+GET: JSON open pickup dates for the customer reservation UI.
+
+### `customer_reserve_pickup(request)`
+
+POST: reserve selected packages for an open pickup day.
+
+Body JSON: package_ids list and date YYYY-MM-DD.
+Packages must belong to the user account and be checked-in (state 1).
+Existing reservations for those packages are moved to the new day.
 
 ## `boxes.views.emails`
 
@@ -124,16 +163,23 @@ Site home page.
 
 ### `index(request)`
 
-Render customer home, or send staff-only users to packages.
+Render customer home, or send warehouse roles to packages/check-in.
 
 Users in the Customer group keep the customer landing page. Authenticated
-staff without Customer membership are redirected to the staff package list.
+staff without Customer membership are redirected to the package list.
+Delivery-only users are redirected to check-in.
 
 ## `boxes.views.labels`
 
 ReportLab package label generation.
 
-### `draw_label(canvas, first_name, last_name, barcode_value, date, inside)`
+### `draw_centered_string(canvas_obj, y, text, font_name, font_size, page_width, wrap=False)`
+
+Draw a centered string; optionally wrap long names onto a second line.
+
+Never truncates with ellipsis — shrinks font and/or wraps instead.
+
+### `draw_label(canvas_obj, first_name, last_name, barcode_value, date, inside)`
 
 Draw one label onto a ReportLab canvas.
 
@@ -151,7 +197,7 @@ GET: label print UI.
 
 ## `boxes.views.mgmt`
 
-Auto-import management settings views.
+Explicit exports for management settings views.
 
 ## `boxes.views.mgmt.accounts`
 
@@ -241,6 +287,26 @@ Resize an image and assign it to a model ImageField attribute.
 
 POST: save GlobalSettings fields and process logo upload.
 
+## `boxes.views.mgmt.pickup`
+
+Staff CRUD for pickup days and schedule rules.
+
+### `pickup_mgmt(request)`
+
+GET: staff pickup days and schedule rules management page.
+
+### `pickup_open_days(request)`
+
+GET: JSON open pickup dates in a window (start/end query params).
+
+### `update_pickup_days(request)`
+
+POST: create/update pickup days (date, is_active, notes, picklist).
+
+### `update_pickup_rules(request)`
+
+POST: create/update/delete schedule rules from JSON payload.
+
 ## `boxes.views.mgmt.types`
 
 Package type catalog management.
@@ -271,7 +337,7 @@ Return picklist management modal markup.
 
 ## `boxes.views.packages`
 
-Auto-import package view modules.
+Explicit exports for package views.
 
 ## `boxes.views.packages.backend`
 
@@ -357,6 +423,12 @@ GET: search packages by query/filters.
 
 Shared package field update and state-transition utilities.
 
+### `tracking_code_conflict(carrier, tracking_code, exclude_package_id=None)`
+
+Return an error message if tracking is a duplicate for this carrier, else None.
+
+When ``carrier.allow_duplicate_tracking`` is True, duplicates are allowed.
+
 ### `update_packages_fields(package_ids, package_data, user, no_ledger=False)`
 
 Apply field changes to package ids; optional ledger suppression.
@@ -407,7 +479,7 @@ POST: delete a picklist by id.
 
 ## `boxes.views.reports`
 
-Auto-import report view modules.
+Explicit exports for report views.
 
 ## `boxes.views.reports.backend`
 
@@ -469,6 +541,14 @@ GET: stream report as CSV.
 
 GET: serve generated PDF if available.
 
+## `boxes.views.reports.stripe_totals`
+
+Staff Stripe payment totals summary (succeeded invoices).
+
+### `stripe_totals(request)`
+
+GET: aggregate succeeded invoice money fields for staff reports.
+
 ## `boxes.views.user`
 
 Profile self-service and staff user create/update endpoints.
@@ -510,6 +590,12 @@ POST (staff): update notification emails for a target user.
 ## `boxes.views.webhooks`
 
 External webhook receivers.
+
+### `mailjet_webhooks(request)`
+
+POST: accept Mailjet Event API payloads and store SentEmailEvent rows.
+
+Maps each event to SentEmail by Message_GUID / MessageUUID when present.
 
 ### `stripe_webhooks(request)`
 

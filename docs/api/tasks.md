@@ -45,6 +45,10 @@ Logging handler that updates ReportResult progress from log records.
 - `__init__(self, result, level=0)` — Attach handler to a ReportResult instance.
 - `emit(self, record)` — Update progress field from log record messages.
 
+## `boxes.tasks.pickup`
+
+Celery tasks for pickup day notifications.
+
 ## `boxes.tasks.stripe`
 
 Stripe webhook processing and coupon cleanup.

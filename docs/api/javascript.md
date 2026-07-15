@@ -4,7 +4,7 @@ Parsed from `boxes/static/js` file headers and `function` declarations.
 
 ## `account.js`
 
-@file account.js; @description Staff account detail page interactions (comments save, etc.).; @see docs/api/javascript.md
+@file account.js; @description Staff account detail page interactions (comments save, membership, fee waiver).; @see docs/api/javascript.md
 
 - `function init_account_page()`
 
@@ -70,7 +70,16 @@ Parsed from `boxes/static/js` file headers and `function` declarations.
 
 @file customer/make_payment.js; @description Customer payment amount/method selection and invoice create.; @see docs/api/javascript.md
 
+- `function submit_checkout()`
+- `function get_selected_payment_method_id()`
+- `function get_selected_payment_amount()`
 - `function init_customer_payment_page()`
+
+## `customer/parcels.js`
+
+@file customer/parcels.js; @description Reserve selected parcels for an open pickup day.
+
+- `function init_customer_parcels_page()`
 
 ## `mgmt/accounts.js`
 
@@ -101,6 +110,14 @@ Parsed from `boxes/static/js` file headers and `function` declarations.
 
 @file mgmt/email_template.js; @description Jodit email template editor and save/load.; @see docs/api/javascript.md
 
+- `function make_token_btn()` — Build a Jodit toolbar control that inserts a stable token chip. @param {{name: string, text: string, token: string}} spec @returns {object}
+- `function mark_email_template_dirty()` — Mark the editor form dirty unless updates are suppressed (load/reset).
+- `function clear_email_template_dirty()` — Clear dirty flag after load or successful save.
+- `function hide_add_template_modal()` — Hide the add-template modal via Bootstrap 5 API.
+- `function ensure_email_template_editor()` — Create the single Jodit instance if not already created. @returns {object|null}
+- `function set_editor_value()` — Set editor HTML via editor.value only. @param {string} html
+- `function get_editor_value()` — Read editor HTML via editor.value only. @returns {string}
+- `function load_email_template()` — Load a template's subject/body into the form. @param {string|number} id
 - `function init_email_template_mgmt_page()` — Initialize email template editor page.
 
 ## `mgmt/general.js`
@@ -108,6 +125,12 @@ Parsed from `boxes/static/js` file headers and `function` declarations.
 @file mgmt/general.js; @description GlobalSettings general business info and logo upload.; @see docs/api/javascript.md
 
 - `function init_general_mgmt_page()`
+
+## `mgmt/pickup.js`
+
+@file mgmt/pickup.js; @description Staff pickup schedule rules and day CRUD.
+
+- `function init_pickup_mgmt_page()`
 
 ## `mgmt/types.js`
 
@@ -167,6 +190,8 @@ Parsed from `boxes/static/js` file headers and `function` declarations.
 
 @file reports/report_chart.js; @description Chart.js rendering for dashboard stats.; @see docs/api/javascript.md
 
+- `function carrier_datasets()` — Build Chart.js datasets from packages_by_carrier y_data.
+- `function update_carrier_chart()` — Update or create the packages-by-carrier chart.
 - `function toggle_disabled_chart_buttons()`
 - `function update_chart()` — Fetch and redraw the dashboard chart for a frequency.
 - `function init_report_chart()` — Create the initial Chart.js instance.
