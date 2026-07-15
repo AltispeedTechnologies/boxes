@@ -40,17 +40,19 @@
         <title>{% block title %}Boxes{% endblock title %}</title>
     </head>
     <body class="bg-light bg-gradient">
-        {# Navbar stays mounted across htmx-boosted navigations #}
+        {# Navbar stays mounted across htmx-boosted navigations; data-auth detects login/logout drift #}
         {% include "_navbar.html" %}
 
         <main id="app-main"
+              class="{% block main_class %}{% endblock main_class %}"
+              data-auth="{% if request.user.is_authenticated %}1{% else %}0{% endif %}"
               hx-boost="true"
               hx-target="#app-main"
               hx-select="#app-main"
               hx-swap="outerHTML"
               hx-push-url="true"
               {% block page_attrs %}{% endblock page_attrs %}>
-            <div class="container mt-4">
+            <div class="{% block main_container_class %}container mt-4{% endblock main_container_class %}">
                 {% block content %}{% endblock content %}
             </div>
         </main>

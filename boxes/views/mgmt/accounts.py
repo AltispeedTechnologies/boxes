@@ -14,10 +14,10 @@ def account_mgmt(request):
     query = escape(request.GET.get("q", ""))
 
     accounts = Account.objects.select_related(
-        "useraccount__user"
+        "user_memberships__user"
     ).annotate(
-        phone_number=F("useraccount__user__phone_number"),
-        mobile_number=F("useraccount__user__mobile_number"),
+        phone_number=F("user_memberships__user__phone_number"),
+        mobile_number=F("user_memberships__user__mobile_number"),
         hr_balance=Case(
             When(balance__gte=0, then=Concat(Value("$"), Cast(F("balance"), CharField()))),
             default=Concat(Value("$("), Cast(F("balance") * -1, CharField()), Value(")")),

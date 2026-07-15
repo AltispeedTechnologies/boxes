@@ -33,7 +33,7 @@ def sign_in(request):
 
 
 def sign_out(request):
-    """Log out the current user and redirect to login."""
+    """Log out the current user and redirect to the login page (full document)."""
     logout(request)
     messages.success(request, "You have been logged out.")
-    return redirect("home")
+    return redirect("login")

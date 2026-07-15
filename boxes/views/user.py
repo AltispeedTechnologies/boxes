@@ -26,7 +26,7 @@ def profile_user(request):
     user = CustomUser.objects.get(pk=request.user.pk)
     emails = CustomUserEmail.objects.filter(user=user).order_by("id")
     linked_accounts = (
-        Account.objects.filter(useraccount__user=user)
+        Account.objects.filter(user_memberships__user=user, user_memberships__is_active=True)
         .select_related("accountbalance")
         .distinct()
         .order_by("name")

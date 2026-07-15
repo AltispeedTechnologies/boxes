@@ -471,7 +471,25 @@ function update_navbar_active(pathname) {
     });
 }
 
+/**
+ * If htmx swapped main after login/logout without refreshing the navbar,
+ * force a full document load so auth chrome matches session state.
+ */
+function ensure_auth_chrome() {
+    var main = document.getElementById("app-main");
+    var nav = document.getElementById("app-navbar");
+    if (!main || !nav) {
+        return;
+    }
+    var mainAuth = main.getAttribute("data-auth");
+    var navAuth = nav.getAttribute("data-auth");
+    if (mainAuth !== null && navAuth !== null && mainAuth !== navAuth) {
+        window.location.reload();
+    }
+}
+
 function boot_app_main() {
+    ensure_auth_chrome();
     init_page();
     window.BoxesPage.mount(document.getElementById("app-main"));
     update_navbar_active();

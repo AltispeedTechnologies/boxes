@@ -20,8 +20,8 @@
     --boxes-primary: #0d6efd;
     --boxes-focus-ring: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
     --boxes-select2-height: 38px;
-    --boxes-table-header-bg: #212529;
-    --boxes-table-header-fg: #ffffff;
+    --boxes-table-header-bg: #e9ecef;
+    --boxes-table-header-fg: #212529;
     --boxes-card-padding: 1rem;
     --boxes-main-gap: 1.5rem;
 }
@@ -93,10 +93,11 @@ body {
 }
 
 .table thead.table-dark th,
+.table thead.table-light th,
 .table thead.thead-dark th {
     background-color: var(--boxes-table-header-bg);
     color: var(--boxes-table-header-fg);
-    border-color: #32383e;
+    border-color: #dee2e6;
     font-weight: 600;
     white-space: nowrap;
 }
@@ -204,4 +205,76 @@ label.form-label {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+/* ---------------------------------------------------------------------------
+ * Login page
+ * --------------------------------------------------------------------------- */
+#app-main.app-main--auth {
+    min-height: calc(100vh - 3.5rem);
+    display: flex;
+    align-items: center;
+    padding: 2rem 0 3rem;
+}
+
+#app-main.app-main--auth > .container-fluid {
+    margin-top: 0;
+}
+
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 1rem 0;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 26rem;
+    margin: 0 auto;
+    padding: 2rem 2rem 2.25rem;
+    border: 1px solid var(--boxes-border);
+    box-shadow: var(--boxes-shadow);
+}
+
+.login-logo {
+    display: block;
+    width: 4.5rem;
+    height: 4.5rem;
+    margin: 0 auto 1rem;
+    object-fit: contain;
+    /* Avoid Chromium color-management surprises on small PNGs */
+    image-rendering: auto;
+    background: transparent;
+}
+
+.login-title {
+    font-weight: 600;
+    color: var(--boxes-text);
+}
+
+.login-card .form-control-lg {
+    font-size: 1rem;
+    min-height: 2.75rem;
+}
+
+.btn-login {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+/* ---------------------------------------------------------------------------
+ * Light table headers (match light page chrome)
+ * --------------------------------------------------------------------------- */
+.table > thead.table-light > tr > th {
+    background-color: var(--boxes-table-header-bg) !important;
+    color: var(--boxes-table-header-fg) !important;
+    border-bottom-color: var(--boxes-border);
+}
+
+.boxes-empty-state {
+    text-align: center;
+    color: var(--boxes-text-muted);
+    padding: 2rem 1rem;
 }
