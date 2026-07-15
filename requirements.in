@@ -18,9 +18,5 @@ html-sanitizer==2.6.0
 # Sending emails
 mailjet-rest==1.7.0
 
-# Tooling and demo instance setup
-pycodestyle==2.14.0
-Faker==40.28.1
-
 # Payment processing
 stripe==15.3.0
