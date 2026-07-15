@@ -3,12 +3,19 @@ from django.db import models
 from django.utils import timezone
 
 
+def _account_user_on_delete():
+    """Reassign Account.user to the system actor when the owner is deleted."""
+    from boxes.backend.system import get_system_user_pk
+    return get_system_user_pk()
+
+
+
 class Account(models.Model):
     """Billing and parcel entity for a customer.
 
     ``user`` is the creator/owner (often staff), **not** the customer portal link — use ``UserAccount`` for that. Balance sign: negative typically means amount owed.
     """
-    user = models.ForeignKey("CustomUser", on_delete=models.SET(1))
+    user = models.ForeignKey("CustomUser", on_delete=models.SET(_account_user_on_delete))
     name = models.CharField(max_length=64)
     balance = models.DecimalField(max_digits=8, decimal_places=2)
     billable = models.BooleanField()
