@@ -3,6 +3,7 @@
 {% block javascript %}
 {% load static %}
 <script src="{% static 'js/table_select.js' %}"></script>
+<script src="{% static 'js/customer/parcels.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -10,7 +11,30 @@
     <div class="row bg-primary bg-gradient rounded mb-3">
         <h2 class="text-center text-white py-2">My Parcels</h2>
     </div>
+    {% include "_messages.html" %}
     {% include "_paginate.html" %}
+
+    <div class="row g-2 align-items-end mb-3">
+        <div class="col-md-5">
+            <label for="pickupdayselect" class="form-label fw-bold mb-1">Pickup day</label>
+            <select class="form-select" id="pickupdayselect">
+                <option value="">Select a pickup day…</option>
+                {% for d in open_dates %}
+                <option value="{{ d|date:'Y-m-d' }}">{{ d|date:"D, F j, Y" }}</option>
+                {% empty %}
+                <option value="" disabled>No open pickup days</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="button" class="btn btn-primary" id="reservepickupbtn" disabled>
+                <i class="fas fa-calendar-check"></i> Reserve selected
+            </button>
+        </div>
+        <div class="col-md-4">
+            <span id="reservestatus" class="small"></span>
+        </div>
+    </div>
 
     <div class="table-responsive mt-3">
         <table class="table table-hover table-bordered">
@@ -22,7 +46,7 @@
                     <th>Cost</th>
                     <th>Carrier</th>
                     <th>Type</th>
-                    <th>Pickup Date</th>
+                    <th>Pickup Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -38,6 +62,7 @@
                                type="checkbox"
                                value=""
                                id="package-{{ package.id }}"
+                               {% if package.current_state != 1 %}disabled{% endif %}
                                {% if package.id|stringformat:"s" in selected %}
                                    checked
                                {% endif %}>
@@ -61,8 +86,19 @@
                     </td>
                     <td data-type="carrier" data-id="{{ package.carrier_id }}">{{ package.carrier__name }}</td>
                     <td data-type="package_type" data-id="{{ package.package_type_id }}">{{ package.package_type__description }}</td>
-                    <td data-type="pickup" data-id="{{ package.picklist_id|default_if_none:"" }}">
-                        {% if package.picklist_date %}
+                    <td data-type="pickup"
+                        data-reservation-id="{{ package.reservation_id|default_if_none:'' }}"
+                        data-id="{{ package.picklist_id|default_if_none:'' }}">
+                        {% if package.reservation_date %}
+                            {% if package.reservation_active %}
+                            <span class="badge text-bg-success">Reserved</span>
+                            {{ package.reservation_date|date:"D, F j, Y" }}
+                            {% else %}
+                            <span class="badge text-bg-warning">Day cancelled</span>
+                            {{ package.reservation_date|date:"D, F j, Y" }}
+                            {% endif %}
+                        {% elif package.picklist_date %}
+                        <span class="text-muted">Staff scheduled</span>
                         {{ package.picklist_date|date:"D, F j, Y" }}
                         {% else %}
                         Not scheduled

@@ -367,19 +367,25 @@ def customer_cancel_invoice(request, pk):
 @require_http_methods(["GET"])
 def customer_parcels(request):
     """GET: customer package list for linked account."""
+    from datetime import date, timedelta
+    from boxes.backend.pickup import list_open_pickup_dates
+
     account, early = _customer_account_or_response(request)
     if early:
         return early
     account_id = account.id
 
     packages = Package.objects.select_related(
-        "carrier", "packagetype", "packagepicklist"
+        "carrier", "package_type", "packagepicklist", "pickup_reservation__pickup_day"
     ).annotate(
         check_in_time=Max(Case(When(packageledger__state=1, then="packageledger__timestamp"))),
         check_out_time=Max(Case(When(packageledger__state=2, then="packageledger__timestamp"))),
         cost=F("price"),
         picklist_id=F("packagepicklist__picklist_id"),
         picklist_date=F("packagepicklist__picklist__date"),
+        reservation_date=F("pickup_reservation__pickup_day__date"),
+        reservation_active=F("pickup_reservation__pickup_day__is_active"),
+        reservation_id=F("pickup_reservation__id"),
     ).values(
         "id",
         "picklist_id",
@@ -391,6 +397,9 @@ def customer_parcels(request):
         "carrier__name",
         "package_type__description",
         "picklist_date",
+        "reservation_date",
+        "reservation_active",
+        "reservation_id",
         "tracking_code",
         "check_in_time",
         "check_out_time",
@@ -405,10 +414,18 @@ def customer_parcels(request):
     selected_ids = request.GET.get("selected_ids", "")
     selected = selected_ids.split(",") if selected_ids else []
 
+    today = date.today()
+    open_dates = list_open_pickup_dates(today, today + timedelta(days=60))
+
     return render(
         request,
         "customer/parcels.html",
-        {"page_obj": page_obj, "selected": selected, "active_account": account},
+        {
+            "page_obj": page_obj,
+            "selected": selected,
+            "active_account": account,
+            "open_dates": open_dates,
+        },
     )
 
 
@@ -437,7 +454,6 @@ def customer_invoices(request):
     per_page = request.GET.get("per_page", 10)
     paginator = Paginator(invoices, per_page)
     page_obj = paginator.get_page(page_number)
-
     return render(
         request,
         "customer/invoices.html",
@@ -454,31 +470,28 @@ def customer_ledger(request):
 
     ledger = (
         AccountLedger.objects.filter(account=account)
-        .select_related("user", "package", "invoice")
-        .values(
-            "credit",
-            "debit",
-            "timestamp",
-            "description",
-            "package_id",
-            "is_late",
-            "user__first_name",
-            "user__last_name",
-            "package__tracking_code",
-            "invoice__id",
-        )
         .order_by("-timestamp")
+        .values(
+            "id",
+            "timestamp",
+            "debit",
+            "credit",
+            "description",
+            "is_late",
+            "package_id",
+            "invoice_id",
+        )
     )
     page_number = request.GET.get("page", 1)
     per_page = request.GET.get("per_page", 10)
     paginator = Paginator(ledger, per_page)
     page_obj = paginator.get_page(page_number)
-
     return render(
         request,
         "customer/ledger.html",
         {"page_obj": page_obj, "active_account": account, "account": account},
     )
+
 
 
 @require_http_methods(["POST"])
