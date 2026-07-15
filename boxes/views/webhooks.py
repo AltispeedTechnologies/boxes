@@ -1,3 +1,4 @@
+"""External webhook receivers."""
 import stripe
 from boxes.tasks.stripe import handle_stripe_webhook
 from django.conf import settings
@@ -9,6 +10,7 @@ from django.views.decorators.http import require_http_methods
 @require_http_methods(["POST"])
 @csrf_exempt
 def stripe_webhooks(request):
+    """POST: verify Stripe signature and enqueue payment handling."""
     sig_header = request.META.get("HTTP_STRIPE_SIGNATURE", "")
 
     try:
@@ -27,6 +29,6 @@ def stripe_webhooks(request):
     if not (event.type.startswith("payment_intent") and event.type.split(".")[1] in valid_payment_intent_types):
         return HttpResponse(status=400)
 
-    handle_stripe_webhook.delay(event.data.object, request.user.id)
+    handle_stripe_webhook.delay(event.data.object)
 
     return HttpResponse(status=200)

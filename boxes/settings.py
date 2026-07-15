@@ -1,3 +1,7 @@
+"""Django settings loaded from environment (``/etc/boxes.env`` or ENV_PATH).
+
+See docs/SETTINGS.md for variable reference and docs/DATABASE_SETTINGS.md for DB config.
+"""
 import environ
 import os
 from celery.schedules import crontab
@@ -54,6 +58,7 @@ environ.Env.read_env(env.str('ENV_PATH', '/etc/boxes.env'))
 # This is defined here as a do-nothing function because we can't import
 # django.utils.translation -- that module depends on the settings.
 def gettext_noop(s):
+    """No-op gettext used for language list labels before Django i18n is ready."""
     return s
 
 
@@ -570,7 +575,7 @@ ROOT_URLCONF = "boxes.urls"
 
 LOGIN_URL = "/login/"
 
-LOGIN_REDIRECT_URL = "/accounts/profile/"
+LOGIN_REDIRECT_URL = "/profile/"
 
 LOGOUT_REDIRECT_URL = None
 

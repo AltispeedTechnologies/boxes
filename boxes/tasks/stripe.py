@@ -1,3 +1,4 @@
+"""Stripe webhook processing and coupon cleanup."""
 import json
 import stripe
 from boxes.models import AccountLedger, Invoice, Package
@@ -10,6 +11,7 @@ from django.utils import timezone
 
 
 def process_successful_invoice(user_id, account_id, invoice_id, subtotal, line_items):
+    """Apply successful payment to ledger and mark packages paid."""
     # Separate regular and late fees
     regular_fees = sum(i["amt"] for i in line_items if not i["late"])
     late_fees = sum(i["amt"] for i in line_items if i["late"])
@@ -33,7 +35,12 @@ def process_successful_invoice(user_id, account_id, invoice_id, subtotal, line_i
 
 
 @shared_task
-def handle_stripe_webhook(payment_intent, user_id):
+def handle_stripe_webhook(payment_intent, user_id=None):
+    """Celery task: process a PaymentIntent event.
+
+    ``user_id`` is accepted for backward compatibility but ignored; the
+    Invoice row supplies user/account ids on success.
+    """
     invoice = Invoice.objects.filter(payment_intent_id=payment_intent["id"]).first()
     if not invoice:
         return
@@ -55,6 +62,7 @@ def handle_stripe_webhook(payment_intent, user_id):
 
 @shared_task
 def remove_old_coupons():
+    """Celery beat: delete expired Stripe coupons."""
     day_ago_epoch = str(int((timezone.now() - timedelta(days=1)).timestamp()))
     coupon_ids = []
     coupons = stripe.Coupon.list(created={"lte": day_ago_epoch})

@@ -1,3 +1,6 @@
+"""URL routing with public, authenticated, staff, and customer tiers."""
+from functools import wraps
+
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import HttpResponseForbidden
@@ -10,26 +13,57 @@ from boxes.views.reports import *
 
 
 def is_staff(view_func):
+    """Decorator: require login and Staff group (``has_staff_role``), else 403."""
+
+    @wraps(view_func)
     def wrapped_view(request, *args, **kwargs):
+        """Staff-gated view wrapper."""
         if not request.user.is_authenticated:
             return redirect(f"{reverse('login')}?next={request.path}")
         elif not request.user.has_staff_role():
             return HttpResponseForbidden()
         return view_func(request, *args, **kwargs)
+
+    wrapped_view.access_tier = "staff"
     return wrapped_view
 
 
+
 def is_customer(view_func):
+    """Decorator: require login and Customer group, else 403."""
+
+    @wraps(view_func)
     def wrapped_view(request, *args, **kwargs):
+        """Customer-gated view wrapper."""
         if not request.user.is_authenticated:
             return redirect(f"{reverse('login')}?next={request.path}")
         elif not request.user.is_customer():
             return HttpResponseForbidden()
         return view_func(request, *args, **kwargs)
+
+    wrapped_view.access_tier = "customer"
     return wrapped_view
 
 
+
+
+
+def _tag_access_tier(urlpatterns, tier):
+    """Attach access_tier metadata to each pattern callback for introspection."""
+    for pattern in urlpatterns:
+        if isinstance(pattern, URLPattern):
+            cb = pattern.callback
+            if not getattr(cb, "access_tier", None):
+                try:
+                    cb.access_tier = tier
+                except (AttributeError, TypeError):
+                    pass
+        elif isinstance(pattern, URLResolver):
+            _tag_access_tier(pattern.url_patterns, tier)
+    return urlpatterns
+
 def decorate_urlpatterns(urlpatterns, decorator):
+    """Apply a decorator to every URLPattern callback in a list (recursive)."""
     for i in range(len(urlpatterns)):
         if isinstance(urlpatterns[i], URLPattern):
             urlpatterns[i].callback = decorator(urlpatterns[i].callback)
@@ -166,6 +200,8 @@ authenticated_urlpatterns = [
 staff_urlpatterns = decorate_urlpatterns(staff_urlpatterns, is_staff)
 customer_urlpatterns = decorate_urlpatterns(customer_urlpatterns, is_customer)
 authenticated_urlpatterns = decorate_urlpatterns(authenticated_urlpatterns, login_required)
+_tag_access_tier(public_urlpatterns, "public")
+_tag_access_tier(authenticated_urlpatterns, "authenticated")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
