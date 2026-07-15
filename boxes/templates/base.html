@@ -17,7 +17,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
         <!-- App styles (after vendor CSS) -->
-        <link rel="stylesheet" href="{% static css/boxes.css %}" />
+        <link rel="stylesheet" href="{% static 'css/boxes.css' %}" />
 
         <!-- jQuery 3.7.1 (plugin-safe; jQuery UI / Select2) -->
         <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
@@ -32,7 +32,7 @@
         <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"></script>
 
         <!-- Application-wide JS (BoxesPage, CSRF, Select2 helpers, htmx hooks) -->
-        <script src="{% static js/app.js %}"></script>
+        <script src="{% static 'js/app.js' %}"></script>
 
         <!-- Page-specific JS (full document navigation only; prefer BoxesPage.register) -->
         {% block javascript %}{% endblock javascript %}
