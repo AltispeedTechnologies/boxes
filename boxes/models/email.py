@@ -57,3 +57,24 @@ class SentEmailResult(models.Model):
     """Raw provider response JSON for a send attempt."""
     sent_email = models.ForeignKey(SentEmail, on_delete=models.CASCADE)
     response = models.JSONField()
+
+
+class SentEmailEvent(models.Model):
+    """Mailjet delivery event (sent/open/click/bounce/etc.) for a sent message.
+
+    Linked to SentEmail when Message_GUID matches ``message_uuid``; unmatched
+    events are still stored for later reconciliation.
+    """
+    sent_email = models.ForeignKey(
+        SentEmail, on_delete=models.CASCADE, null=True, blank=True, related_name="events"
+    )
+    event_type = models.CharField(max_length=32)
+    timestamp = models.DateTimeField()
+    message_uuid = models.CharField(max_length=64, null=True, blank=True, db_index=True)
+    email = models.CharField(max_length=254, null=True, blank=True)
+    payload = models.JSONField(null=True, blank=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["message_uuid", "event_type"]),
+        ]
