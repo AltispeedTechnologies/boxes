@@ -401,13 +401,13 @@ function init_page(event) {
     });
 
     // Dispose leftover Bootstrap tooltips bound to swapped-out nodes, then recreate
-    $(context).find([data-bs-tooltip=yes]).each(function() {
+    $(context).find("[data-bs-tooltip=yes]").each(function() {
         var existing = bootstrap.Tooltip.getInstance(this);
         if (existing) {
             existing.dispose();
         }
     });
-    var tooltip_trigger_list = [].slice.call(context.querySelectorAll([data-bs-tooltip=yes]));
+    var tooltip_trigger_list = [].slice.call(context.querySelectorAll("[data-bs-tooltip=yes]"));
     tooltip_trigger_list.map(function(tooltip_trigger_el) {
         return new bootstrap.Tooltip(tooltip_trigger_el);
     });
@@ -449,6 +449,24 @@ function update_navbar_active(pathname) {
 
         if (is_active) {
             link.classList.add("active");
+        }
+    });
+
+    // Mark dropdown parents active when a child route matches
+    navbar.querySelectorAll(".nav-item.dropdown").forEach(function(item) {
+        var child_active = false;
+        item.querySelectorAll(".dropdown-item").forEach(function(item_link) {
+            var child_href = item_link.getAttribute("href");
+            if (!child_href || child_href === "#") {
+                return;
+            }
+            if (path === child_href || path.indexOf(child_href) === 0) {
+                child_active = true;
+            }
+        });
+        var toggle = item.querySelector(".nav-link.dropdown-toggle");
+        if (toggle && child_active) {
+            toggle.classList.add("active");
         }
     });
 }
