@@ -24,7 +24,7 @@ SPECIAL_ATTRIBUTES = {
     "a": ["href", "name", "target", "rel"],
     "img": ["src", "alt", "height", "width"],
     "font": ["color", "style"],
-    "span": ["contenteditable", "style", "class"]
+    "span": ["contenteditable", "style", "class", "data-token"]
 }
 
 # Apply common attributes to all tags and update with special cases
