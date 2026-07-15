@@ -1,4 +1,5 @@
 """Aging storage fees and account balance totals."""
+from boxes.backend.system import get_system_user
 from boxes.models import Account, AccountBalance, AccountChargeSettings, AccountLedger, Package, PackageLedger
 from celery import shared_task
 from collections import defaultdict
@@ -128,7 +129,7 @@ def assess_regular_charges(start_time, end_time=None, exclude_package_types=None
             is_late = check_in_timestamp != charge_time
             description = "Late charge" if is_late else "Parcel charge"
             new_charges.append(AccountLedger(
-                user_id=1, package_id=pkg_id, account_id=acct_id, credit=0,
+                user_id=get_system_user().pk, package_id=pkg_id, account_id=acct_id, credit=0,
                 debit=price, timestamp=charge_time, is_late=is_late, description=description
             ))
 
@@ -165,7 +166,7 @@ def assess_custom_charges(endpoint_date, check_in_date, package_type_id, frequen
             ).exists()
             if not charge_exists:
                 new_charges.append(AccountLedger(
-                    user_id=1, package_id=package_id, account_id=account_id,
+                    user_id=get_system_user().pk, package_id=package_id, account_id=account_id,
                     credit=0, debit=price, timestamp=current_time, is_late=True
                 ))
                 account_ids.add(account_id)

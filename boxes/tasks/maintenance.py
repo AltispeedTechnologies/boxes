@@ -2,6 +2,7 @@
 import random
 from boxes.backend import reports as reports_backend
 from boxes.backend.account import create_user_from_account
+from boxes.backend.system import get_system_user
 from boxes.models import (Account, Chart, Package, PackageLedger, PackagePicklist, PackageQueue, Picklist,
                           PicklistQueue, Queue)
 from boxes.models.chart import CHART_FREQUENCIES
@@ -83,7 +84,7 @@ def populate_seed_data():
     accounts = []
     account_ids = set()
     for fake_name in fake_names:
-        new_account = Account(user_id=1,
+        new_account = Account(user_id=get_system_user().pk,
                               name=fake_name,
                               balance=0.00,
                               billable=True,
@@ -129,7 +130,7 @@ def populate_seed_data():
     missing_packages = Package.objects.exclude(id__in=ledger_entries).values_list("id", flat=True)
 
     # Create new ledger entries for these packages
-    new_ledger_entries = (PackageLedger(user_id=1, package_id=package_id, state=1) for package_id in missing_packages)
+    new_ledger_entries = (PackageLedger(user_id=get_system_user().pk, package_id=package_id, state=1) for package_id in missing_packages)
     PackageLedger.objects.bulk_create(new_ledger_entries)
 
     # Start the other tasks
