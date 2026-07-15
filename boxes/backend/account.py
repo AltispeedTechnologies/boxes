@@ -1,4 +1,5 @@
 """Account-related non-HTTP helpers."""
+from boxes.backend.membership import associate_user
 from boxes.models import Account, CustomUser, UserAccount
 from django.utils import timezone
 from django.utils.crypto import get_random_string
@@ -7,18 +8,23 @@ from django.utils.crypto import get_random_string
 def create_user_from_account(account_id):
     """Create an inactive CustomUser linked to an account via UserAccount.
 
-    Returns the user id, or an existing linked user id, or None if the account is missing/empty name.
-    Synchronous — not a Celery task. Username is a random unique string.
+    Returns the user id when a single membership exists or a new user is
+    created. Returns an existing linked user id only when there is exactly one
+    membership. Returns None if the account is missing, has an empty name, or
+    already has multiple linked users (ambiguous). Creates a user only when
+    there are zero memberships.
     """
     try:
         account = Account.objects.get(pk=account_id)
     except Account.DoesNotExist:
         return None
 
-    # If a UserAccount entry already exists, return that user
-    existing = UserAccount.objects.filter(account=account).first()
-    if existing:
-        return existing.user_id
+    existing = UserAccount.objects.filter(account=account)
+    existing_count = existing.count()
+    if existing_count == 1:
+        return existing.first().user_id
+    if existing_count > 1:
+        return None
 
     # Split the account.name into name parts
     name_parts = account.name.split()
@@ -52,7 +58,5 @@ def create_user_from_account(account_id):
         password=get_random_string(128),
         date_joined=timezone.now()
     )
-    # Create a UserAccount with the new CustomUser
-    UserAccount.objects.create(user=new_custom_user, account=account)
-    # Return the new CustomUser id
+    associate_user(account, new_custom_user, role=UserAccount.ROLE_OWNER)
     return new_custom_user.id

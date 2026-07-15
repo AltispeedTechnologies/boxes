@@ -90,8 +90,34 @@ class AccountLedger(models.Model):
 
 class UserAccount(models.Model):
     """Join table linking a login (CustomUser) to a billing Account for portal access."""
-    user = models.ForeignKey("CustomUser", on_delete=models.CASCADE)
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    ROLE_OWNER = "owner"
+    ROLE_MEMBER = "member"
+    ROLE_CHOICES = (
+        (ROLE_OWNER, "Owner"),
+        (ROLE_MEMBER, "Member"),
+    )
+
+    user = models.ForeignKey(
+        "CustomUser",
+        on_delete=models.CASCADE,
+        related_name="account_memberships",
+    )
+    account = models.ForeignKey(
+        Account,
+        on_delete=models.CASCADE,
+        related_name="user_memberships",
+    )
+    is_active = models.BooleanField(default=True)
+    role = models.CharField(max_length=16, choices=ROLE_CHOICES, default=ROLE_MEMBER)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user", "account"], name="unique_user_account"),
+        ]
+
+    def __str__(self):
+        return f"{self.user_id}@{self.account_id} ({self.role})"
 
 
 class AccountAlias(models.Model):
