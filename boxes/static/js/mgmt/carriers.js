@@ -28,7 +28,15 @@ function init_carrier_mgmt_page() {
             let name = $(this).find("td[data-type=\"name\"] span.text").text().trim();
             let phone_number = $(this).find("td[data-type=\"phone_number\"] span.text").text().trim();
             let website = $(this).find("td[data-type=\"website\"] span.text").text().trim();
-            payload[data_id] = {name: name, phone_number: phone_number, website: website};
+            let is_active = $(this).find("input.is_active").is(":checked");
+            let allow_duplicate_tracking = $(this).find("input.allow_duplicate_tracking").is(":checked");
+            payload[data_id] = {
+                name: name,
+                phone_number: phone_number,
+                website: website,
+                is_active: is_active,
+                allow_duplicate_tracking: allow_duplicate_tracking
+            };
         });
 
         window.ajax_request({

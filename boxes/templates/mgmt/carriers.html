@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container bg-body shadow rounded p-3 col-md-8" id="carriermgmt">
+<div class="container bg-body shadow rounded p-3 col-md-10" id="carriermgmt">
     <div class="row bg-primary bg-gradient rounded mb-3">
         <h2 class="text-center text-white py-2">Edit Carriers</h2>
     </div>
@@ -27,6 +27,8 @@
                     <th>Name</th>
                     <th>Phone Number</th>
                     <th>Website</th>
+                    <th class="text-center">Active</th>
+                    <th class="text-center text-nowrap">Allow Dup. Tracking</th>
                     <th class="text-nowrap" style="width: 1%;"></th>
                 </tr>
             </thead>
@@ -51,6 +53,11 @@
                             </span>
                             <input class="form-control website d-none" maxlength="32"></input>
                         </td>
+                        <td class="text-center" data-type="is_active">
+                            <input type="checkbox" class="form-check-input is_active" {% if carrier.is_active %}checked{% endif %}>
+                        </td>
+                        <td class="text-center" data-type="allow_duplicate_tracking">
+                            <input type="checkbox" class="form-check-input allow_duplicate_tracking" {% if carrier.allow_duplicate_tracking %}checked{% endif %}>
                         </td>
                         <td class="text-nowrap" style="width: 1%;">
                             <button class="btn btn-primary editrow">
@@ -74,6 +81,12 @@
                     <td data-type="website">
                         <span class="text d-none"></span>
                         <input class="form-control website" maxlength="32"></input>
+                    </td>
+                    <td class="text-center" data-type="is_active">
+                        <input type="checkbox" class="form-check-input is_active" checked>
+                    </td>
+                    <td class="text-center" data-type="allow_duplicate_tracking">
+                        <input type="checkbox" class="form-check-input allow_duplicate_tracking">
                     </td>
                     <td class="text-nowrap" style="width: 1%;">
                         <button class="btn btn-primary editrow d-none">

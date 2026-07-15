@@ -22,10 +22,16 @@ def update_carriers(request):
     updated_carriers = {}
 
     for carrier_id, attributes in data.items():
+        is_active = bool(attributes.get("is_active", True))
+        allow_duplicate_tracking = bool(attributes.get("allow_duplicate_tracking", False))
         if str(carrier_id).startswith("NEW_"):
-            new_carrier = Carrier(name=attributes["name"],
-                                  phone_number=attributes["phone_number"],
-                                  website=attributes["website"])
+            new_carrier = Carrier(
+                name=attributes["name"],
+                phone_number=attributes["phone_number"],
+                website=attributes["website"],
+                is_active=is_active,
+                allow_duplicate_tracking=allow_duplicate_tracking,
+            )
             new_carrier.save()
             updated_carriers[carrier_id] = new_carrier.id
         else:
@@ -34,6 +40,8 @@ def update_carriers(request):
                 carrier.name = attributes["name"]
             carrier.phone_number = attributes["phone_number"]
             carrier.website = attributes["website"]
+            carrier.is_active = is_active
+            carrier.allow_duplicate_tracking = allow_duplicate_tracking
             carrier.save()
 
     return JsonResponse({"success": True, "updated_carriers": updated_carriers})

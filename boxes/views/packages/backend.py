@@ -12,7 +12,7 @@ from django.views.decorators.http import require_http_methods
 def type_search(request):
     """GET: PackageType Select2 search."""
     search_query = request.GET.get("term", "")
-    pkgtypes = PackageType.objects.filter(description__icontains=search_query)[:10]
+    pkgtypes = PackageType.objects.filter(description__icontains=search_query, is_active=True)[:10]
     results = [{"id": pkgtype.id,
                 "text": pkgtype.description,
                 "default_price": pkgtype.default_price} for pkgtype in pkgtypes]

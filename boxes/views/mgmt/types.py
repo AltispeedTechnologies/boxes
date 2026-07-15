@@ -22,10 +22,14 @@ def update_package_types(request):
     updated_types = {}
 
     for type_id, attributes in data.items():
+        is_active = bool(attributes.get("is_active", True))
         if str(type_id).startswith("NEW_"):
-            new_type = PackageType(shortcode=attributes["shortcode"],
-                                   description=attributes["description"],
-                                   default_price=attributes["default_price"])
+            new_type = PackageType(
+                shortcode=attributes["shortcode"],
+                description=attributes["description"],
+                default_price=attributes["default_price"],
+                is_active=is_active,
+            )
             new_type.save()
             updated_types[type_id] = new_type.id
         else:
@@ -34,6 +38,7 @@ def update_package_types(request):
                 package_type.shortcode = attributes["shortcode"]
                 package_type.description = attributes["description"]
                 package_type.default_price = attributes["default_price"]
+                package_type.is_active = is_active
                 package_type.save()
             except PackageType.DoesNotExist:
                 updated_types[type_id] = "Not found"

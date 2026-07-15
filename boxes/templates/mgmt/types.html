@@ -3,7 +3,7 @@
 {% block content %}
 {% include "_messages.html" %}
 
-<div class="container bg-body shadow rounded p-3 col-md-6" id="typesmgmt">
+<div class="container bg-body shadow rounded p-3 col-md-8" id="typesmgmt">
     <div class="row bg-primary bg-gradient rounded mb-3">
         <h2 class="text-center text-white py-2">Configure Package Types</h2>
     </div>
@@ -26,6 +26,7 @@
                     <th class="text-nowrap" style="width: 1%;">Shortcode</th>
                     <th>Description</th>
                     <th>Default Price</th>
+                    <th class="text-center">Active</th>
                     <th class="text-nowrap" style="width: 1%;"></th>
                 </tr>
             </thead>
@@ -50,6 +51,9 @@
                             </span>
                             <input class="form-control default_price d-none" placeholder="0.00" maxlength="8" inputmode="decimal"></input>
                         </td>
+                        <td class="text-center" data-type="is_active">
+                            <input type="checkbox" class="form-check-input is_active" {% if type.is_active %}checked{% endif %}>
+                        </td>
                         <td class="text-nowrap" style="width: 1%;">
                             <button class="btn btn-primary editrow">
                                 <i class="fas fa-edit"></i>
@@ -72,6 +76,9 @@
                     <td data-type="default_price">
                         <span class="text d-none"></span>
                         <input class="form-control default_price is-invalid" placeholder="0.00" maxlength="8" inputmode="decimal"></input>
+                    </td>
+                    <td class="text-center" data-type="is_active">
+                        <input type="checkbox" class="form-check-input is_active" checked>
                     </td>
                     <td class="text-nowrap" style="width: 1%;">
                         <button class="btn btn-primary editrow d-none">

@@ -28,7 +28,13 @@ function init_types_mgmt_page() {
             let shortcode = $(this).find("td[data-type=\"shortcode\"] span.text").text().trim();
             let description = $(this).find("td[data-type=\"description\"] span.text").text().trim();
             let default_price = $(this).find("td[data-type=\"default_price\"] span.text").text().trim();
-            payload[data_id] = {shortcode: shortcode, description: description, default_price: default_price};
+            let is_active = $(this).find("input.is_active").is(":checked");
+            payload[data_id] = {
+                shortcode: shortcode,
+                description: description,
+                default_price: default_price,
+                is_active: is_active
+            };
         });
 
         window.ajax_request({

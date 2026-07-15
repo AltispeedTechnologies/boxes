@@ -8,6 +8,6 @@ from boxes.models import Carrier
 def carrier_search(request):
     """GET: search carriers by name."""
     search_query = request.GET.get("term", "")
-    carriers = Carrier.objects.filter(name__icontains=search_query)[:10]
+    carriers = Carrier.objects.filter(name__icontains=search_query, is_active=True)[:10]
     results = [{"id": carrier.id, "text": carrier.name} for carrier in carriers]
     return JsonResponse({"success": True, "results": results})
