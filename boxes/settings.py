@@ -1,6 +1,6 @@
 """Django settings loaded from environment (``/etc/boxes.env`` or ENV_PATH).
 
-See docs/SETTINGS.md for variable reference and docs/DATABASE_SETTINGS.md for DB config.
+See docs/api/settings.md (generated) and docs/DATABASE_SETTINGS.md for DB-backed config.
 """
 import environ
 import os
