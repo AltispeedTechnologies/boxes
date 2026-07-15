@@ -89,7 +89,7 @@ test_unit:
     - env/bin/pip install -r requirements-dev.txt
   script:
     - env/bin/coverage run manage.py test boxes.tests
-    - env/bin/coverage report --fail-under=40
+    - env/bin/coverage report --fail-under=45
 
 deploy_staging:
   stage: deploy
