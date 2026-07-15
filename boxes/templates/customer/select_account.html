@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container bg-body shadow-sm rounded p-3 col-md-8">
+    <div class="row bg-primary bg-gradient rounded mb-3">
+        <h2 class="text-center text-white py-2">Select Account</h2>
+    </div>
+    <p class="text-muted">You have access to more than one account. Choose which account to use.</p>
+    <div class="list-group">
+        {% for account in accounts %}
+        <form method="post" action="{% url 'customer_select_account' %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            {% csrf_token %}
+            <input type="hidden" name="account_id" value="{{ account.id }}">
+            <input type="hidden" name="next" value="{{ next|default:'/' }}">
+            <div>
+                <strong>{{ account.name }}</strong>
+                <span class="text-muted ms-2">{{ account.hr_balance }}</span>
+                {% if active_account and active_account.id == account.id %}
+                <span class="badge bg-success ms-2">Current</span>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Use this account</button>
+        </form>
+        {% empty %}
+        <div class="list-group-item">No accounts available.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
