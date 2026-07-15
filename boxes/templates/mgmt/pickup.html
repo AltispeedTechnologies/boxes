@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container bg-body shadow rounded p-3 col-md-10" id="pickupmgmt">
+    <div class="row bg-primary bg-gradient rounded mb-3">
+        <h2 class="text-center text-white py-2">Pickup Days</h2>
+    </div>
+
+    {% include "_messages.html" %}
+
+    <h4 class="mt-2">Schedule Rules</h4>
+    <div class="d-flex justify-content-end mb-2">
+        <div class="me-2 align-self-center">
+            <i id="savingrulesicon" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+            <i id="successrulesicon" class="fas fa-check-circle text-success" style="display: none;"></i>
+        </div>
+        <button type="button" class="btn btn-success me-2" id="addrule">
+            <i class="fas fa-plus"></i> Add Rule
+        </button>
+        <button class="btn btn-primary" id="saverules">
+            <i class="fas fa-save"></i> Save Rules
+        </button>
+    </div>
+    <div class="table-responsive mb-4">
+        <table class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Recurrence</th>
+                    <th>Weekday</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Active</th>
+                    <th style="width:1%"></th>
+                </tr>
+            </thead>
+            <tbody id="pickuprules">
+                {% for rule in rules %}
+                <tr data-id="{{ rule.id }}">
+                    <td><input class="form-control name" value="{{ rule.name }}" maxlength="100"></td>
+                    <td>
+                        <select class="form-select recurrence">
+                            <option value="none" {% if rule.recurrence == "none" %}selected{% endif %}>None</option>
+                            <option value="weekly" {% if rule.recurrence == "weekly" %}selected{% endif %}>Weekly</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="form-select weekday">
+                            <option value="">—</option>
+                            {% for val, label in weekday_labels %}
+                            <option value="{{ val }}" {% if rule.weekday == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td><input type="date" class="form-control start_date" value="{{ rule.start_date|date:'Y-m-d' }}"></td>
+                    <td><input type="date" class="form-control end_date" value="{{ rule.end_date|date:'Y-m-d' }}"></td>
+                    <td class="text-center"><input type="checkbox" class="form-check-input is_active" {% if rule.is_active %}checked{% endif %}></td>
+                    <td><button type="button" class="btn btn-danger btn-sm removerule"><i class="fas fa-trash-alt"></i></button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h4>Explicit Days</h4>
+    <p class="text-muted small">Inactive days override schedule rules (day closed). Active one-off days open a date without a rule.</p>
+    <div class="d-flex justify-content-end mb-2">
+        <div class="me-2 align-self-center">
+            <i id="savingdaysicon" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+            <i id="successdaysicon" class="fas fa-check-circle text-success" style="display: none;"></i>
+        </div>
+        <button type="button" class="btn btn-success me-2" id="addday">
+            <i class="fas fa-plus"></i> Add Day
+        </button>
+        <button class="btn btn-primary" id="savedays">
+            <i class="fas fa-save"></i> Save Days
+        </button>
+    </div>
+    <div class="table-responsive mb-4">
+        <table class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Active</th>
+                    <th>Notes</th>
+                    <th>Picklist</th>
+                    <th style="width:1%"></th>
+                </tr>
+            </thead>
+            <tbody id="pickupdays">
+                {% for day in days %}
+                <tr data-id="{{ day.id }}">
+                    <td><input type="date" class="form-control date" value="{{ day.date|date:'Y-m-d' }}"></td>
+                    <td class="text-center"><input type="checkbox" class="form-check-input is_active" {% if day.is_active %}checked{% endif %}></td>
+                    <td><input class="form-control notes" value="{{ day.notes|default_if_none:'' }}"></td>
+                    <td>
+                        <select class="form-select picklist_id">
+                            <option value="">—</option>
+                            {% for pl in picklists %}
+                            <option value="{{ pl.id }}" {% if day.picklist_id == pl.id %}selected{% endif %}>
+                                {{ pl.date|default:'' }} {{ pl.description|default:'' }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td><button type="button" class="btn btn-danger btn-sm removeday"><i class="fas fa-trash-alt"></i></button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h4>Open days (next 60 days)</h4>
+    <ul class="list-inline">
+        {% for d in open_dates %}
+        <li class="list-inline-item badge text-bg-success mb-1">{{ d|date:"D, M j, Y" }}</li>
+        {% empty %}
+        <li class="text-muted">No open pickup days in the next 60 days.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+{% load static %}
+<script src="{% static 'js/mgmt/pickup.js' %}"></script>
+{% endblock %}

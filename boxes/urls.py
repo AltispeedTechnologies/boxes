@@ -85,6 +85,8 @@ customer_urlpatterns = [
     path("session/account", session_set_active_account, name="session_set_active_account"),
     path("customer/select-account", customer_select_account, name="customer_select_account"),
     path("customer/parcels", customer_parcels, name="customer_parcels"),
+    path("customer/parcels/reserve", customer_reserve_pickup, name="customer_reserve_pickup"),
+    path("customer/pickup/open", customer_open_pickup_days, name="customer_open_pickup_days"),
     path("customer/payments", customer_make_payment, name="customer_make_payment"),
     path("customer/payments/portal", customer_payment_methods, name="customer_payment_methods"),
     path("customer/payments/portal/redir", customer_billing_portal, name="customer_billing_portal"),
@@ -116,6 +118,10 @@ staff_urlpatterns = [
     path("mgmt/packages/carriers/update", update_carriers, name="update_carriers"),
     path("mgmt/packages/types", package_type_settings, name="package_type_settings"),
     path("mgmt/packages/types/update", update_package_types, name="update_package_types"),
+    path("mgmt/pickup", pickup_mgmt, name="pickup_mgmt"),
+    path("mgmt/pickup/open", pickup_open_days, name="pickup_open_days"),
+    path("mgmt/pickup/rules/update", update_pickup_rules, name="update_pickup_rules"),
+    path("mgmt/pickup/days/update", update_pickup_days, name="update_pickup_days"),
 
     # Accounts
     path("accounts/<int:pk>/edit", account_edit, name="account_edit"),
