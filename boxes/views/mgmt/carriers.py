@@ -1,3 +1,4 @@
+"""Carrier catalog management."""
 import json
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import Carrier
@@ -8,6 +9,7 @@ from django.views.decorators.http import require_http_methods
 
 @require_http_methods(["GET"])
 def carrier_settings(request):
+    """GET: carriers management page."""
     carriers = Carrier.objects.all().order_by("id")
     return render(request, "mgmt/carriers.html", {"carriers": carriers})
 
@@ -15,6 +17,7 @@ def carrier_settings(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def update_carriers(request):
+    """POST: create/update/delete carriers from form data."""
     data = json.loads(request.body)
     updated_carriers = {}
 

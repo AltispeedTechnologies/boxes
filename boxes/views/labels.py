@@ -1,3 +1,4 @@
+"""ReportLab package label generation."""
 import os
 import re
 from boxes.models import GlobalSettings, Package
@@ -12,9 +13,11 @@ from reportlab.pdfbase import pdfmetrics
 
 
 def draw_label(canvas, first_name, last_name, barcode_value, date, inside):
+    """Draw one label onto a ReportLab canvas."""
     page_width, page_height = 4*inch, 6*inch
 
     def draw_centered_string(y, text, font_name, font_size):
+        """Draw a centered string on the label canvas."""
         if len(text) > 13 and font_size > 24:
             text = text[:10] + "..."
         text_width = pdfmetrics.stringWidth(text, font_name, font_size)
@@ -70,6 +73,7 @@ def draw_label(canvas, first_name, last_name, barcode_value, date, inside):
 
 
 def get_ids(request):
+    """Parse package ids from the request for label printing."""
     ids = request.GET.get("ids")
     if ids:
         ids = re.sub(r"[^\d,]", "", ids)
@@ -79,6 +83,7 @@ def get_ids(request):
 
 
 def generate_label(request):
+    """GET: stream multi-label PDF for requested packages."""
     ids = get_ids(request)
     if not ids:
         return HttpResponse("No IDs provided.", content_type="text/plain", status=400)
@@ -106,6 +111,7 @@ def generate_label(request):
 
 
 def show_label(request):
+    """GET: label print UI."""
     ids = get_ids(request)
 
     if not ids:

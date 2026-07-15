@@ -1,3 +1,4 @@
+"""Aging charge rules and tax settings UI."""
 import decimal
 import json
 import stripe
@@ -10,6 +11,7 @@ from django.views.decorators.http import require_http_methods
 
 @require_http_methods(["GET"])
 def charge_settings(request):
+    """GET: charges and tax configuration page."""
     charge_rules = AccountChargeSettings.objects.filter(
         package_type_id__isnull=True,
         price__isnull=True,
@@ -41,6 +43,7 @@ def charge_settings(request):
 def get_tax_rate(tax_rate):
     # If there is an existing tax with the new percentage, simply re-enable it
     # Otherwise, create a new TaxRate
+    """Ensure a Stripe Tax Rate exists for ``tax_rate``; return id."""
     tax_rates = stripe.TaxRate.list()
     target, last = None, None
     while (tax_rates["has_more"] or len(tax_rates["data"]) > 0) and not target:
@@ -62,6 +65,7 @@ def get_tax_rate(tax_rate):
 
 @require_http_methods(["POST"])
 def save_charge_settings(request):
+    """POST: persist AccountChargeSettings and tax GlobalSettings fields."""
     data = json.loads(request.body)
 
     AccountChargeSettings.objects.all().delete()

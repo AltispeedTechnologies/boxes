@@ -1,3 +1,4 @@
+"""Staff account detail: search, ledger, packages, emails, updates."""
 import json
 from django.core.paginator import Paginator
 from django.http import JsonResponse
@@ -11,6 +12,7 @@ from boxes.views.common import _get_packages, _get_matching_users, _get_emails
 
 @require_http_methods(["GET"])
 def account_search(request):
+    """JSON/Select2 search over accounts and aliases."""
     search_query = request.GET.get("term", "")
     aliases = AccountAlias.objects.filter(alias__icontains=search_query)[:10]
     results = [{"id": alias.account.id,
@@ -21,6 +23,7 @@ def account_search(request):
 
 @require_http_methods(["GET"])
 def account_edit(request, pk):
+    """Render staff account edit page."""
     user, account = _get_matching_users(pk)
     aliases = AccountAlias.objects.filter(account_id=pk)
     emails = CustomUserEmail.objects.filter(user=user)
@@ -33,6 +36,7 @@ def account_edit(request, pk):
 
 @require_http_methods(["GET"])
 def account_ledger(request, pk):
+    """Render or return ledger rows for an account."""
     account = Account.objects.filter(id=pk).select_related("accountbalance").first()
     ledger = AccountLedger.objects.select_related("user", "package", "invoice").values(
         "credit",
@@ -61,6 +65,7 @@ def account_ledger(request, pk):
 
 @require_http_methods(["GET"])
 def account_packages(request, pk):
+    """List packages belonging to an account."""
     account = Account.objects.filter(id=pk).select_related("accountbalance").first()
 
     page_number = request.GET.get("page", 1)
@@ -76,6 +81,7 @@ def account_packages(request, pk):
 
 @require_http_methods(["GET"])
 def account_emails(request, pk):
+    """List sent emails related to an account."""
     account = Account.objects.filter(id=pk).select_related("accountbalance").first()
 
     page_number = request.GET.get("page", 1)
@@ -92,6 +98,7 @@ def account_emails(request, pk):
 @require_http_methods(["POST"])
 @exception_catcher()
 def update_account(request, pk):
+    """POST: update account fields (name, billable, comments, etc.)."""
     request_data = json.loads(request.body)
     account = get_object_or_404(Account, pk=pk)
 
@@ -120,6 +127,7 @@ def update_account(request, pk):
 @require_http_methods(["POST"])
 @exception_catcher()
 def update_account_aliases(request):
+    """POST: replace/update account alias list."""
     data = json.loads(request.body)
     updated_aliases = dict()
 

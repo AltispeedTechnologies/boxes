@@ -1,3 +1,4 @@
+"""Session login and logout views."""
 # Authentication-related view classes
 # Register, sign in, and sign out
 
@@ -8,6 +9,7 @@ from django.shortcuts import render, redirect
 
 
 def sign_in(request):
+    """Render login form or authenticate and redirect (honors ``next``)."""
     if request.method == "GET":
         return render(request, "login.html", {"form": AuthenticationForm()})
 
@@ -31,6 +33,7 @@ def sign_in(request):
 
 
 def sign_out(request):
+    """Log out the current user and redirect to login."""
     logout(request)
     messages.success(request, "You have been logged out.")
     return redirect("home")

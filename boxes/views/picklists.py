@@ -1,3 +1,4 @@
+"""Staff picklist CRUD, assignment, and checkout."""
 import json
 import re
 from boxes.management.exception_catcher import exception_catcher
@@ -18,6 +19,7 @@ from django.utils.timezone import localtime
 
 @require_http_methods(["GET"])
 def picklist_query(request):
+    """GET: query picklists for UI widgets."""
     results = _picklist_data()
     return JsonResponse({"success": True, "results": results})
 
@@ -25,6 +27,7 @@ def picklist_query(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def create_picklist(request):
+    """POST: create a picklist (date/description)."""
     data = json.loads(request.body)
     description = data.get("description", None)
     date = data.get("date", None)
@@ -56,6 +59,7 @@ def create_picklist(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def modify_package_picklist(request):
+    """POST: assign packages to a picklist."""
     data = json.loads(request.body)
     picklist_id = int(data.get("picklist_id"))
     package_ids = set(data.get("ids", []))
@@ -79,6 +83,7 @@ def modify_package_picklist(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def remove_package_picklist(request):
+    """POST: remove packages from picklists."""
     data = json.loads(request.body)
     package_ids = set(data.get("ids", []))
 
@@ -96,6 +101,7 @@ def remove_package_picklist(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def remove_picklist(request, pk):
+    """POST: delete a picklist by id."""
     data = json.loads(request.body)
     picklist_id_value = data.get("picklist_id")
     new_picklist = int(picklist_id_value) if picklist_id_value else None
@@ -149,6 +155,7 @@ def remove_picklist(request, pk):
 
 @require_http_methods(["GET"])
 def picklist_list(request, pk=None):
+    """GET: picklist index page."""
     picklists = Picklist.objects.annotate(
         count=Count("packagepicklist"),
         queue_count=Coalesce(Subquery(
@@ -180,6 +187,7 @@ def picklist_list(request, pk=None):
 
 @require_http_methods(["GET"])
 def picklist_show_table(request, pk=None):
+    """GET: packages table fragment for a picklist."""
     picklist = get_object_or_404(Picklist, pk=pk)
     picklist_title = picklist.date if picklist.date else picklist.description
 
@@ -198,6 +206,7 @@ def picklist_show_table(request, pk=None):
 
 @require_http_methods(["GET"])
 def picklist_show(request, pk=None):
+    """GET: picklist detail page."""
     picklist = get_object_or_404(Picklist, pk=pk)
 
     package_ids = PackagePicklist.objects.filter(picklist_id=picklist.id).values_list("package_id", flat=True)
@@ -221,6 +230,7 @@ def picklist_show(request, pk=None):
 
 @require_http_methods(["GET"])
 def picklist_check_out(request, pk=None):
+    """GET: checkout flow scoped to a picklist."""
     picklist = get_object_or_404(Picklist, pk=pk)
 
     picklist_title = picklist.date if picklist.date else picklist.description
@@ -257,6 +267,7 @@ def picklist_check_out(request, pk=None):
 
 
 def _picklist_data(exclude=None):
+    """Serialize picklist options, optionally excluding an id."""
     if exclude:
         picklists = Picklist.objects.exclude(id=exclude)
     else:

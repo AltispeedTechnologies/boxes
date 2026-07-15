@@ -1,3 +1,4 @@
+"""Staff account list management page."""
 from boxes.models import Account
 from django.core.paginator import Paginator
 from django.db.models import Case, When, Value, CharField, F
@@ -9,6 +10,7 @@ from django.views.decorators.http import require_http_methods
 
 @require_http_methods(["GET"])
 def account_mgmt(request):
+    """GET: management accounts list/search UI."""
     query = escape(request.GET.get("q", ""))
 
     accounts = Account.objects.select_related(

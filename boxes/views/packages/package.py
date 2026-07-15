@@ -1,3 +1,4 @@
+"""Single-package detail and update endpoints."""
 import json
 from boxes.models import Package, PackageLedger, SentEmail
 from boxes.models.package import PACKAGE_STATES
@@ -9,6 +10,7 @@ from django.views.decorators.http import require_http_methods
 
 @require_http_methods(["GET"])
 def package_detail(request, pk):
+    """GET: package detail page with history."""
     package_values = Package.objects.select_related("account", "carrier", "packagetype").values(
         "id",
         "price",
@@ -48,6 +50,7 @@ def package_detail(request, pk):
 
 @require_http_methods(["POST"])
 def update_package(request, pk):
+    """POST: update fields on one package."""
     request_data = json.loads(request.body)
     result = update_packages_fields([pk], request_data, request.user)
     return result
@@ -55,6 +58,7 @@ def update_package(request, pk):
 
 @require_http_methods(["POST"])
 def update_packages(request):
+    """POST: bulk update package fields."""
     request_data = json.loads(request.body)
     package_ids = request_data.get("ids")
     package_data = request_data.get("values")

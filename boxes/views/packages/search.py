@@ -1,3 +1,4 @@
+"""Package listing and search pages."""
 from boxes.views.common import _search_packages_helper
 from django.shortcuts import render
 from django.urls import reverse
@@ -6,12 +7,14 @@ from django.views.decorators.http import require_http_methods
 
 @require_http_methods(["GET"])
 def all_packages(request):
+    """GET: all-packages listing."""
     return render(request, "packages/index.html", {"search_url": reverse("search_packages"),
                                                    "filter": "customer"})
 
 
 @require_http_methods(["GET"])
 def search_packages(request):
+    """GET: search packages by query/filters."""
     req_filter = request.GET.get("filter").strip()
     if req_filter not in ["tracking_code", "customer", ""]:
         return

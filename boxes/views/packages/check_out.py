@@ -1,3 +1,4 @@
+"""Package check-out UI and state transitions."""
 import json
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import Package, PackagePicklist, PackageQueue, Picklist, PicklistQueue, Queue
@@ -12,6 +13,7 @@ from django.views.decorators.http import require_http_methods
 @require_http_methods(["GET"])
 def check_out(request):
     # Check if there is already a PicklistQueue mapping
+    """GET: check-out page."""
     queue, _ = Queue.objects.get_or_create(description="Check Out Queue", check_in=False)
 
     # Grab all packages in the queue
@@ -35,6 +37,7 @@ def check_out(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def check_out_packages(request):
+    """POST: check out packages (state → Checked out)."""
     result = update_packages_util(request, state=2, debit_credit_switch=True)
     if not result["success"]:
         return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occured."])})
@@ -43,6 +46,7 @@ def check_out_packages(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def check_out_packages_reverse(request):
+    """POST: reverse a check-out back to checked-in."""
     result = update_packages_util(request, state=1, debit_credit_switch=False)
     if not result["success"]:
         return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occured."])})
@@ -51,6 +55,7 @@ def check_out_packages_reverse(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def verify_can_checkout(request):
+    """POST: validate packages can be checked out (paid/balance rules)."""
     data = json.loads(request.body)
     tracking_code = str(data.get("tracking_code"))
     picklist_id = data.get("picklist_id", None)

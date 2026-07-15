@@ -1,3 +1,4 @@
+"""Email settings and logs management."""
 import json
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import EmailSettings, EmailTemplate, GlobalSettings, NotificationRule, SentEmail
@@ -13,6 +14,7 @@ from django.views.decorators.http import require_http_methods
 
 @require_http_methods(["GET"])
 def email_settings(request):
+    """GET: sender and notification rules page."""
     templates = EmailTemplate.objects.all().order_by("id")
     global_settings, _ = GlobalSettings.objects.get_or_create(id=1)
     try:
@@ -27,6 +29,7 @@ def email_settings(request):
 
 @require_http_methods(["GET"])
 def email_logs(request):
+    """GET: sent email log listing."""
     emails = SentEmail.objects.annotate(
         sent_id=F("pk"),
         timestamp_val=F("timestamp"),
@@ -65,6 +68,7 @@ def email_logs(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def save_email_settings(request):
+    """POST: save EmailSettings and NotificationRule rows."""
     data = json.loads(request.body)
     email_sending = bool(data.get("email_sending"))
     sender_name = data.get("sender_name")

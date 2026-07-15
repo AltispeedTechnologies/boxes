@@ -1,3 +1,4 @@
+"""Shared package field update and state-transition utilities."""
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import (Account, AccountLedger, Carrier, Package, PackageLedger, PackagePicklist, PackageQueue,
                           PackageType)
@@ -11,6 +12,7 @@ from django.http import JsonResponse
 
 @exception_catcher()
 def update_packages_fields(package_ids, package_data, user, no_ledger=False):
+    """Apply field changes to package ids; optional ledger suppression."""
     packages = Package.objects.filter(pk__in=package_ids)
     updates = []
     errors = []
@@ -113,6 +115,7 @@ def update_packages_fields(package_ids, package_data, user, no_ledger=False):
 
 
 def update_packages_util(request, state, debit_credit_switch=False):
+    """Parse request and apply a target state with debit/credit switch."""
     response_data = {"success": False, "errors": []}
     try:
         ids = request.POST.getlist("ids[]", [])

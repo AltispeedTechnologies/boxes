@@ -1,3 +1,4 @@
+"""Package check-in UI and creation."""
 from boxes.forms import PackageForm
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import (Account, Carrier, EmailQueue, EmailSettings, Package, PackageQueue,
@@ -11,6 +12,7 @@ from django.views.decorators.http import require_http_methods
 
 @require_http_methods(["GET"])
 def check_in(request):
+    """GET: check-in page with queue selector."""
     form = PackageForm()
     queues = Queue.objects.filter(check_in=True)
     prices = PackageType.objects.all().values_list("default_price", flat=True)
@@ -24,6 +26,7 @@ def check_in(request):
 def create_package(request):
     # If the tracking code is None, this means we need to generate one
     # (An empty tracking code should give the user an error)
+    """POST: create a package (and queue membership) from form data."""
     data = request.POST.copy()
     return_tracking_code = False
     if not data.get("tracking_code"):
@@ -58,6 +61,7 @@ def create_package(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def check_in_packages(request):
+    """POST: transition selected packages to checked-in state."""
     queue_id = request.POST.get("queue_id")
     PackageQueue.objects.filter(queue_id=queue_id).delete()
 

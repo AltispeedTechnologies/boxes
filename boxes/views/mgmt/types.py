@@ -1,3 +1,4 @@
+"""Package type catalog management."""
 import json
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import PackageType
@@ -8,6 +9,7 @@ from django.views.decorators.http import require_http_methods
 
 @require_http_methods(["GET"])
 def package_type_settings(request):
+    """GET: package types management page."""
     package_types = PackageType.objects.all().order_by("id")
     return render(request, "mgmt/types.html", {"package_types": package_types})
 
@@ -15,6 +17,7 @@ def package_type_settings(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def update_package_types(request):
+    """POST: create/update/delete package types."""
     data = json.loads(request.body)
     updated_types = {}
 

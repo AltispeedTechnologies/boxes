@@ -1,3 +1,4 @@
+"""GlobalSettings (business identity and logos) management."""
 import json
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import GlobalSettings
@@ -11,6 +12,7 @@ from PIL import Image
 
 @require_http_methods(["GET"])
 def general_settings(request):
+    """GET: general settings page."""
     settings, _ = GlobalSettings.objects.get_or_create(id=1)
     return render(request, "mgmt/general.html", {"settings": settings})
 
@@ -18,6 +20,7 @@ def general_settings(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def save_general_settings(request):
+    """POST: save GlobalSettings fields and process logo upload."""
     settings, _ = GlobalSettings.objects.get_or_create(id=1)
 
     payload = request.POST.get("payload")
@@ -56,6 +59,7 @@ def save_general_settings(request):
 # Utility function for resizing and saving images
 def resize_and_save(image, size, format, model, attribute, filename):
     # Resize the image
+    """Resize an image and assign it to a model ImageField attribute."""
     resized_image = image.resize(size, Image.Resampling.LANCZOS)
 
     # Save to buffer

@@ -1,3 +1,4 @@
+"""Auto-import management settings views."""
 from pathlib import Path
 
 views_directory = Path(__file__).parent

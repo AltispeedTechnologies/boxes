@@ -1,3 +1,4 @@
+"""Profile self-service and staff user create/update endpoints."""
 import json
 from boxes.forms import CustomUserForm
 from boxes.models import Account, CustomUser, CustomUserEmail, UserAccount
@@ -140,6 +141,7 @@ def update_profile_emails(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def update_user(request):
+    """POST (staff): update a target user's profile fields."""
     data = json.loads(request.body)
 
     responses = {}
@@ -168,6 +170,7 @@ def update_user(request):
 
 # Generate a unique username
 def generate_username():
+    """Generate a unique username string for new users."""
     while True:
         username = get_random_string(149)
         if not CustomUser.objects.filter(username=username).exists():
@@ -177,6 +180,7 @@ def generate_username():
 @require_http_methods(["POST"])
 @exception_catcher()
 def create_user(request):
+    """POST (staff): create user, optional account link, set groups."""
     data = json.loads(request.body)
     data["username"] = generate_username()
 
@@ -204,6 +208,7 @@ def create_user(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def update_user_emails(request):
+    """POST (staff): update notification emails for a target user."""
     data = json.loads(request.body)
     updated_emails = dict()
 

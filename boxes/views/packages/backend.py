@@ -1,3 +1,4 @@
+"""Package-adjacent JSON helpers (types, queues)."""
 import json
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import PackageQueue, PackageType, Queue
@@ -9,6 +10,7 @@ from django.views.decorators.http import require_http_methods
 
 @require_http_methods(["GET"])
 def type_search(request):
+    """GET: PackageType Select2 search."""
     search_query = request.GET.get("term", "")
     pkgtypes = PackageType.objects.filter(description__icontains=search_query)[:10]
     results = [{"id": pkgtype.id,
@@ -19,6 +21,7 @@ def type_search(request):
 
 @require_http_methods(["GET"])
 def queue_packages(request, pk):
+    """GET: packages currently in queue ``pk``."""
     packages = PackageQueue.objects.filter(queue=pk).select_related(
         "package__account",
         "package__package_type",
@@ -54,6 +57,7 @@ def queue_packages(request, pk):
 @require_http_methods(["POST"])
 @exception_catcher()
 def update_queue_name(request, pk):
+    """POST: rename a queue."""
     data = json.loads(request.body)
     queue_id = data["id"]
     description = data["description"]

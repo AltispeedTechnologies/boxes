@@ -1,3 +1,4 @@
+"""Report HTML pages and export downloads."""
 import csv
 import io
 import json
@@ -17,6 +18,7 @@ from django.utils import timezone
 @require_http_methods(["GET"])
 def report_data(request):
     # If the frequency is different, ensure it is in the supported list
+    """GET: dashboard data page shell."""
     frequency = request.GET.get("frequency", "W")
     is_supported = any(freq[0] == frequency for freq in CHART_FREQUENCIES)
     frequency = frequency if is_supported else "W"
@@ -35,6 +37,7 @@ def report_data(request):
 @require_http_methods(["GET"])
 def report_data_view(request):
     # Ensure the frequency is in the supported list
+    """GET: data/chart fragment for frequency tabs."""
     frequency = request.GET.get("frequency", "W")
     is_supported = any(freq[0] == frequency for freq in CHART_FREQUENCIES)
     frequency = frequency if is_supported else "W"
@@ -67,6 +70,7 @@ def report_data_view(request):
 
 @require_http_methods(["GET"])
 def report_list(request):
+    """GET: list saved reports."""
     reports = Report.objects.values("id", "name")
 
     return render(request, "reports/list.html", {"reports": reports})
@@ -74,6 +78,7 @@ def report_list(request):
 
 @require_http_methods(["GET"])
 def report_details(request, pk=None):
+    """GET: create/edit report builder UI."""
     if pk:
         report = Report.objects.filter(pk=pk).first()
         return render(request, "reports/details.html", {"report_config": report.config,
@@ -85,6 +90,7 @@ def report_details(request, pk=None):
 
 @require_http_methods(["GET"])
 def report_view(request, pk):
+    """GET: view report results and generation status."""
     report_name, report_headers, query = reports_backend.generate_full_report(pk)
 
     # Pagination
@@ -103,6 +109,7 @@ def report_view(request, pk):
 
 @require_http_methods(["GET"])
 def report_view_pdf(request, pk):
+    """GET: serve generated PDF if available."""
     result, _ = ReportResult.objects.get_or_create(report_id=pk)
     filename = result.pdf_path
     file_path = os.path.join(settings.SECURE_ROOT, filename)
@@ -118,6 +125,7 @@ def report_view_pdf(request, pk):
 @require_http_methods(["GET"])
 def report_view_csv(request, pk):
     # Generate the report
+    """GET: stream report as CSV."""
     report_name, report_headers, query = reports_backend.generate_full_report(pk)
 
     # Create a buffer to hold the CSV and assign a writer to it

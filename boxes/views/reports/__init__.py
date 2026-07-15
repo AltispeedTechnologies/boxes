@@ -1,3 +1,4 @@
+"""Auto-import report view modules."""
 from pathlib import Path
 
 views_directory = Path(__file__).parent

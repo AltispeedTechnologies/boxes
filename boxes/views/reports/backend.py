@@ -1,3 +1,4 @@
+"""Report mutation and chart JSON endpoints."""
 import json
 from boxes.backend import reports as reports_backend
 from boxes.management.exception_catcher import exception_catcher
@@ -11,6 +12,7 @@ from django.views.decorators.http import require_http_methods
 @require_http_methods(["POST"])
 @exception_catcher()
 def report_name_search(request):
+    """POST: check report name availability/search."""
     data = json.loads(request.body)
     name = data.get("name", None)
     if name:
@@ -23,6 +25,7 @@ def report_name_search(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def report_new_submit(request):
+    """POST: create a new Report from config JSON."""
     data = json.loads(request.body)
     name = data.get("name", None)
     config = data.get("config", None)
@@ -44,6 +47,7 @@ def report_new_submit(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def report_update(request, pk):
+    """POST: update report ``pk`` config."""
     data = json.loads(request.body)
     name = data.get("name", None)
     config = data.get("config", None)
@@ -62,6 +66,7 @@ def report_update(request, pk):
 @require_http_methods(["POST"])
 @exception_catcher()
 def report_remove(request, pk):
+    """POST: delete report ``pk``."""
     Report.objects.filter(pk=pk).delete()
 
 
@@ -69,6 +74,7 @@ def report_remove(request, pk):
 @require_http_methods(["POST"])
 @exception_catcher()
 def report_stats_chart(request):
+    """POST: return chart data payload for dashboard."""
     data = json.loads(request.body)
     freq = data.get("filter")
     chart = Chart.objects.filter(frequency=freq).first()
@@ -81,6 +87,7 @@ def report_stats_chart(request):
 
 
 def report_generate_pdf(request, pk):
+    """Queue or trigger PDF generation for report ``pk``."""
     if request.method == "POST":
         # Fetch the result for this report or create one
         result, _ = ReportResult.objects.get_or_create(report_id=pk)

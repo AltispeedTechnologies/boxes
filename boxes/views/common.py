@@ -1,3 +1,4 @@
+"""Shared helpers for package/email querysets used by multiple views."""
 from boxes.backend.account import create_user_from_account
 from boxes.models import Account, CustomUser, Package, SentEmail, UserAccount
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -32,6 +33,7 @@ ALLOWED_ATTRIBUTES.update(SPECIAL_ATTRIBUTES)
 
 
 def _clean_html(html):
+    """Sanitize or normalize HTML content for safe display."""
     sanitizer = Sanitizer({
         "tags": ALLOWED_TAGS,
         "attributes": ALLOWED_ATTRIBUTES,
@@ -48,6 +50,7 @@ def _clean_html(html):
 def _get_packages(per_page, **kwargs):
     # Organized by size of expected data, manually
     # Revisit this section after we have data to test with scale
+    """Paginated package queryset helper with optional filters."""
     packages = Package.objects.select_related(
         "account", "carrier", "packagetype", "packagepicklist"
     ).annotate(
@@ -83,6 +86,7 @@ def _get_packages(per_page, **kwargs):
 
 
 def _get_emails(per_page, page_number, **kwargs):
+    """Paginated sent-email queryset helper."""
     emails = SentEmail.objects.annotate(
         sent_id=F("pk"),
         timestamp_val=F("timestamp"),
@@ -115,6 +119,7 @@ def _get_emails(per_page, page_number, **kwargs):
 
 
 def _search_packages_helper(query, per_page, **kwargs):
+    """Apply search query to packages and paginate."""
     packages = _get_packages(per_page=per_page,
                              tracking_code__icontains=query,
                              current_state=1,
@@ -125,6 +130,7 @@ def _search_packages_helper(query, per_page, **kwargs):
 
 def _get_matching_users(account_id):
     # Ensure Account exists
+    """Users linked to an account via UserAccount (and related)."""
     account = get_object_or_404(Account.objects.select_related("accountbalance"), pk=account_id)
 
     # Check if there is a UserAccount entry for this account id

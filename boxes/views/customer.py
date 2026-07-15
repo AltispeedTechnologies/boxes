@@ -1,3 +1,4 @@
+"""Customer portal: parcels, payments, invoices, billing portal."""
 from django.utils import timezone
 import json
 import stripe
@@ -18,6 +19,7 @@ from weasyprint import HTML
 
 @require_http_methods(["GET"])
 def customer_make_payment(request):
+    """GET: payment page with balance and methods."""
     account_id = UserAccount.objects.get(user_id=request.user.id).account_id
     globalsettings, _ = GlobalSettings.objects.get_or_create(id=1)
 
@@ -52,11 +54,13 @@ def customer_make_payment(request):
 
 @require_http_methods(["GET"])
 def customer_payment_methods(request):
+    """GET: payment methods data for UI."""
     return render(request, "customer/_loading.html", {"view_type": "billing_portal"})
 
 
 @require_http_methods(["GET"])
 def customer_billing_portal(request):
+    """GET: redirect to Stripe Billing Portal session."""
     billing_portal_session = stripe.billing_portal.Session.create(
         customer=invoice.get_customer_id(request.user.id),
         configuration=invoice.get_billing_portal_id(),
@@ -69,6 +73,7 @@ def customer_billing_portal(request):
 
 @require_http_methods(["GET"])
 def customer_view_invoice(request, pk):
+    """GET: invoice detail / confirmation page."""
     invoice_data = Invoice.objects.get(pk=pk)
 
     payment_intent = None
@@ -138,6 +143,7 @@ def customer_view_invoice(request, pk):
 
 @require_http_methods(["GET"])
 def customer_view_pdf(request, pk):
+    """GET: invoice PDF download/view."""
     invoice_data = Invoice.objects.get(pk=pk)
 
     payment_intent = stripe.PaymentIntent.retrieve(invoice_data.payment_intent_id)
@@ -187,6 +193,7 @@ def customer_view_pdf(request, pk):
 
 @require_http_methods(["GET"])
 def customer_cancel_invoice(request, pk):
+    """GET: cancel an open invoice/PaymentIntent."""
     invoice = Invoice.objects.get(pk=pk)
     if invoice.current_state in [0, 1, 4]:
         if invoice.payment_intent_id:
@@ -197,6 +204,7 @@ def customer_cancel_invoice(request, pk):
 
 @require_http_methods(["GET"])
 def customer_parcels(request):
+    """GET: customer's package list for linked account."""
     account_id = UserAccount.objects.get(user_id=request.user.id).account_id
 
     packages = Package.objects.select_related(
@@ -243,6 +251,7 @@ def customer_parcels(request):
 @require_http_methods(["POST"])
 @exception_catcher()
 def customer_confirm_invoice(request, pk):
+    """POST: confirm and finalize payment for invoice."""
     invoice_data = Invoice.objects.get(pk=pk)
     invoice_url = request.build_absolute_uri(reverse("customer_view_invoice", kwargs={"pk": invoice_data.id}))
 
@@ -280,6 +289,7 @@ def customer_confirm_invoice(request, pk):
 @require_http_methods(["POST"])
 @exception_catcher()
 def customer_new_invoice(request):
+    """POST: create invoice/PaymentIntent for amount and method."""
     account_id = UserAccount.objects.get(user_id=request.user.id).account_id
     customer_id = invoice.get_customer_id(request.user.id)
 
