@@ -129,23 +129,18 @@ def _search_packages_helper(query, per_page, **kwargs):
 
 
 def _get_matching_users(account_id):
-    # Ensure Account exists
-    """Users linked to an account via UserAccount (and related)."""
+    """Return (list_of_users, account) for UserAccount links on the account.
+
+    Always returns a list of CustomUser (possibly empty after auto-create
+    failure). Creates a linked inactive user when no memberships exist.
+    """
     account = get_object_or_404(Account.objects.select_related("accountbalance"), pk=account_id)
 
-    # Check if there is a UserAccount entry for this account id
-    user_accounts = UserAccount.objects.filter(account=account)
-
+    user_accounts = UserAccount.objects.filter(account=account).select_related("user")
     if user_accounts.exists():
-        # Check if the relationship is one-to-one
-        if user_accounts.count() == 1:
-            custom_user = user_accounts.first().user
-            return custom_user, account
-        else:
-            # There are multiple CustomUser objects for this Account
-            custom_users = [user_account.user for user_account in user_accounts]
-            # Return all CustomUser objects that match the account
-            return custom_users, account
-    else:
-        user_id = create_user_from_account(account_id)
-        return CustomUser.objects.get(pk=user_id), account
+        return [ua.user for ua in user_accounts], account
+
+    user_id = create_user_from_account(account_id)
+    if user_id is None:
+        return [], account
+    return [CustomUser.objects.get(pk=user_id)], account

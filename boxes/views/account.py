@@ -4,8 +4,9 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
-from boxes.models import (Account, AccountAlias, AccountLedger, CustomUserEmail, SentEmail, SentEmailContents,
-                          SentEmailPackage, SentEmailResult)
+from boxes.backend.membership import associate_user, disassociate_user
+from boxes.models import (Account, AccountAlias, AccountLedger, CustomUser, CustomUserEmail, SentEmail, SentEmailContents,
+                          SentEmailPackage, SentEmailResult, UserAccount)
 from boxes.management.exception_catcher import exception_catcher
 from boxes.views.common import _get_packages, _get_matching_users, _get_emails
 
@@ -24,14 +25,73 @@ def account_search(request):
 @require_http_methods(["GET"])
 def account_edit(request, pk):
     """Render staff account edit page."""
-    user, account = _get_matching_users(pk)
+    users, account = _get_matching_users(pk)
     aliases = AccountAlias.objects.filter(account_id=pk)
-    emails = CustomUserEmail.objects.filter(user=user)
-    return render(request, "accounts/edit.html", {"custom_user": user,
-                                                  "account": account,
-                                                  "aliases": aliases,
-                                                  "emails": emails,
-                                                  "view_type": "edit"})
+    memberships = (
+        UserAccount.objects.filter(account=account)
+        .select_related("user")
+        .order_by("-is_active", "role", "user__username")
+    )
+    custom_user = users[0] if users else None
+    emails = CustomUserEmail.objects.filter(user=custom_user) if custom_user else []
+    return render(request, "accounts/edit.html", {
+        "custom_user": custom_user,
+        "custom_users": users,
+        "memberships": memberships,
+        "account": account,
+        "aliases": aliases,
+        "emails": emails,
+        "view_type": "edit",
+    })
+
+
+@require_http_methods(["POST"])
+@exception_catcher()
+def account_members_link(request, pk):
+    """POST (staff): link a user to this account by user_id."""
+    account = get_object_or_404(Account, pk=pk)
+    data = json.loads(request.body) if request.body else {}
+    user_id = data.get("user_id") or request.POST.get("user_id")
+    if user_id is None:
+        raise ValueError("user_id is required")
+    user = get_object_or_404(CustomUser, pk=user_id)
+    role = data.get("role") or request.POST.get("role") or UserAccount.ROLE_MEMBER
+    membership = associate_user(account, user, role=role, actor=request.user)
+    return JsonResponse({
+        "success": True,
+        "membership": {
+            "id": membership.id,
+            "user_id": membership.user_id,
+            "account_id": membership.account_id,
+            "role": membership.role,
+            "is_active": membership.is_active,
+        },
+    })
+
+
+@require_http_methods(["POST"])
+@exception_catcher()
+def account_members_disassociate(request, pk):
+    """POST (staff): soft-disassociate a user from this account by user_id."""
+    account = get_object_or_404(Account, pk=pk)
+    data = json.loads(request.body) if request.body else {}
+    user_id = data.get("user_id") or request.POST.get("user_id")
+    if user_id is None:
+        raise ValueError("user_id is required")
+    user = get_object_or_404(CustomUser, pk=user_id)
+    membership = disassociate_user(account, user, actor=request.user)
+    if membership is None:
+        return JsonResponse({"success": False, "errors": ["Membership not found"]}, status=404)
+    return JsonResponse({
+        "success": True,
+        "membership": {
+            "id": membership.id,
+            "user_id": membership.user_id,
+            "account_id": membership.account_id,
+            "role": membership.role,
+            "is_active": membership.is_active,
+        },
+    })
 
 
 @require_http_methods(["GET"])
