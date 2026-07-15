@@ -1,10 +1,13 @@
 """External webhook receivers."""
+import logging
 import stripe
 from boxes.tasks.stripe import handle_stripe_webhook
 from django.conf import settings
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+
+logger = logging.getLogger(__name__)
 
 
 @require_http_methods(["POST"])
@@ -18,10 +21,10 @@ def stripe_webhooks(request):
             request.body, sig_header, settings.STRIPE_ENDPOINT_SECRET
         )
     except ValueError as e:
-        print(f"Error parsing payload: {e}")
+        logger.warning("Error parsing Stripe payload: %s", e)
         return HttpResponse(status=400)
     except stripe.SignatureVerificationError as e:
-        print(f"Error verifying webhook signature: {e}")
+        logger.warning("Error verifying Stripe webhook signature: %s", e)
         return HttpResponse(status=400)
 
     # This endpoint only supports PaymentIntent objects with specific events
