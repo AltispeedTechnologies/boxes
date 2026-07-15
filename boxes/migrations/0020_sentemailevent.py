@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('boxes', '0018_useraccount_membership_fields'),
+        ('boxes', '0019_carrier_packagetype_active_tracking'),
     ]
 
     operations = [
