@@ -2,17 +2,6 @@
 
 {% block content %}
 {% include "_messages.html" %}
-
-<style>
-    .btn-verylarge {
-        padding: 1rem 2rem;
-        font-size: 1.5em;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-</style>
-
 <div class="d-flex justify-content-center align-items-center">
 {% if request.user.has_staff_role %}
     <a href="{% url 'account_mgmt' %}" role="button" class="btn btn-primary btn-lg btn-verylarge mx-2">
@@ -36,7 +25,7 @@
         <i class="fa-solid fa-money-bill mb-3" style="font-size: 6rem;"></i>
         Make a Payment
     </a>
-    <a href="{% url 'customer_payment_methods' %}" role="button" class="btn btn-primary btn-lg btn-verylarge mx-2">
+    <a href="{% url 'customer_payment_methods' %}" role="button" class="btn btn-primary btn-lg btn-verylarge mx-2" hx-boost="false" data-hx-boost="false">
         <i class="fa-solid fa-wallet mb-3" style="font-size: 6rem;"></i>
         Payment Methods
     </a>

@@ -26,7 +26,7 @@
                     <i class="fa-solid fa-file-pdf"></i> Generate PDF
                 </button>
                 <a class="btn btn-info ms-2 disabled" role="button"
-                   href="/reports/{{ report_id }}/pdf/view" target="_blank"
+                   href="/reports/{{ report_id }}/pdf/view" target="_blank" rel="noopener" hx-boost="false" data-hx-boost="false"
                    id="viewpdf">
                     <i class="fa-solid fa-file-pdf"></i> View PDF
                 </a>
@@ -39,7 +39,7 @@
 
             <div class="d-flex justify-content-end">
                 <a class="btn btn-success" role="button"
-                   href="/reports/{{ report_id }}/csv" target="_blank">
+                   href="/reports/{{ report_id }}/csv" target="_blank" rel="noopener" hx-boost="false" data-hx-boost="false">
                     <i class="fa-solid fa-table-cells"></i> Download CSV
                 </a>
             </div>
@@ -51,7 +51,7 @@
     {% include "_paginate.html" %}
     <div class="table-responsive mt-3">
         <table class="table table-hover table-bordered">
-            <thead class="thead-dark align-top">
+            <thead class="table-dark align-top">
                 <tr>
                     {% for val in report_headers.values %}
                     <th>{{ val }}</th>
