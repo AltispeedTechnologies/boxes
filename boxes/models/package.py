@@ -14,6 +14,7 @@ class PackageType(models.Model):
     shortcode = models.CharField(max_length=1)
     description = models.CharField(max_length=64)
     default_price = models.DecimalField(max_digits=8, decimal_places=2)
+    is_active = models.BooleanField(default=True)
 
 
 class Package(models.Model):
@@ -25,7 +26,7 @@ class Package(models.Model):
     carrier = models.ForeignKey("Carrier", on_delete=models.RESTRICT)
     package_type = models.ForeignKey(PackageType, on_delete=models.RESTRICT)
     inside = models.BooleanField(default=False)
-    tracking_code = models.CharField(max_length=30, unique=True)
+    tracking_code = models.CharField(max_length=30)
     current_state = models.PositiveSmallIntegerField(choices=PACKAGE_STATES, default=0)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     comments = models.CharField(max_length=256, null=True)
