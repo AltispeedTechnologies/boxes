@@ -1,10 +1,106 @@
 /**
  * @file app.js
- * @description Global AJAX helpers, CSRF, Select2 utilities, debounce, and page init.
+ * @description Global AJAX helpers, CSRF, Select2 utilities, debounce,
+ *              BoxesPage mount/unmount registry, and htmx app-shell hooks.
  * @see docs/api/javascript.md
+ *
+ * htmx shell notes
+ * ----------------
+ * base.html boosts links/forms inside #app-main only (navbar stays mounted).
+ * Page scripts in {% block javascript %} load on FULL document navigation.
+ * On boosted navigations the head is not re-parsed, so:
+ *   - Prefer BoxesPage.register("page-id", { mount, unmount })
+ *   - Set data-page / {% block page_id %} so afterSettle can remount
+ *   - unmount should tear down listeners/widgets the module owns
+ * Do not reintroduce Turbo.
  */
 
-// Global Utility Functions
+// ---------------------------------------------------------------------------
+// BoxesPage registry
+// ---------------------------------------------------------------------------
+
+/**
+ * Lightweight page-module registry for full loads and htmx swaps.
+ * register(name, { mount(el), unmount(el) })
+ */
+window.BoxesPage = (function() {
+    var modules = Object.create(null);
+    var active_name = null;
+    var active_el = null;
+
+    function register(name, hooks) {
+        if (!name) {
+            console.warn("BoxesPage.register: name is required");
+            return;
+        }
+        modules[name] = hooks || {};
+    }
+
+    function resolve_page_name(root) {
+        if (!root) {
+            return null;
+        }
+        if (root.getAttribute && root.getAttribute("data-page")) {
+            var on_root = root.getAttribute("data-page").trim();
+            if (on_root) {
+                return on_root;
+            }
+        }
+        var nested = root.querySelector ? root.querySelector("[data-page]") : null;
+        if (nested) {
+            var name = nested.getAttribute("data-page");
+            return name ? name.trim() : null;
+        }
+        return null;
+    }
+
+    function unmount() {
+        if (active_name && modules[active_name] && typeof modules[active_name].unmount === "function") {
+            try {
+                modules[active_name].unmount(active_el);
+            } catch (err) {
+                console.warn("BoxesPage.unmount error for " + active_name, err);
+            }
+        }
+        active_name = null;
+        active_el = null;
+    }
+
+    function mount(root) {
+        root = root || document.getElementById("app-main");
+        var name = resolve_page_name(root);
+        active_el = root || null;
+        active_name = null;
+
+        if (!name || !modules[name]) {
+            return;
+        }
+
+        active_name = name;
+        if (typeof modules[name].mount === "function") {
+            try {
+                modules[name].mount(root);
+            } catch (err) {
+                console.warn("BoxesPage.mount error for " + name, err);
+            }
+        }
+    }
+
+    function get_active() {
+        return { name: active_name, el: active_el };
+    }
+
+    return {
+        register: register,
+        mount: mount,
+        unmount: unmount,
+        get_active: get_active
+    };
+})();
+
+// ---------------------------------------------------------------------------
+// Global utility functions
+// ---------------------------------------------------------------------------
 
 /// Generic cookie function, currently only used for CSRF tokens
 window.get_cookie = function(name) {
@@ -28,7 +124,7 @@ window.get_cookie = function(name) {
 
     // Returns null if no cookies match the name, otherwise returns the value
     return cookie_value;
-}
+};
 
 /// Given a unique identifier to a select2 box, ensure the height and width is
 /// consistent
@@ -62,7 +158,7 @@ window.select2properheight = function(select2_name) {
         "top": "50%",
         "transform": "translateY(-50%)"
     });
-}
+};
 
 /// Create a select2 dropdown for items which get their data asynchronously
 //// field_name: unique identifier for the dropdown
@@ -106,7 +202,7 @@ window.initialize_async_select2 = function(field_name, search_url, dropdown_pare
     }
 
     window.select2properheight("#" + field_name);
-}
+};
 
 /// Display a custom error message on the screen
 window.display_error_message = function(errors) {
@@ -135,7 +231,7 @@ window.display_error_message = function(errors) {
     if (error_message.trim() !== "") {
         messages_div.append(alert_div);
     }
-}
+};
 
 /// Generic debounce function to rate-limit e.g. async requests
 window.debounce = function(func, wait) {
@@ -145,7 +241,7 @@ window.debounce = function(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(context, args), wait);
     };
-}
+};
 
 /// Properly validate price inputs, and do not allow any extra characters
 window.format_price_input = function(input_element) {
@@ -173,7 +269,7 @@ window.format_price_input = function(input_element) {
     if (value.includes(".")) {
         var float_value = parseFloat(value).toFixed(2);
         if (isNaN(float_value)) {
-            float_value = '0.00';
+            float_value = "0.00";
         }
         value = float_value;
     }
@@ -271,7 +367,7 @@ window.ajax_request = function({ type, url, payload = null, content_type = "appl
         },
         error: function(xhr, status, error) {
             let error_message = "An unexpected error occurred.";
-            if (xhr.responseJSON && xhr.responsePlJSON.errors) {
+            if (xhr.responseJSON && xhr.responseJSON.errors) {
                 error_message = xhr.responseJSON.errors;
             } else if (error) {
                 error_message = [error];
@@ -283,12 +379,16 @@ window.ajax_request = function({ type, url, payload = null, content_type = "appl
     });
 };
 
-/// Functionality to run once the content has fully loaded
+// ---------------------------------------------------------------------------
+// Shared page widgets + navbar active state
+// ---------------------------------------------------------------------------
+
 /**
- * Document-ready bootstrap for shared UI widgets.
+ * Document-ready / afterSettle bootstrap for shared UI widgets.
+ * Safe to call on full load and after every htmx settle of #app-main.
  */
 function init_page(event) {
-    var context = document;
+    var context = document.getElementById("app-main") || document;
 
     // Timestamps are stored in the database as UTC, this does the conversion
     // client-side to the current browser time
@@ -300,11 +400,96 @@ function init_page(event) {
         }
     });
 
-    // Set up tooltips for each HTML element that has data-bs-tooltip="yes"
-    var tooltip_trigger_list = [].slice.call(context.querySelectorAll('[data-bs-tooltip="yes"]'));
-    var tooltip_list = tooltip_trigger_list.map(function (tooltip_trigger_el) {
-        return new bootstrap.Tooltip(tooltip_trigger_el)
-    })
+    // Dispose leftover Bootstrap tooltips bound to swapped-out nodes, then recreate
+    $(context).find([data-bs-tooltip=yes]).each(function() {
+        var existing = bootstrap.Tooltip.getInstance(this);
+        if (existing) {
+            existing.dispose();
+        }
+    });
+    var tooltip_trigger_list = [].slice.call(context.querySelectorAll([data-bs-tooltip=yes]));
+    tooltip_trigger_list.map(function(tooltip_trigger_el) {
+        return new bootstrap.Tooltip(tooltip_trigger_el);
+    });
 }
 
-$(init_page);
+/**
+ * Highlight navbar links from the current path (navbar is outside hx-boost).
+ */
+function update_navbar_active(pathname) {
+    var path = pathname || window.location.pathname;
+    var navbar = document.getElementById("app-navbar");
+    if (!navbar) {
+        return;
+    }
+
+    navbar.querySelectorAll(".nav-link").forEach(function(link) {
+        link.classList.remove("active");
+        var href = link.getAttribute("href");
+        if (!href || href === "#") {
+            return;
+        }
+
+        // Exact match for home; prefix match for other routes
+        var is_active = false;
+        if (href === "/") {
+            is_active = path === "/";
+        } else if (path === href || path.indexOf(href) === 0) {
+            // Avoid /packages matching /packages/checkin when the Search link is /packages/
+            if (href === "/packages/" || href === "/packages") {
+                is_active = path === "/packages/" || path === "/packages" || path.indexOf("/packages/search") === 0;
+            } else if (href.indexOf("/packages/checkin") === 0) {
+                is_active = path.indexOf("/packages/checkin") === 0;
+            } else if (href.indexOf("/packages/checkout") === 0) {
+                is_active = path.indexOf("/packages/checkout") === 0;
+            } else {
+                is_active = true;
+            }
+        }
+
+        if (is_active) {
+            link.classList.add("active");
+        }
+    });
+}
+
+function boot_app_main() {
+    init_page();
+    window.BoxesPage.mount(document.getElementById("app-main"));
+    update_navbar_active();
+}
+
+// Full document load
+$(function() {
+    boot_app_main();
+});
+
+// ---------------------------------------------------------------------------
+// htmx app-shell hooks
+// ---------------------------------------------------------------------------
+
+document.addEventListener("htmx:configRequest", function(event) {
+    var token = window.get_cookie("csrftoken");
+    if (token) {
+        event.detail.headers["X-CSRFToken"] = token;
+    }
+});
+
+document.addEventListener("htmx:beforeSwap", function(event) {
+    var target = event.detail && event.detail.target;
+    if (target && target.id === "app-main") {
+        window.BoxesPage.unmount();
+    }
+});
+
+document.addEventListener("htmx:afterSettle", function(event) {
+    var target = event.detail && event.detail.target;
+    // outerHTML swap may leave target as parent; always re-boot from #app-main
+    if (!target || target.id === "app-main" || (target.querySelector && target.querySelector("#app-main")) || target.id === undefined) {
+        boot_app_main();
+    }
+});
+
+document.addEventListener("htmx:historyRestore", function() {
+    boot_app_main();
+});
