@@ -1,4 +1,17 @@
 #!/bin/bash
+# setup.sh — Boxes environment bootstrap and update helper.
+#
+# Usage:
+#   ./setup.sh prod [venv_dir]   # install, migrate, loaddata, processjs
+#   ./setup.sh dev  [venv_dir]   # prod + seed demo data via Celery
+#   ./setup.sh update [venv_dir] # pip install -r requirements.txt, migrate, processjs
+#   ./setup.sh check [venv_dir]  # manage.py check --deploy
+#
+# Second argument overrides the virtualenv directory (default: env).
+# Requires virtualenv on PATH and a readable /etc/boxes.env for Django commands.
+#
+# See docs/SETUP.md and docs/DEVELOPMENT.md.
+
 
 # Allow for custom venv names while defaulting to env if none is provided
 if [ "$2" != "" ]
@@ -11,6 +24,7 @@ fi
 PYTHON_PATH="$VENV_DIR/bin/python3"
 
 function setup_virtualenv() {
+    # Create venv if missing and install requirements.txt
     if [ ! -d "$VENV_DIR" ]; then
         echo "Setting up the virtual environment..."
         virtualenv $VENV_DIR
@@ -28,27 +42,33 @@ fi
 
 # Define functions for various setup tasks
 function update_pip() {
+    # Upgrade pip and install locked requirements
     $PYTHON_PATH -m pip install --upgrade pip
     $PYTHON_PATH -m pip install -r requirements.txt
 }
 
 function migrate() {
+    # Apply Django database migrations
     $PYTHON_PATH manage.py migrate
 }
 
 function init() {
+    # Load initial_data.json fixtures (groups, carriers, types, …)
     $PYTHON_PATH manage.py loaddata initial_data.json
 }
 
 function load_testdata() {
+    # Queue Celery seeddata task for demo users/packages
     $PYTHON_PATH manage.py seeddata
 }
 
 function check() {
+    # Run Django deploy checks
     $PYTHON_PATH manage.py check --deploy
 }
 
 function processjs() {
+    # collectstatic + prune stale hashed JS (manage.py processjs)
     $PYTHON_PATH manage.py processjs
 }
 

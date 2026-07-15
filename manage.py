@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Django's command-line utility for administrative tasks."""
+"""Django manage.py entrypoint for the Boxes project.
+
+Runs administrative tasks via django.core.management.execute_from_command_line.
+"""
 import os
 import sys
 
