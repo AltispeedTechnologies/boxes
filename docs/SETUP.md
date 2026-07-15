@@ -2,6 +2,19 @@
 
 Boxes is a Django project utilizing Celery, RabbitMQ, PostgreSQL, NGINX, and GUnicorn. This document details setting up Boxes manually, with considerations for each step.
 
+
+## Related documentation
+
+After completing setup, configure **business settings in the database** (General, Email, Charges) via the staff UI. Full maps:
+
+- [SETTINGS.md](SETTINGS.md) — `/etc/boxes.env` variables
+- [DATABASE_SETTINGS.md](DATABASE_SETTINGS.md) — GlobalSettings, email, charge rules
+- [ARCHITECTURE.md](ARCHITECTURE.md) — system overview
+- [CELERY.md](CELERY.md) — worker/beat tasks you just enabled
+- [DEVELOPMENT.md](DEVELOPMENT.md) — day-to-day development
+
+---
+
 ## Base server setup
 
 Boxes has been tested on Ubuntu 24.04 LTS, and we aim to support the latest Ubuntu LTS. Deploy an instance of Ubuntu on a server with a public IP address.
@@ -43,6 +56,10 @@ DB_PORT="5432"
 # Mailjet settings
 MJ_APIKEY_PUBLIC="{{ vault_boxes_mailjet_public }}"
 MJ_APIKEY_PRIVATE="{{ vault_boxes_mailjet_private }}"
+
+# Stripe settings
+STRIPE_API_KEY="{{ vault_boxes_stripe_api_key }}"
+STRIPE_ENDPOINT_SECRET="{{ vault_boxes_stripe_endpoint_secret }}"
 
 # Celery settings
 CELERY_BROKER_USER="{{ rabbitmq_user }}"
@@ -134,7 +151,7 @@ Exit PostgreSQL. No need to restart the systemd unit.
 
 Ensure the values you configure below match the values in `/etc/boxes.env`, specifically `CELERY_BROKER_USER`, `CELERY_BROKER_PASSWORD`, and `CELERY_BROKER_VHOST`.
 
-For a local development instance, it is possible to use the default vhost, setting `CELERY_BROKER_VHOST` to `/`. 
+For a local development instance, it is possible to use the default vhost, setting `CELERY_BROKER_VHOST` to `/`.
 
 Run these commands as root:
 
