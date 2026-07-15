@@ -33,6 +33,13 @@ class CustomUser(AbstractUser):
         """Return True if the user is in the Customer group."""
         return self.groups.filter(name="Customer").exists()
 
+    def has_delivery_role(self):
+        """True if the user is in the Delivery group.
+
+        Named like has_staff_role to avoid clashing with unrelated flags.
+        """
+        return self.groups.filter(name="Delivery").exists()
+
 
 class CustomUserEmail(models.Model):
     """Notification email address for a login (Mailjet recipients).

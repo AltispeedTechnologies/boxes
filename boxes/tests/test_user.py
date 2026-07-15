@@ -28,3 +28,11 @@ class CustomUserTest(TestCase):
         self.assertEqual(self.user.middle_name, "John")
         self.assertEqual(self.user.suffix, "Jr.")
         self.assertEqual(self.user.comments, "This is a test user.")
+
+    def test_has_delivery_role(self):
+        """has_delivery_role reflects Delivery group membership."""
+        self.assertFalse(self.user.has_delivery_role())
+        group, _ = Group.objects.get_or_create(name="Delivery")
+        self.user.groups.add(group)
+        self.assertTrue(self.user.has_delivery_role())
+
