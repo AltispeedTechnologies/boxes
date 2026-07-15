@@ -1,8 +1,110 @@
-"""Auto-import top-level view modules."""
-from pathlib import Path
+"""Explicit exports for top-level view modules."""
+from boxes.views.account import (
+    account_edit,
+    account_emails,
+    account_fee_waiver,
+    account_ledger,
+    account_members_disassociate,
+    account_members_link,
+    account_packages,
+    account_search,
+    update_account,
+    update_account_aliases,
+)
+from boxes.views.auth import sign_in, sign_out
+from boxes.views.carrier import carrier_search
+from boxes.views.customer import (
+    customer_billing_portal,
+    customer_cancel_invoice,
+    customer_confirm_invoice,
+    customer_invoices,
+    customer_ledger,
+    customer_make_payment,
+    customer_new_invoice,
+    customer_parcels,
+    customer_payment_methods,
+    customer_select_account,
+    customer_view_invoice,
+    customer_view_pdf,
+    session_set_active_account,
+)
+from boxes.views.customer_pickup import customer_open_pickup_days, customer_reserve_pickup
+from boxes.views.emails import get_email_contents
+from boxes.views.index import index
+from boxes.views.labels import generate_label, show_label
+from boxes.views.modals import get_actions_modals, get_bulk_modals, get_picklist_mgmt_modals
+from boxes.views.picklists import (
+    create_picklist,
+    modify_package_picklist,
+    picklist_check_out,
+    picklist_list,
+    picklist_query,
+    picklist_show,
+    picklist_show_table,
+    remove_package_picklist,
+    remove_picklist,
+)
+from boxes.views.user import (
+    create_user,
+    profile_user,
+    update_profile,
+    update_profile_emails,
+    update_user,
+    update_user_emails,
+)
+from boxes.views.webhooks import mailjet_webhooks, stripe_webhooks
 
-views_directory = Path(__file__).parent
-for file_path in views_directory.glob("*.py"):
-    module_name = file_path.stem
-    if module_name != "__init__":
-        exec(f"from .{module_name} import *")
+__all__ = [
+    "account_edit",
+    "account_emails",
+    "account_fee_waiver",
+    "account_ledger",
+    "account_members_disassociate",
+    "account_members_link",
+    "account_packages",
+    "account_search",
+    "carrier_search",
+    "create_picklist",
+    "create_user",
+    "customer_billing_portal",
+    "customer_cancel_invoice",
+    "customer_confirm_invoice",
+    "customer_invoices",
+    "customer_ledger",
+    "customer_make_payment",
+    "customer_new_invoice",
+    "customer_open_pickup_days",
+    "customer_parcels",
+    "customer_payment_methods",
+    "customer_reserve_pickup",
+    "customer_select_account",
+    "customer_view_invoice",
+    "customer_view_pdf",
+    "generate_label",
+    "get_actions_modals",
+    "get_bulk_modals",
+    "get_email_contents",
+    "get_picklist_mgmt_modals",
+    "index",
+    "mailjet_webhooks",
+    "modify_package_picklist",
+    "picklist_check_out",
+    "picklist_list",
+    "picklist_query",
+    "picklist_show",
+    "picklist_show_table",
+    "profile_user",
+    "remove_package_picklist",
+    "remove_picklist",
+    "session_set_active_account",
+    "show_label",
+    "sign_in",
+    "sign_out",
+    "stripe_webhooks",
+    "update_account",
+    "update_account_aliases",
+    "update_profile",
+    "update_profile_emails",
+    "update_user",
+    "update_user_emails",
+]

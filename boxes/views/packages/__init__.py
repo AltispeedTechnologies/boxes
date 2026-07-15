@@ -1,8 +1,29 @@
-"""Auto-import package view modules."""
-from pathlib import Path
+"""Explicit exports for package views."""
+from boxes.views.packages.backend import queue_packages, type_search, update_queue_name
+from boxes.views.packages.check_in import check_in, check_in_packages, create_package
+from boxes.views.packages.check_out import (
+    check_out,
+    check_out_packages,
+    check_out_packages_reverse,
+    verify_can_checkout,
+)
+from boxes.views.packages.package import package_detail, update_package, update_packages
+from boxes.views.packages.search import all_packages, search_packages
 
-views_directory = Path(__file__).parent
-for file_path in views_directory.glob("*.py"):
-    module_name = file_path.stem
-    if module_name != "__init__":
-        exec(f"from .{module_name} import *")
+__all__ = [
+    "all_packages",
+    "check_in",
+    "check_in_packages",
+    "check_out",
+    "check_out_packages",
+    "check_out_packages_reverse",
+    "create_package",
+    "package_detail",
+    "queue_packages",
+    "search_packages",
+    "type_search",
+    "update_package",
+    "update_packages",
+    "update_queue_name",
+    "verify_can_checkout",
+]
