@@ -1,12 +1,12 @@
 """Report query building, config cleaning, and chart data generation."""
 import json
 import re
-from boxes.models import Package, PackageLedger, Report, SentEmail
+from boxes.models import Package, PackageLedger, Report, SentEmail, SentEmailEvent
 from datetime import datetime, timedelta
 from django.core.paginator import Paginator
 from django.db.models import (Count, Case, CharField, DateTimeField, F, IntegerField, Max, OuterRef, Q, Subquery,
                               Value, When)
-from django.db.models.functions import Concat, TruncDay
+from django.db.models.functions import Coalesce, Concat, TruncDay
 from django.utils import timezone
 
 
@@ -65,6 +65,18 @@ def generate_full_report(pk):
     ).order_by("-timestamp").annotate(
         full_name=Concat("user__first_name", Value(" "), "user__last_name", output_field=CharField())
     ).values("full_name")[:1]
+    latest_email_event = SentEmailEvent.objects.filter(
+        sent_email__sentemailpackage__package=OuterRef("pk")
+    ).order_by("-timestamp").values("event_type")[:1]
+    email_send_label = SentEmail.objects.filter(
+        sentemailpackage__package=OuterRef("pk")
+    ).order_by("-timestamp").annotate(
+        label=Case(
+            When(success=True, then=Value("sent")),
+            default=Value("failed"),
+            output_field=CharField(),
+        )
+    ).values("label")[:1]
 
     # Filter by a specific state
     match config["state"]:
@@ -82,10 +94,25 @@ def generate_full_report(pk):
             start = timezone.make_aware(start)
             combined_filters &= Q(packageledger__timestamp__gte=start, packageledger__timestamp__lte=end)
         case "relative_date_range":
+            # Relative keys: start = older bound (days ago); end = newer bound (days ago).
+            # Closed range (start + end): timestamps from (now - end) through (now - start).
+            # Open-ended (start only): "over N days" warehouse aging — packages with a
+            # check-in ledger (state=1) older than N days: timestamp <= now - start.
             now = timezone.now()
-            end = now - timedelta(days=config["filter"]["end"])
-            start = now - timedelta(days=config["filter"]["start"])
-            combined_filters &= Q(packageledger__timestamp__gte=end, packageledger__timestamp__lte=start)
+            start_days = config["filter"]["start"]
+            if "end" in config["filter"]:
+                end = now - timedelta(days=config["filter"]["end"])
+                start = now - timedelta(days=start_days)
+                combined_filters &= Q(
+                    packageledger__timestamp__gte=end,
+                    packageledger__timestamp__lte=start,
+                )
+            else:
+                older_than = now - timedelta(days=start_days)
+                combined_filters &= Q(
+                    packageledger__state=1,
+                    packageledger__timestamp__lte=older_than,
+                )
         case "time_period":
             _, this_period, _ = _datetime_from_period(config["filter"]["frequency"])
             combined_filters &= Q(packageledger__timestamp__gte=this_period)
@@ -109,7 +136,13 @@ def generate_full_report(pk):
             When(current_state=3, then=Value("Mis-placed")),
             default=Value("Unknown"),
             output_field=CharField(),
-        ))
+        )),
+        # Prefer latest Mailjet event_type; else sent/failed from provider response
+        "email_status": Coalesce(
+            Subquery(latest_email_event, output_field=CharField()),
+            Subquery(email_send_label, output_field=CharField()),
+            Value(""),
+        ),
     }
 
     # Annotate queryset
@@ -118,7 +151,8 @@ def generate_full_report(pk):
 
     # Include all necessary values, including the annotations
     allowed_fields = ["account_name", "carrier_name", "check_in_time", "check_out_time", "checked_in_by",
-                      "checked_out_by", "comments", "inside", "package_type_desc", "price", "status", "tracking_code"]
+                      "checked_out_by", "comments", "email_status", "inside", "package_type_desc", "price",
+                      "status", "tracking_code"]
     fields_to_include = [f for f in config["fields"] if f in allowed_fields]
     query = query.values(*fields_to_include)
 
@@ -134,6 +168,7 @@ def generate_full_report(pk):
         "checked_in_by": "Checked In By",
         "checked_out_by": "Checked Out By",
         "comments": "Comments",
+        "email_status": "Email Status",
         "inside": "Inside",
         "package_type_desc": "Type",
         "price": "Price",
@@ -164,7 +199,8 @@ def clean_config(config):
 
     # Only allow specific values in fields
     allowed_fields = ["account_name", "carrier_name", "check_in_time", "check_out_time", "checked_in_by",
-                      "checked_out_by", "comments", "inside", "package_type_desc", "price", "status", "tracking_code"]
+                      "checked_out_by", "comments", "email_status", "inside", "package_type_desc", "price",
+                      "status", "tracking_code"]
     for field in config["fields"]:
         if field not in allowed_fields:
             return False
@@ -238,6 +274,45 @@ def clean_config(config):
     return True
 
 
+def packages_by_carrier_by_day(timeframe_filter):
+    """Group PackageLedger check-ins by carrier name and calendar day.
+
+    Returns ``{"x_data": [...], "y_data": {carrier: [counts...]}}`` for charting.
+    """
+    today, starting_point, days = _datetime_from_period(timeframe_filter)
+    x_data = [(starting_point + timedelta(days=i)).strftime("%m/%d/%Y") for i in range(days + 1)]
+
+    rows = (
+        PackageLedger.objects.filter(
+            state=1,
+            timestamp__gte=starting_point,
+            timestamp__lt=today + timedelta(days=1),
+        )
+        .annotate(
+            date=TruncDay("timestamp"),
+            carrier_name=F("package__carrier__name"),
+        )
+        .values("date", "carrier_name")
+        .annotate(count=Count("id"))
+        .order_by("date", "carrier_name")
+    )
+
+    start_date_index = {
+        (starting_point + timedelta(days=i)).strftime("%m/%d/%Y"): i
+        for i in range(days + 1)
+    }
+
+    carriers = sorted({r["carrier_name"] or "Unknown" for r in rows})
+    y_data = {name: [0] * (days + 1) for name in carriers}
+
+    for row in rows:
+        name = row["carrier_name"] or "Unknown"
+        index = start_date_index[row["date"].strftime("%m/%d/%Y")]
+        y_data[name][index] = row["count"]
+
+    return {"x_data": x_data, "y_data": y_data}
+
+
 def report_chart_generate(timeframe_filter):
     """Build chart series data for the given timeframe filter."""
     today, starting_point, days = _datetime_from_period(timeframe_filter)
@@ -301,6 +376,10 @@ def report_chart_generate(timeframe_filter):
         y_data["Emails Sent"][index] = count["emails_sent"]
         total_data["emails_sent"] += count["emails_sent"]
 
-    chart_data = {"x_data": x_data, "y_data": y_data}
+    chart_data = {
+        "x_data": x_data,
+        "y_data": y_data,
+        "packages_by_carrier": packages_by_carrier_by_day(timeframe_filter),
+    }
 
     return chart_data, total_data
