@@ -81,10 +81,14 @@ public_urlpatterns = [
 customer_urlpatterns = [
     path("", index, name="home"),
     path("logout/", sign_out, name="logout"),
+    path("session/account", session_set_active_account, name="session_set_active_account"),
+    path("customer/select-account", customer_select_account, name="customer_select_account"),
     path("customer/parcels", customer_parcels, name="customer_parcels"),
     path("customer/payments", customer_make_payment, name="customer_make_payment"),
     path("customer/payments/portal", customer_payment_methods, name="customer_payment_methods"),
     path("customer/payments/portal/redir", customer_billing_portal, name="customer_billing_portal"),
+    path("customer/invoices", customer_invoices, name="customer_invoices"),
+    path("customer/ledger", customer_ledger, name="customer_ledger"),
     path("invoice/new", customer_new_invoice, name="customer_new_invoice"),
     path("invoice/<int:pk>", customer_view_invoice, name="customer_view_invoice"),
     path("invoice/<int:pk>/cancel", customer_cancel_invoice, name="customer_cancel_invoice"),
@@ -119,6 +123,8 @@ staff_urlpatterns = [
     path("accounts/<int:pk>/waiver", account_fee_waiver, name="account_fee_waiver"),
     path("accounts/<int:pk>/packages", account_packages, name="account_packages"),
     path("accounts/<int:pk>/update", update_account, name="update_account"),
+    path("accounts/<int:pk>/members/link", account_members_link, name="account_members_link"),
+    path("accounts/<int:pk>/members/disassociate", account_members_disassociate, name="account_members_disassociate"),
     path("accounts/aliases/update", update_account_aliases, name="update_account_aliases"),
     path("accounts/search", account_search, name="account_search"),
 
@@ -188,7 +194,8 @@ staff_urlpatterns = [
     path("reports/<int:pk>/remove", report_remove, name="report_remove"),
     path("reports/<int:pk>/update", report_update, name="report_update"),
     path("reports/<int:pk>/view", report_view, name="report_view"),
-    path("reports/stats/chart", report_stats_chart, name="report_stats_chart")
+    path("reports/stats/chart", report_stats_chart, name="report_stats_chart"),
+    path("reports/stripe-totals", stripe_totals, name="stripe_totals")
 ]
 
 # Shared routes for any authenticated user (staff or customer login)

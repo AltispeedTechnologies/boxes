@@ -32,6 +32,7 @@
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="mgmt_dropdown">
                             <li><a class="dropdown-item" href="{% url 'account_mgmt' %}">Accounts</a></li>
+                            <li><a class="dropdown-item" href="{% url 'stripe_totals' %}">Stripe Totals</a></li>
                             <li><a class="dropdown-item" href="{% url 'carrier_settings' %}">Carriers</a></li>
                             <li><a class="dropdown-item" href="{% url 'charge_settings' %}">Charges</a></li>
                             <li><a class="dropdown-item" href="{% url 'email_settings' %}">Emails</a></li>
@@ -56,7 +57,12 @@
                         <ul class="dropdown-menu" aria-labelledby="payments_dropdown">
                             <li><a class="dropdown-item" href="{% url 'customer_make_payment' %}">Make a Payment</a></li>
                             <li><a class="dropdown-item" href="{% url 'customer_payment_methods' %}">Payment Methods</a></li>
+                            <li><a class="dropdown-item" href="{% url 'customer_invoices' %}">Payment History</a></li>
+                            <li><a class="dropdown-item" href="{% url 'customer_ledger' %}">Account Activity</a></li>
                         </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-bold" href="{% url 'customer_select_account' %}">Switch Account</a>
                     </li>
                 </ul>
             {% endif %}
