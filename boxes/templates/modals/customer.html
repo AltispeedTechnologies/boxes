@@ -1,41 +1,42 @@
 {% block content %}
-<div class="modal fade" id="overNeededPaymentAmountModal" tabindex="-1" aria-labelledby="overNeededPaymentAmountModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade" id="overPaymentAmountModal" tabindex="-1" aria-labelledby="overPaymentAmountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="overNeededPaymentAmountModalLabel">Create Credit Balance?</h5>
+                <h5 class="modal-title" id="overPaymentAmountModalLabel">Create Credit Balance?</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body container">
+            <div class="modal-body">
                 <p>
-                    The amount specified ($<span id="specifiedamount"></span>) exceeds the balance due ($<span id="dueamount"></span>).
-                    Would you like to add a credit balance of $<span id="creditamount"></span>? This will be applied towards future purchases.
+                    The amount specified ($<span id="over-specified"></span>) exceeds the balance due
+                    ($<span id="over-due"></span>). Add a credit of $<span id="over-credit"></span>
+                    toward future purchases?
                 </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary">No</button>
-                <button type="button" class="btn btn-primary">Yes</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="overPaymentConfirm">Yes, continue</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="overNeededPaymentAmountModal" tabindex="-1" aria-labelledby="overNeededPaymentAmountModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade" id="underPaymentAmountModal" tabindex="-1" aria-labelledby="underPaymentAmountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="overNeededPaymentAmountModalLabel">Create Credit Balance?</h5>
+                <h5 class="modal-title" id="underPaymentAmountModalLabel">Partial Payment?</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body container">
+            <div class="modal-body">
                 <p>
-                    The amount specified ($<span id="specifiedamount"></span>) exceeds the balance due ($<span id="dueamount"></span>).
-                    Would you like to add a credit balance of $<span id="creditamount"></span>? This will be applied towards future purchases.
+                    The amount specified ($<span id="under-specified"></span>) is less than the balance due
+                    ($<span id="under-due"></span>). Continue with a partial payment?
                 </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary">No</button>
-                <button type="button" class="btn btn-primary">Yes</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="underPaymentConfirm">Yes, continue</button>
             </div>
         </div>
     </div>
