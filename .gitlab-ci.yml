@@ -30,7 +30,7 @@ lint_pycodestyle:
   before_script:
     - apt-get update && apt-get -y install python3-virtualenv
     - virtualenv env
-    - env/bin/pip install -r requirements.txt
+    - env/bin/pip install -r requirements-dev.txt
   script:
     - env/bin/pycodestyle --config=.pycodestylerc .
 
@@ -39,10 +39,28 @@ lint_eslint:
   before_script:
     - apt-get update && apt-get -y install curl
   script:
-    - curl -fsSL https://deb.nodesource.com/setup_20.x | bash - 
+    - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
     - apt-get install -y nodejs
     - npm install
     - npm run lint
+
+lint_bootstrap_version:
+  stage: lint
+  script:
+    - |
+      versions=$(grep -RhoE "bootstrap@[0-9]+\.[0-9]+\.[0-9]+" boxes/templates || true)
+      unique=$(printf "%s\n" "$versions" | sort -u | sed "/^$/d")
+      count=$(printf "%s\n" "$unique" | sed "/^$/d" | wc -l)
+      echo "Bootstrap CDN versions found:"
+      printf "%s\n" "$unique"
+      if [ "$count" -eq 0 ]; then
+        echo "error: no bootstrap CDN version found in templates" >&2
+        exit 1
+      fi
+      if [ "$count" -ne 1 ]; then
+        echo "error: expected a single bootstrap version in templates, found $count" >&2
+        exit 1
+      fi
 
 test_seeddata_setup:
   stage: test
@@ -54,7 +72,7 @@ test_seeddata_setup:
   before_script:
     - apt-get update && apt-get -y install python3-virtualenv python3-psycopg weasyprint
     - virtualenv env
-    - env/bin/pip install -r requirements.txt
+    - env/bin/pip install -r requirements-dev.txt
   script:
     - ./setup.sh dev
     - env/bin/celery -A boxes worker -l info &
@@ -68,9 +86,10 @@ test_unit:
   before_script:
     - apt-get update && apt-get -y install python3-virtualenv python3-psycopg weasyprint
     - virtualenv env
-    - env/bin/pip install -r requirements.txt
-  script: 
-    - env/bin/python3 manage.py test
+    - env/bin/pip install -r requirements-dev.txt
+  script:
+    - env/bin/coverage run manage.py test boxes.tests
+    - env/bin/coverage report --fail-under=40
 
 deploy_staging:
   stage: deploy
