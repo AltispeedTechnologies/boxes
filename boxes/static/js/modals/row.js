@@ -1,5 +1,14 @@
+/**
+ * @file modals/row.js
+ * @description Per-row package edit modal and bulk row updates.
+ * @see docs/api/javascript.md
+ */
+
 var row_id;
 
+/**
+ * Bind per-row action buttons on package tables.
+ */
 function setup_actions() {
     $(document).off("rowsUpdated").on("rowsUpdated", handle_updated_rows);
 
@@ -216,6 +225,9 @@ function setup_actions() {
     });
 }
 
+/**
+ * Populate and show the row edit modal.
+ */
 function init_edit_modal(event) {
     let package_data = {};
     var tr = $(event.target).closest("tr");
@@ -278,11 +290,17 @@ function init_edit_modal(event) {
     });
 }
 
+/**
+ * Refresh rows after a successful edit POST.
+ */
 function handle_updated_rows() {
     $("[data-bs-target=\"#editModal\"]").off("click");
     $("[data-bs-target=\"#editModal\"]").on("click", init_edit_modal);
 }
 
+/**
+ * Initialize row modal subsystem.
+ */
 function row_modals() {
     window.picklist_data().then(function(data) {
         let picklist_data = data;

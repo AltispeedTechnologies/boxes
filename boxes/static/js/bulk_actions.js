@@ -1,3 +1,9 @@
+/**
+ * @file bulk_actions.js
+ * @description Bulk package field updates from multi-select tables.
+ * @see docs/api/javascript.md
+ */
+
 function update_package_rows(price, carrier) {
     window.selected_packages.forEach(function(package_id) {
         var $tr = $('tr[data-row-id="' + package_id + '"]');
@@ -13,6 +19,9 @@ function update_package_rows(price, carrier) {
     window.display_error_message();
 }
 
+/**
+ * Bind bulk action controls on package tables.
+ */
 function setup_bulk_actions() {
     window.picklist_data().then(function(data) {
         let picklist_data = data;

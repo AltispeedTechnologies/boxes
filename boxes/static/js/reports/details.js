@@ -1,3 +1,9 @@
+/**
+ * @file reports/details.js
+ * @description Report builder UI: field config JSON payload.
+ * @see docs/api/javascript.md
+ */
+
 function prepare_json_payload() {
     // Specific format enforced on the backend
     let config = {
@@ -81,6 +87,9 @@ function prepare_json_payload() {
     return payload;
 }
 
+/**
+ * Enable/disable report create based on form validity.
+ */
 function toggle_create_button() {
     // Ensure a field is selected
     let create_disabled = $("#display_fields input[type=\"checkbox\"]:checked").length === 0;
@@ -91,6 +100,9 @@ function toggle_create_button() {
     $("#submitconfig").attr("disabled", create_disabled);
 }
 
+/**
+ * Update field-order arrow button states.
+ */
 function toggle_row_arrows() {
     // Enable all buttons
     $(".move-up").prop("disabled", false);
@@ -103,6 +115,9 @@ function toggle_row_arrows() {
     $(".move-down").last().prop("disabled", true);
 }
 
+/**
+ * Initialize report create/edit builder.
+ */
 function init_report_details_page() {
     // Basic setup for Sort By Field
     $("#sort_by_field").select2({width: "50%"});

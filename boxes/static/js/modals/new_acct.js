@@ -1,3 +1,9 @@
+/**
+ * @file modals/new_acct.js
+ * @description Modal workflow to create a new account.
+ * @see docs/api/javascript.md
+ */
+
 function new_acct() {
     $("#createNewCustomerModal .btn-primary").off("click").on("click", function() {
         $("#savingiconnew").show();

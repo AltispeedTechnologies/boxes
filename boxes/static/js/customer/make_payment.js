@@ -1,3 +1,9 @@
+/**
+ * @file customer/make_payment.js
+ * @description Customer payment amount/method selection and invoice create.
+ * @see docs/api/javascript.md
+ */
+
 function init_customer_payment_page() {
     $("input#otheramountinput").off("input").on("input", function() {
         window.format_price_input($(this));

@@ -1,3 +1,9 @@
+/**
+ * @file modals/edit_queue_name.js
+ * @description Modal to rename a check-in queue.
+ * @see docs/api/javascript.md
+ */
+
 function edit_queue_name() {
     let queue_id = null;
 

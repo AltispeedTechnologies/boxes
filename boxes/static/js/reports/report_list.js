@@ -1,3 +1,9 @@
+/**
+ * @file reports/report_list.js
+ * @description Saved reports list actions.
+ * @see docs/api/javascript.md
+ */
+
 function init_report_list() {
     // Store the row ID for deletion
     let current_id = 0;

@@ -1,3 +1,9 @@
+/**
+ * @file profile.js
+ * @description My Profile form submit and email list management.
+ * @see docs/api/javascript.md
+ */
+
 function init_profile_page() {
     window.email_internal_id = 1;
 

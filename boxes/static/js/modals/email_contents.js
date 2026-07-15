@@ -1,3 +1,9 @@
+/**
+ * @file modals/email_contents.js
+ * @description Modal to view sent email HTML contents.
+ * @see docs/api/javascript.md
+ */
+
 function email_contents() {
     $("[data-bs-target=\"#showEmailModal\"]").off("click").on("click", function() {
         $("#emailcontents").html("");

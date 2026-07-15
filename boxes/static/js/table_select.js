@@ -1,3 +1,9 @@
+/**
+ * @file table_select.js
+ * @description Checkbox multi-select with shift-click and pagination links.
+ * @see docs/api/javascript.md
+ */
+
 function update_pagination_links() {
     // Convert the Set to a comma-separated string
     let selected_ids_str = Array.from(window.selected_packages).join(",");
@@ -12,6 +18,9 @@ function update_pagination_links() {
     $(document).trigger("selectedPackagesUpdated");
 }
 
+/**
+ * Select a range of checkboxes between last and current.
+ */
 function handle_shift_select(current, last) {
     let start = $(".package-checkbox").index(current);
     let end = $(".package-checkbox").index(last);
@@ -21,6 +30,9 @@ function handle_shift_select(current, last) {
     });
 }
 
+/**
+ * Track selected package ids when a checkbox toggles.
+ */
 function update_package_selection(is_checked, package_id) {
     if (is_checked) {
         window.selected_packages.add(package_id);
@@ -31,6 +43,9 @@ function update_package_selection(is_checked, package_id) {
     update_pagination_links();
 }
 
+/**
+ * Initialize table checkbox selection behavior.
+ */
 function init_checkbox() {
     window.last_checked = null;
 
@@ -42,7 +57,7 @@ function init_checkbox() {
 
     $(document).off("click", ".package-checkbox").on("click", ".package-checkbox", function(e) {
         let package_id = this.id.split("-")[1];
-        
+
         if (!last_checked) {
             window.last_checked = this;
             update_package_selection(this.checked, package_id);

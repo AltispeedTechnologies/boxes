@@ -1,3 +1,9 @@
+/**
+ * @file mgmt/email.js
+ * @description Email settings (sender + notification rules) form.
+ * @see docs/api/javascript.md
+ */
+
 function init_email_mgmt_page() {
     $("#add-day-template").off("click").on("click", function() {
         var new_entry = $(".day-template.d-none").clone().removeClass("d-none");

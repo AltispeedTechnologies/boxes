@@ -1,3 +1,9 @@
+/**
+ * @file customer/confirm_payment.js
+ * @description Invoice confirmation and client-side payment completion.
+ * @see docs/api/javascript.md
+ */
+
 function init_invoice_page() {
     $("button#confirmbtn, a#retrypayment").off("click").on("click", function() {
         let invoice_id = $(this).data("id");

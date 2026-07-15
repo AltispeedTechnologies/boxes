@@ -1,7 +1,16 @@
+/**
+ * @file reports/report_chart.js
+ * @description Chart.js rendering for dashboard stats.
+ * @see docs/api/javascript.md
+ */
+
 function toggle_disabled_chart_buttons(disabled) {
     $("#chart_toggle").find("button").attr("disabled", disabled);
 }
 
+/**
+ * Fetch and redraw the dashboard chart for a frequency.
+ */
 function update_chart(current_value) {
     $("#loadingicon").show();
     toggle_disabled_chart_buttons(true);
@@ -43,6 +52,9 @@ function update_chart(current_value) {
     });
 }
 
+/**
+ * Create the initial Chart.js instance.
+ */
 function init_report_chart() {
     // Chart colors
     window.colors = [

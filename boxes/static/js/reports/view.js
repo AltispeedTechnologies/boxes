@@ -1,3 +1,9 @@
+/**
+ * @file reports/view.js
+ * @description Report view page with PDF generation status polling.
+ * @see docs/api/javascript.md
+ */
+
 function update_ui(current_status) {
     switch (current_status) {
     case 0:
@@ -33,6 +39,9 @@ function update_ui(current_status) {
     }
 }
 
+/**
+ * Start PDF status polling on report view.
+ */
 function init_report_view_page() {
     // Get the report ID
     let report_id = $("#reportviewpage").data("report-id");

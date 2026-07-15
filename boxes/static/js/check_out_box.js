@@ -1,3 +1,9 @@
+/**
+ * @file check_out_box.js
+ * @description Per-package checkout verification UI before submit.
+ * @see docs/api/javascript.md
+ */
+
 function verify_package() {
     window.display_error_message();
     $("#savingicon").show();
@@ -36,6 +42,9 @@ function verify_package() {
     });
 }
 
+/**
+ * Bind checkout verification box events.
+ */
 function setup_checkout_box() {
     $("#tracking_code").off("keydown").on("keydown", function(event) {
         if (event.keyCode === 13) {  // Enter key

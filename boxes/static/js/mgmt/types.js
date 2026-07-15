@@ -1,3 +1,9 @@
+/**
+ * @file mgmt/types.js
+ * @description Package type management form save/add/remove.
+ * @see docs/api/javascript.md
+ */
+
 function init_types_mgmt_page() {
     let new_type_id = 0;
 

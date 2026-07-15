@@ -1,3 +1,9 @@
+/**
+ * @file app.js
+ * @description Global AJAX helpers, CSRF, Select2 utilities, debounce, and page init.
+ * @see docs/api/javascript.md
+ */
+
 // Global Utility Functions
 
 /// Generic cookie function, currently only used for CSRF tokens
@@ -121,7 +127,7 @@ window.display_error_message = function(errors) {
 
     // Create and append alert div with the concatenated error message
     var alert_div = $("<div></div>").addClass("alert alert-danger").text(error_message.trim());
-    
+
     // Clear all existing messages before appending the new error message
     messages_div.empty();
 
@@ -149,7 +155,7 @@ window.format_price_input = function(input_element) {
     // Remove all non-numeric characters except the decimal point
     value = value.replace(/[^0-9\.]/g, "");
     var split = value.split(".");
-    
+
     // Handle multiple decimals
     if (split.length > 2) {
         value = split[0] + "." + split[1].slice(0, 2);
@@ -157,7 +163,7 @@ window.format_price_input = function(input_element) {
         split[1] = split[1].slice(0, 2);
         value = split.join(".");
     }
-    
+
     // Limit integer part to 6 digits
     if (split[0].length > 6) {
         value = value.slice(0, 6) + (split.length === 2 ? "." + split[1] : "");
@@ -193,12 +199,12 @@ window.picklist_data = (function() {
 
     return async function() {
         const now = Date.now();
-        
+
         // If there's a fetch in progress, return the existing promise
         if (fetch_promise) {
             return fetch_promise;
         }
-        
+
         // Use cache if the last fetch was less than 1000 milliseconds ago and cache is available
         if (last_fetch > 0 && (now - last_fetch) < 1000 && cache !== null) {
             return cache;
@@ -278,6 +284,9 @@ window.ajax_request = function({ type, url, payload = null, content_type = "appl
 };
 
 /// Functionality to run once the content has fully loaded
+/**
+ * Document-ready bootstrap for shared UI widgets.
+ */
 function init_page(event) {
     var context = document;
 

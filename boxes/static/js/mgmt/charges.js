@@ -1,3 +1,9 @@
+/**
+ * @file mgmt/charges.js
+ * @description Charge rules and tax settings form handling.
+ * @see docs/api/javascript.md
+ */
+
 function init_charges_mgmt_page() {
     $("input#taxrate").off("input").on("input", function() {
         window.format_price_input($(this));

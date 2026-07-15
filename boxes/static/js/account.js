@@ -1,3 +1,9 @@
+/**
+ * @file account.js
+ * @description Staff account detail page interactions (comments save, etc.).
+ * @see docs/api/javascript.md
+ */
+
 function init_account_page() {
     $("#accountnotes").off("input").on("input", window.debounce(function() {
         $("#savingnotes").removeClass("d-none");

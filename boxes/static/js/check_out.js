@@ -1,3 +1,9 @@
+/**
+ * @file check_out.js
+ * @description Check-out page initialization and submit wiring.
+ * @see docs/api/javascript.md
+ */
+
 function init_checkout_page() {
     $(document).off("checkoutPackageValid").on("checkoutPackageValid", function(event, pkg) {
         let new_row = $(".visually-hidden")

@@ -1,3 +1,9 @@
+/**
+ * @file user_edit.js
+ * @description Staff user/account edit: aliases, emails, create user AJAX.
+ * @see docs/api/javascript.md
+ */
+
 function init_user_edit_page() {
     window.alias_internal_id = 1;
     window.email_internal_id = 1;
@@ -9,7 +15,7 @@ function init_user_edit_page() {
     $("#aliasesinput").off("click", ".fa-trash").on("click", ".fa-trash", function() {
         var input = $(this).siblings("input");
         var current_id = input.attr("data-id");
-        
+
         if (current_id.startsWith("NEW_")) {
             $(this).parent().remove();
         } else {
@@ -77,7 +83,7 @@ function init_user_edit_page() {
     $("#emailsinput").off("click", ".fa-trash").on("click", ".fa-trash", function() {
         var input = $(this).siblings("input");
         var current_id = input.attr("data-id");
-        
+
         if (current_id.startsWith("NEW_")) {
             $(this).parent().remove();
         } else {

@@ -1,3 +1,9 @@
+/**
+ * @file mgmt/general.js
+ * @description GlobalSettings general business info and logo upload.
+ * @see docs/api/javascript.md
+ */
+
 function init_general_mgmt_page() {
     $("#clear-file").off("click").on("click", function() {
         $("#image").val("");

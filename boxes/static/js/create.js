@@ -1,3 +1,9 @@
+/**
+ * @file create.js
+ * @description Check-in page: create package, queue load, and check-in submit.
+ * @see docs/api/javascript.md
+ */
+
 function request_create_package(form_data, hr_fields) {
     window.ajax_request({
         type: "POST",
@@ -27,6 +33,9 @@ function request_create_package(form_data, hr_fields) {
     $("#checkinbtn").prop("disabled", (window.packages.size == 0));
 }
 
+/**
+ * Collect form fields and create a package row.
+ */
 function handle_create_package() {
     let selected_queue = localStorage.getItem("selected_queue");
 
@@ -71,6 +80,9 @@ function handle_create_package() {
     }
 }
 
+/**
+ * Clear the create-package form.
+ */
 function reset_form_fields() {
     $("#create_tracking_code").val("");
     $("#create_inside").prop("checked", false);
@@ -93,6 +105,9 @@ function reset_form_fields() {
     }
 }
 
+/**
+ * Render created/queued packages into the check-in table.
+ */
 function display_packages(response) {
     $("#checkinbtn").prop("disabled", false);
 
@@ -129,6 +144,9 @@ function display_packages(response) {
     $("tbody#checkin").append(new_row);
 }
 
+/**
+ * Submit check-in for visible table packages.
+ */
 function handle_checkin() {
     let selected_queue = localStorage.getItem("selected_queue");
 
@@ -148,6 +166,9 @@ function handle_checkin() {
     });
 }
 
+/**
+ * Load packages for the selected queue into the table.
+ */
 function load_queue(selected_queue) {
     window.ajax_request({
         type: "GET",
@@ -171,6 +192,9 @@ function load_queue(selected_queue) {
     });
 }
 
+/**
+ * Initialize check-in/create page handlers.
+ */
 function init_create_page() {
     window.packages = new Set();
     window.billable = true;

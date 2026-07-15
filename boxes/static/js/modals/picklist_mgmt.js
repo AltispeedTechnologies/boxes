@@ -1,5 +1,14 @@
+/**
+ * @file modals/picklist_mgmt.js
+ * @description Picklist create/edit modal and list actions.
+ * @see docs/api/javascript.md
+ */
+
 var current_id = null;
 
+/**
+ * Picklist management modal interactions.
+ */
 function picklist_list_page() {
     window.picklist_data().then(function(data) {
         let picklist_data = data;

@@ -1,3 +1,9 @@
+/**
+ * @file searchbox.js
+ * @description Package search filters and Select2-backed search box.
+ * @see docs/api/javascript.md
+ */
+
 
 function change_selected_filter(filter) {
     let search_input_container = $("#search_input_container");
@@ -12,6 +18,9 @@ function change_selected_filter(filter) {
     }
 }
 
+/**
+ * Initialize package search box and Select2.
+ */
 function init_searchbox_page() {
     change_selected_filter(window.filter);
 
@@ -53,7 +62,7 @@ function init_searchbox_page() {
         let customer_id = $("#customer_select").val();
         window.location.href = "/accounts/" + customer_id + "/packages";
     });
-    
+
     $("#filter_select").off("change").on("change", function() {
         let filter = $(this).val();
         change_selected_filter(filter);

@@ -1,7 +1,13 @@
+/**
+ * @file mgmt/email_template.js
+ * @description Jodit email template editor and save/load.
+ * @see docs/api/javascript.md
+ */
+
 $(document).ready(function() {
     const make_btn = (name, text) => ({
         name: name,
-        text: text, 
+        text: text,
         tooltip: "Insert " + text,
         exec: (editor) => {
             editor.selection.insertHTML(`<span contenteditable="false" style="user-select: none;" class="custom-block bg-light mx-1 p-2">${text}</span>`);
@@ -28,6 +34,9 @@ $(document).ready(function() {
     });
 });
 
+/**
+ * Initialize email template editor page.
+ */
 function init_email_template_mgmt_page() {
     $("#template-selector").select2();
     window.select2properheight("#template-selector");

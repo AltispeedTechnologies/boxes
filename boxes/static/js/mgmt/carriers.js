@@ -1,3 +1,9 @@
+/**
+ * @file mgmt/carriers.js
+ * @description Carrier management form save/add/remove.
+ * @see docs/api/javascript.md
+ */
+
 function init_carrier_mgmt_page() {
     let new_type_id = 0;
 
