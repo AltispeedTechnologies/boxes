@@ -11,20 +11,24 @@ from django.views.decorators.http import require_http_methods
 def email_template(request):
     """GET: template list/editor page."""
     templates = EmailTemplate.objects.all().order_by("id")
-    initial_content = templates.first().content
-    subject = templates.first().subject
-    return render(request, "mgmt/email_templates.html", {"templates": templates,
-                                                         "subject": subject,
-                                                         "initial_content": initial_content})
+    first = templates.first()
+    initial_content = first.content if first else ""
+    subject = first.subject if first else ""
+    return render(request, "mgmt/email_templates.html", {
+        "templates": templates,
+        "subject": subject,
+        "initial_content": initial_content,
+    })
 
 
 @require_http_methods(["POST"])
 def add_email_template(request):
     """POST: create a new EmailTemplate."""
-    template_name = request.POST.get("name")
-    if template_name:
-        new_template = EmailTemplate.objects.create(name=template_name, subject="", content="")
-        return JsonResponse({"success": True, "id": new_template.id})
+    template_name = (request.POST.get("name") or "").strip()
+    if not template_name:
+        return JsonResponse({"success": False, "errors": ["Template name is required"]})
+    new_template = EmailTemplate.objects.create(name=template_name, subject="", content="")
+    return JsonResponse({"success": True, "id": new_template.id})
 
 
 @require_http_methods(["GET"])
@@ -32,9 +36,11 @@ def email_template_content(request):
     """GET: fetch subject/body for a template id."""
     template_id = request.GET.get("id")
     template = EmailTemplate.objects.get(id=template_id)
-    return JsonResponse({"success": True,
-                         "content": template.content,
-                         "subject": template.subject})
+    return JsonResponse({
+        "success": True,
+        "content": template.content,
+        "subject": template.subject,
+    })
 
 
 @require_http_methods(["POST"])
@@ -42,8 +48,8 @@ def email_template_content(request):
 def update_email_template(request):
     """POST: update template name/subject/content."""
     template_id = request.POST.get("id")
-    content = _clean_html(request.POST.get("content"))
-    subject = request.POST.get("subject")
+    content = _clean_html(request.POST.get("content") or "")
+    subject = request.POST.get("subject") or ""
 
     template = EmailTemplate.objects.get(id=template_id)
     template.subject = subject
