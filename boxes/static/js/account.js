@@ -50,6 +50,33 @@ function init_account_page() {
             });
         });
     }
+
+    if ($("#postwaiver").length === 1) {
+        $("#postwaiver").off("click").on("click", function() {
+            let account_id = $("#feewaiver").attr("data-account-id");
+            let amount = $("#waiver_amount").val().trim();
+            let description = $("#waiver_description").val().trim() || "Fee waiver";
+            if (!amount) {
+                window.display_error_message("Amount is required");
+                return;
+            }
+            $("#savingiconwaiver").show();
+            window.ajax_request({
+                type: "POST",
+                url: "/accounts/" + account_id + "/waiver",
+                payload: JSON.stringify({amount: amount, description: description}),
+                content_type: "application/json",
+                on_success: function(response) {
+                    $("#savingiconwaiver").hide();
+                    $("#successiconwaiver").show();
+                    setTimeout(function() {
+                        $("#successiconwaiver").fadeOut();
+                        window.location.reload();
+                    }, 800);
+                }
+            });
+        });
+    }
 }
 
 $(init_account_page);

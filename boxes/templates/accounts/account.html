@@ -23,6 +23,27 @@
         </div>
     </div>
 
+    <div class="container mt-3 border rounded p-3 bg-light" id="feewaiver" data-account-id="{{ account.id }}">
+        <h5 class="mb-2">Fee waiver</h5>
+        <div class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label for="waiver_amount" class="form-label">Amount</label>
+                <input type="text" class="form-control" id="waiver_amount" placeholder="0.00" inputmode="decimal">
+            </div>
+            <div class="col-md-6">
+                <label for="waiver_description" class="form-label">Description</label>
+                <input type="text" class="form-control" id="waiver_description" maxlength="256" placeholder="Fee waiver">
+            </div>
+            <div class="col-md-4">
+                <button type="button" class="btn btn-warning" id="postwaiver">
+                    <i class="fas fa-hand-holding-usd"></i> Post credit
+                </button>
+                <i id="savingiconwaiver" class="fas fa-spinner fa-spin text-warning ms-2" style="display: none;"></i>
+                <i id="successiconwaiver" class="fas fa-check-circle text-success ms-2" style="display: none;"></i>
+            </div>
+        </div>
+    </div>
+
     {% if page_obj %}
     {% include "_paginate.html" %}
 

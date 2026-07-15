@@ -116,6 +116,7 @@ staff_urlpatterns = [
     path("accounts/<int:pk>/edit", account_edit, name="account_edit"),
     path("accounts/<int:pk>/emails", account_emails, name="account_emails"),
     path("accounts/<int:pk>/ledger", account_ledger, name="account_ledger"),
+    path("accounts/<int:pk>/waiver", account_fee_waiver, name="account_fee_waiver"),
     path("accounts/<int:pk>/packages", account_packages, name="account_packages"),
     path("accounts/<int:pk>/update", update_account, name="update_account"),
     path("accounts/aliases/update", update_account_aliases, name="update_account_aliases"),

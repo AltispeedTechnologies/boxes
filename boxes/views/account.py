@@ -208,3 +208,49 @@ def update_account_aliases(request):
                 alias.save()
 
     return JsonResponse({"success": True, "aliases": updated_aliases})
+
+
+@require_http_methods(["POST"])
+@exception_catcher()
+def account_fee_waiver(request, pk):
+    """POST: staff credit waiver on account ledger (account_id from URL).
+
+    Body (JSON or form): amount (required, > 0), description (optional).
+    Creates an AccountLedger credit and recalculates balances.
+    """
+    from decimal import Decimal
+    from boxes.tasks import total_accounts
+
+    account = get_object_or_404(Account, pk=pk)
+    if request.content_type and "application/json" in request.content_type:
+        data = json.loads(request.body) if request.body else {}
+    else:
+        data = request.POST
+
+    amount_raw = data.get("amount")
+    if amount_raw is None or str(amount_raw).strip() == "":
+        raise ValueError("amount is required")
+    amount = Decimal(str(amount_raw).strip())
+    if amount <= 0:
+        raise ValueError("amount must be positive")
+
+    description = data.get("description") or "Fee waiver"
+    description = str(description).strip()[:256]
+
+    entry = AccountLedger.objects.create(
+        user=request.user,
+        account=account,
+        credit=amount,
+        debit=Decimal("0.00"),
+        description=description,
+        package=None,
+        invoice=None,
+        is_late=False,
+    )
+    total_accounts.delay(account_id=account.id)
+    return JsonResponse({
+        "success": True,
+        "ledger_id": entry.id,
+        "credit": str(entry.credit),
+        "description": entry.description,
+    })
