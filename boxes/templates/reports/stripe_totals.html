@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container bg-body shadow rounded p-3 col-md-10">
+    <div class="row bg-primary bg-gradient rounded mb-3">
+        <h2 class="text-center text-white py-2">Stripe Payment Totals</h2>
+    </div>
+    {% include "_messages.html" %}
+    <p class="text-muted">Aggregates from succeeded invoices (payment state = Succeeded).</p>
+    <div class="row text-center mb-4">
+        <div class="col-md-3">
+            <div class="border border-1 border-primary p-3">
+                <small>Count</small>
+                <h4 class="text-primary">{{ totals.count }}</h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="border border-1 border-success p-3">
+                <small>Subtotal</small>
+                <h4 class="text-success">${{ totals.subtotal|floatformat:2 }}</h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="border border-1 border-warning p-3">
+                <small>Tax</small>
+                <h4 class="text-warning">${{ totals.tax|floatformat:2 }}</h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="border border-1 border-danger p-3">
+                <small>Processing Fees</small>
+                <h4 class="text-danger">${{ totals.processing_fees|floatformat:2 }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="row text-center">
+        <div class="col-md-4 offset-md-2">
+            <div class="border p-3">
+                <small>Stripe Fees (recorded)</small>
+                <h5>${{ totals.stripe_fee|floatformat:2 }}</h5>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="border p-3">
+                <small>Deposit Total (recorded)</small>
+                <h5>${{ totals.deposit_total|floatformat:2 }}</h5>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
