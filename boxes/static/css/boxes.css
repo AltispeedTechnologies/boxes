@@ -278,3 +278,20 @@ label.form-label {
     color: var(--boxes-text-muted);
     padding: 2rem 1rem;
 }
+
+/* ---------------------------------------------------------------------------
+ * Navbar: center primary nav links between brand and profile
+ * --------------------------------------------------------------------------- */
+@media (min-width: 992px) {
+    #app-navbar .navbar-collapse {
+        display: flex !important;
+        flex-basis: auto;
+        flex-grow: 1;
+        align-items: center;
+    }
+
+    #app-navbar .navbar-nav.mx-auto {
+        flex-grow: 1;
+        justify-content: center;
+    }
+}

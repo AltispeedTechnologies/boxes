@@ -6,6 +6,18 @@
         <h2 class="text-center text-white py-2">Stripe Payment Totals</h2>
     </div>
     {% include "_messages.html" %}
+
+    <div class="row mx-auto text-center align-items-center mb-3">
+        <nav class="nav nav-pills flex-column flex-sm-row">
+            <a class="flex-sm-fill text-sm-center nav-link bg-light"
+               href="/reports/data">Data</a>
+            <a class="flex-sm-fill text-sm-center nav-link bg-light"
+               href="/reports/list">Reports</a>
+            <a class="flex-sm-fill text-sm-center nav-link active"
+               href="/reports/stripe-totals">Stripe Totals</a>
+        </nav>
+    </div>
+
     <p class="text-muted">Aggregates from succeeded invoices (payment state = Succeeded).</p>
     <div class="row text-center mb-4">
         <div class="col-md-3">
