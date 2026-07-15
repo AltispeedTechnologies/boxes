@@ -66,6 +66,65 @@
 
     <hr />
 
+
+    <hr />
+
+    <div class="container mt-4" id="account-memberships" data-account-id="{{ account.id }}">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h4>Portal Members</h4>
+        </div>
+        <div class="table-responsive mb-3">
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Active</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in memberships %}
+                    <tr class="{% if not m.is_active %}table-secondary{% endif %}">
+                        <td>{{ m.user.first_name }} {{ m.user.last_name }}</td>
+                        <td>{{ m.user.username }} <small class="text-muted">#{{ m.user_id }}</small></td>
+                        <td>{{ m.role }}</td>
+                        <td>{% if m.is_active %}Yes{% else %}No{% endif %}</td>
+                        <td class="text-end">
+                            {% if m.is_active %}
+                            <button type="button" class="btn btn-outline-danger btn-sm disassociate-member" data-user-id="{{ m.user_id }}">
+                                Disassociate
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-muted">No linked portal users.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label" for="link-member-user-id">User ID</label>
+                <input type="number" class="form-control" id="link-member-user-id" min="1" placeholder="User id">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="link-member-role">Role</label>
+                <select class="form-select" id="link-member-role">
+                    <option value="member">Member</option>
+                    <option value="owner">Owner</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="button" class="btn btn-primary" id="link-member-btn">
+                    <i class="fas fa-link"></i> Link existing user
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="container mt-4">
         <div class="d-flex align-items-center justify-content-between mb-2">
             <h4>Details</h4>
