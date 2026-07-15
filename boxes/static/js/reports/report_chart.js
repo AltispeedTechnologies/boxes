@@ -4,6 +4,32 @@
  * @see docs/api/javascript.md
  */
 
+
+/**
+ * Build Chart.js datasets from packages_by_carrier y_data.
+ */
+function carrier_datasets(y_data) {
+    return Object.keys(y_data || {}).map((key, index) => ({
+        fill: false,
+        label: key,
+        backgroundColor: window.colors[index % window.colors.length],
+        borderColor: window.colors[index % window.colors.length],
+        data: y_data[key]
+    }));
+}
+
+/**
+ * Update or create the packages-by-carrier chart.
+ */
+function update_carrier_chart(packages_by_carrier) {
+    if (!window.carrierchart || !packages_by_carrier) {
+        return;
+    }
+    window.carrierchart.data.labels = packages_by_carrier["x_data"] || [];
+    window.carrierchart.data.datasets = carrier_datasets(packages_by_carrier["y_data"]);
+    window.carrierchart.update();
+}
+
 function toggle_disabled_chart_buttons(disabled) {
     $("#chart_toggle").find("button").attr("disabled", disabled);
 }
@@ -35,6 +61,9 @@ function update_chart(current_value) {
             }));
             window.mainchart.update();
 
+            // Packages by carrier / day series from report_stats_chart
+            update_carrier_chart(chart_data["packages_by_carrier"]);
+
             // Update the totals
             let total_data = response.total_data;
             $("#emails_sent").text(total_data["emails_sent"]);
@@ -61,6 +90,10 @@ function init_report_chart() {
         "rgba(54, 162, 235, 1)",
         "rgba(255, 99, 132, 1)",
         "rgba(245, 179, 66, 1)",
+        "rgba(75, 192, 192, 1)",
+        "rgba(153, 102, 255, 1)",
+        "rgba(255, 159, 64, 1)",
+        "rgba(201, 203, 207, 1)",
     ];
 
     // Initialize the chart
@@ -75,6 +108,23 @@ function init_report_chart() {
                 borderColor: window.colors[index % window.colors.length],
                 data: window.initial_chart_data["y_data"][key]
             }))
+        },
+        options: {
+            plugins: {
+                legend: {
+                    position: "bottom"
+                }
+            }
+        }
+    });
+
+    // Packages-by-carrier-by-day chart (check-ins grouped by carrier name + day)
+    let initial_carrier = window.initial_chart_data["packages_by_carrier"] || {x_data: [], y_data: {}};
+    window.carrierchart = new Chart("carrierchart", {
+        type: "line",
+        data: {
+            labels: initial_carrier["x_data"] || [],
+            datasets: carrier_datasets(initial_carrier["y_data"])
         },
         options: {
             plugins: {
