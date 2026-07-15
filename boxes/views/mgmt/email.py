@@ -16,7 +16,7 @@ from django.views.decorators.http import require_http_methods
 def email_settings(request):
     """GET: sender and notification rules page."""
     templates = EmailTemplate.objects.all().order_by("id")
-    global_settings, _ = GlobalSettings.objects.get_or_create(id=1)
+    global_settings = GlobalSettings.load()
     try:
         email_settings = EmailSettings.objects.latest("id")
     except EmailSettings.DoesNotExist:
@@ -77,7 +77,7 @@ def save_email_settings(request):
 
     with transaction.atomic():
         # Update global settings for sending emails
-        settings, _ = GlobalSettings.objects.get_or_create(id=1)
+        settings = GlobalSettings.load()
         settings.email_sending = email_sending
         settings.save()
 

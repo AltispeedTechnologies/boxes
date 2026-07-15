@@ -28,7 +28,7 @@ def draw_label(canvas, first_name, last_name, barcode_value, date, inside):
         canvas.setFont(font_name, font_size)
         canvas.drawString(x, y, text)
 
-    globalsettings = GlobalSettings.objects.filter(id=1).first()
+    globalsettings = GlobalSettings.load()
 
     # Draw the fixed information
     if inside:

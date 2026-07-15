@@ -1,15 +1,16 @@
 """Singleton-style business configuration and branding images."""
 from boxes.management.custom_storage import OverwriteStorage
 from django.db import models
-from django.utils import timezone
 
 
 class GlobalSettings(models.Model):
-    # General business information, for labels and invoices
     """Warehouse identity, tax/fee toggles, email master switch, and logos.
 
-    Typically row id=1. Edited via Management → General. See docs/DATABASE_SETTINGS.md.
+    Prefer GlobalSettings.load() over hard-coded primary keys. Edited via
+    Management -> General. See docs/DATABASE_SETTINGS.md.
     """
+
+    # General business information, for labels and invoices
     name = models.CharField(max_length=32)
     address1 = models.CharField(max_length=64)
     address2 = models.CharField(max_length=64)
@@ -32,3 +33,20 @@ class GlobalSettings(models.Model):
     label_image = models.ImageField(storage=OverwriteStorage(), upload_to="images/")
     navbar_image = models.ImageField(storage=OverwriteStorage(), upload_to="images/")
     favicon_image = models.ImageField(storage=OverwriteStorage(), upload_to="images/")
+
+    @classmethod
+    def load(cls):
+        """Return the singleton settings row, creating defaults if needed."""
+        obj = cls.objects.order_by("pk").first()
+        if obj is not None:
+            return obj
+        return cls.objects.create(
+            name="Boxes",
+            address1="",
+            address2="",
+            website="",
+            email="",
+            email_sending=True,
+            taxes=False,
+            pass_on_fees=False,
+        )

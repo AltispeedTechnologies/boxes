@@ -13,7 +13,7 @@ from PIL import Image
 @require_http_methods(["GET"])
 def general_settings(request):
     """GET: general settings page."""
-    settings, _ = GlobalSettings.objects.get_or_create(id=1)
+    settings = GlobalSettings.load()
     return render(request, "mgmt/general.html", {"settings": settings})
 
 
@@ -21,7 +21,7 @@ def general_settings(request):
 @exception_catcher()
 def save_general_settings(request):
     """POST: save GlobalSettings fields and process logo upload."""
-    settings, _ = GlobalSettings.objects.get_or_create(id=1)
+    settings = GlobalSettings.load()
 
     payload = request.POST.get("payload")
     if payload:

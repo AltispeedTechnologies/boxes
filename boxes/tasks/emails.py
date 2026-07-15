@@ -117,7 +117,7 @@ def _send_users(users, email_data):
 def send_emails():
     # Do not proceed if email sending is disabled
     """Celery beat: drain queue if GlobalSettings.email_sending is enabled."""
-    global_settings, _ = GlobalSettings.objects.get_or_create(id=1)
+    global_settings = GlobalSettings.load()
     if not global_settings.email_sending:
         return
 

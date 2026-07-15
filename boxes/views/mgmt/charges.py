@@ -30,7 +30,7 @@ def charge_settings(request):
         endpoint__isnull=False
     ).values_list("endpoint", flat=True).first()
 
-    globalsettings, _ = GlobalSettings.objects.get_or_create(id=1)
+    globalsettings = GlobalSettings.load()
 
     package_types = PackageType.objects.all().values("id", "description")
     return render(request, "mgmt/charges.html", {"charge_rules": charge_rules,
@@ -85,7 +85,7 @@ def save_charge_settings(request):
         )
 
     # Grab the only global settings present
-    globalsettings, _ = GlobalSettings.objects.get_or_create(id=1)
+    globalsettings = GlobalSettings.load()
 
     # Validate the tax rate, if present
     tax_rate = None

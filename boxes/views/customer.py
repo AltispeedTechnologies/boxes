@@ -21,7 +21,7 @@ from weasyprint import HTML
 def customer_make_payment(request):
     """GET: payment page with balance and methods."""
     account_id = UserAccount.objects.get(user_id=request.user.id).account_id
-    globalsettings, _ = GlobalSettings.objects.get_or_create(id=1)
+    globalsettings = GlobalSettings.load()
 
     subtotal = float(Account.objects.get(pk=account_id).balance * -1)
     tax_rate = float(globalsettings.tax_rate / 100) if globalsettings.taxes else 0.00
@@ -169,7 +169,7 @@ def customer_view_pdf(request, pk):
     invoice_payload = {"balance": balance, "current_state": invoice_data.current_state, "id": invoice_data.id,
                        "line_items": invoice_data.line_items, "payment_method": payment_method}
 
-    globalsettings, _ = GlobalSettings.objects.get_or_create(id=1)
+    globalsettings = GlobalSettings.load()
     logo_path = f"file://{globalsettings.login_image.path}"
 
     hr_timestamp = timezone.localtime(invoice_data.timestamp).strftime("%m/%d/%Y %I:%M:%S %p")
@@ -293,7 +293,7 @@ def customer_new_invoice(request):
     account_id = UserAccount.objects.get(user_id=request.user.id).account_id
     customer_id = invoice.get_customer_id(request.user.id)
 
-    globalsettings, _ = GlobalSettings.objects.get_or_create(id=1)
+    globalsettings = GlobalSettings.load()
 
     data = json.loads(request.body)
     method = data["method"]
