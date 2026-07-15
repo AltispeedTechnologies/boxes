@@ -122,6 +122,11 @@ def update_packages_util(request, state, debit_credit_switch=False):
         if not ids:
             raise ValueError("No package IDs provided.")
 
+        prior_states = {
+            row["id"]: row["current_state"]
+            for row in Package.objects.filter(id__in=ids).values("id", "current_state")
+        }
+
         # Update the state
         Package.objects.filter(id__in=ids).update(current_state=state)
 
@@ -155,14 +160,27 @@ def update_packages_util(request, state, debit_credit_switch=False):
         PackagePicklist.objects.filter(package_id__in=ids).delete()
 
         account_ledger, package_ledger, affected_accounts = [], [], set()
-        for pkg in Package.objects.filter(id__in=ids).values("id", "account_id", "price"):
+        for pkg in Package.objects.filter(id__in=ids).values("id", "account_id", "price", "paid"):
             pkg_entry = PackageLedger(user_id=request.user.id, package_id=pkg["id"], state=state)
             package_ledger.append(pkg_entry)
 
             if pkg["price"] == 0:
                 continue
 
-            debit, credit = (0, pkg["price"]) if debit_credit_switch else (pkg["price"], 0)
+            # Checking out (debit_credit_switch True): credit/clear as designed.
+            # Checking in: only assess the base package debit on first check-in
+            # (not when reversing checkout back to checked-in).
+            prior = prior_states.get(pkg["id"])
+            if debit_credit_switch:
+                debit, credit = 0, pkg["price"]
+            else:
+                if state == 1 and prior == 2:
+                    # Reverse checkout / re-check-in: do not charge again
+                    continue
+                if state == 1 and prior == 1:
+                    continue
+                debit, credit = pkg["price"], 0
+
             acct_entry = AccountLedger(user_id=request.user.id, package_id=pkg["id"], is_late=False,
                                        account_id=pkg["account_id"], debit=debit, credit=credit, description="")
             account_ledger.append(acct_entry)

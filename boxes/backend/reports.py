@@ -204,17 +204,20 @@ def clean_config(config):
             if start_date > end_date:
                 return False
         case "relative_date_range":
-            # There should only be a type, start, and end - enforce this
-            if len(config["filter"].keys()) != 3:
+            # type + start required; end optional (open-ended "over N days")
+            if "start" not in config["filter"]:
                 return False
-            elif "start" not in config["filter"].keys() or "end" not in config["filter"].keys():
+            if not isinstance(config["filter"]["start"], int):
                 return False
-
-            # Both items must be ints
-            if not isinstance(config["filter"]["start"], int) or not isinstance(config["filter"]["end"], int):
+            if config["filter"]["start"] < 0:
                 return False
-            # End must be greater than the start
-            elif config["filter"]["end"] <= config["filter"]["start"]:
+            if "end" in config["filter"]:
+                if not isinstance(config["filter"]["end"], int):
+                    return False
+                if config["filter"]["end"] <= config["filter"]["start"]:
+                    return False
+            allowed_rel_keys = {"type", "start", "end"}
+            if not set(config["filter"].keys()).issubset(allowed_rel_keys):
                 return False
         case "time_period":
             # There should only be a type and frequency - enforce this
