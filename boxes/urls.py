@@ -75,6 +75,7 @@ def decorate_urlpatterns(urlpatterns, decorator):
 public_urlpatterns = [
     path("login/", sign_in, name="login"),
     path("webhooks/stripe", stripe_webhooks, name="stripe_webhooks"),
+    path("webhooks/mailjet", mailjet_webhooks, name="mailjet_webhooks"),
 ]
 
 

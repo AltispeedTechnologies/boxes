@@ -46,6 +46,9 @@ env = environ.Env(
     SECURE_SSL_REDIRECT=(bool, True),
     STRIPE_API_KEY=(str, None),
     STRIPE_ENDPOINT_SECRET=(str, None),
+    MAILJET_WEBHOOK_SECRET=(str, None),
+    MAILJET_WEBHOOK_USER=(str, None),
+    MAILJET_WEBHOOK_PASSWORD=(str, None),
 )
 
 # Set the project base directory
@@ -514,6 +517,15 @@ CELERY_BEAT_SCHEDULE = {
 ##########
 STRIPE_API_KEY = env("STRIPE_API_KEY")
 STRIPE_ENDPOINT_SECRET = env("STRIPE_ENDPOINT_SECRET")
+
+###########
+# MAILJET #
+###########
+# Optional webhook auth: shared secret (header X-Mailjet-Webhook-Secret or ?secret=)
+# and/or HTTP basic auth credentials (Mailjet callback URL style).
+MAILJET_WEBHOOK_SECRET = env("MAILJET_WEBHOOK_SECRET")
+MAILJET_WEBHOOK_USER = env("MAILJET_WEBHOOK_USER")
+MAILJET_WEBHOOK_PASSWORD = env("MAILJET_WEBHOOK_PASSWORD")
 
 ############
 # SESSIONS #
