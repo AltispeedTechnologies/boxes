@@ -33,7 +33,7 @@ class MembershipHelpersTest(TestCase):
         self.assertTrue(m.is_active)
         self.assertEqual(m.role, UserAccount.ROLE_OWNER)
 
-        disassociate_user(self.acct_a, self.user)
+        disassociate_user(self.acct_a, self.user, allow_last_owner=True)
         m.refresh_from_db()
         self.assertFalse(m.is_active)
 

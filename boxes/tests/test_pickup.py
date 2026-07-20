@@ -133,23 +133,25 @@ class ReservationCreateTests(TestCase):
         )
         self.client = Client()
         self.client.force_login(self.customer)
-        # Open a concrete day for reservations
-        self.day = PickupDay.objects.create(date=date(2026, 7, 15), is_active=True)
+        # Open a concrete day inside the customer open-window (today .. +60d)
+        self.open_date = date.today() + timedelta(days=7)
+        self.day = PickupDay.objects.create(date=self.open_date, is_active=True)
+        self.open_date_str = self.open_date.isoformat()
 
     def test_create_reservation_via_helper(self):
-        day = get_or_create_open_pickup_day(date(2026, 7, 15))
+        day = get_or_create_open_pickup_day(self.open_date)
         res = PackagePickupReservation.objects.create(
             package=self.package,
             pickup_day=day,
             user=self.customer,
         )
-        self.assertEqual(res.pickup_day.date, date(2026, 7, 15))
+        self.assertEqual(res.pickup_day.date, self.open_date)
         self.assertEqual(self.package.pickup_reservation.pickup_day_id, day.id)
 
     def test_customer_reserve_endpoint(self):
         response = self.client.post(
             "/customer/parcels/reserve",
-            data='{"package_ids": [%d], "date": "2026-07-15"}' % self.package.id,
+            data='{"package_ids": [%d], "date": "%s"}' % (self.package.id, self.open_date_str),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -167,7 +169,7 @@ class ReservationCreateTests(TestCase):
         self.day.save()
         response = self.client.post(
             "/customer/parcels/reserve",
-            data='{"package_ids": [%d], "date": "2026-07-15"}' % self.package.id,
+            data='{"package_ids": [%d], "date": "%s"}' % (self.package.id, self.open_date_str),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -191,4 +193,4 @@ class ReservationCreateTests(TestCase):
         self.assertEqual(response.status_code, 200)
         payload = response.json()
         self.assertTrue(payload.get("success"))
-        self.assertIn("2026-07-15", payload.get("dates", []))
+        self.assertIn(self.open_date_str, payload.get("dates", []))
