@@ -20,6 +20,7 @@ Execute collectstatic and JS cleanup for DEBUG vs production hashing.
 
 ## `manage.py seeddata`
 
-Enqueue ``populate_seed_data`` Celery task.
+Populate development seed data. Use --sync to run in-process (no Celery worker required); default enqueues a Celery task.
 
-Call ``populate_seed_data.delay()``.
+The actual logic of the command. Subclasses must implement
+this method.

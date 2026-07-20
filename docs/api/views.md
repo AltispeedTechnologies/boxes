@@ -8,7 +8,7 @@ Explicit exports for top-level view modules.
 
 ## `boxes.views.account`
 
-Staff account detail: search, ledger, packages, emails, updates.
+Staff account detail: search, ledger, packages, emails, updates, memberships.
 
 ### `account_edit(request, pk)`
 
@@ -29,13 +29,20 @@ Creates an AccountLedger credit and recalculates balances.
 
 Render or return ledger rows for an account.
 
+### `account_members_create_web(request, pk)`
+
+POST (staff): create a new web portal login and link it to this account.
+
+Body JSON: username, password, first_name (required), last_name, email,
+role (owner|member, default owner), is_active (default true), phone fields.
+
 ### `account_members_disassociate(request, pk)`
 
 POST (staff): soft-disassociate a user from this account by user_id.
 
 ### `account_members_link(request, pk)`
 
-POST (staff): link a user to this account by user_id.
+POST (staff): link a user to this account by user_id or username.
 
 ### `account_packages(request, pk)`
 
@@ -53,6 +60,10 @@ POST: update account fields (name, billable, comments, etc.).
 
 POST: replace/update account alias list.
 
+### `user_search(request)`
+
+JSON/Select2 search over users for membership linking.
+
 ## `boxes.views.auth`
 
 Session login and logout views.
@@ -63,7 +74,7 @@ Render login form or authenticate and redirect (honors ``next``).
 
 ### `sign_out(request)`
 
-Log out the current user and redirect to login.
+Log out the current user and redirect to the login page (full document).
 
 ## `boxes.views.carrier`
 
@@ -357,8 +368,6 @@ POST: rename a queue.
 
 ## `boxes.views.packages.check_in`
 
-Package check-in UI and creation.
-
 ### `check_in(request)`
 
 GET: check-in page with queue selector.
@@ -369,7 +378,7 @@ POST: transition selected packages to checked-in state.
 
 ### `create_package(request)`
 
-POST: create a package (and queue membership) from form data.
+POST: create a package (and queue membership) from form or JSON body.
 
 ## `boxes.views.packages.check_out`
 
@@ -555,7 +564,18 @@ Profile self-service and staff user create/update endpoints.
 
 ### `create_user(request)`
 
-POST (staff): create user, optional account link, set groups.
+POST (staff): create billing account + optional portal web login.
+
+Body JSON:
+  - name fields (first_name required unless username-only legacy path)
+  - company, phone_number, email
+  - username / password: when both provided, create an active web login
+  - create_web_account (bool): force web login; requires username+password
+  - billable (bool, default true)
+  - comments
+
+Without username+password, creates a billing Account with an inactive
+placeholder membership user (legacy check-in path).
 
 ### `generate_username()`
 

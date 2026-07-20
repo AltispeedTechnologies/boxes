@@ -4,7 +4,7 @@ Parsed from `boxes/static/js` file headers and `function` declarations.
 
 ## `account.js`
 
-@file account.js; @description Staff account detail page interactions (comments save, membership, fee waiver).; @see docs/api/javascript.md
+@file account.js; @description Staff account detail page interactions (comments, membership, web accounts, fee waiver).; @see docs/api/javascript.md
 
 - `function init_account_page()`
 
@@ -14,6 +14,7 @@ Parsed from `boxes/static/js` file headers and `function` declarations.
 
 - `function init_page()` — Document-ready / afterSettle bootstrap for shared UI widgets. Safe to call on full load and after every htmx settle of #app-main.
 - `function update_navbar_active()` — Highlight navbar links from the current path (navbar is outside hx-boost).
+- `function ensure_auth_chrome()` — If htmx swapped main after login/logout without refreshing the navbar, force a full document load so auth chrome matches session state.
 - `function boot_app_main()`
 - `window.get_cookie = function(...)`
 - `window.select2properheight = function(...)`
@@ -152,7 +153,7 @@ Parsed from `boxes/static/js` file headers and `function` declarations.
 
 ## `modals/new_acct.js`
 
-@file modals/new_acct.js; @description Modal workflow to create a new account.; @see docs/api/javascript.md
+@file modals/new_acct.js; @description Modal workflow to create a new account (optional web login).; @see docs/api/javascript.md
 
 - `function new_acct()`
 

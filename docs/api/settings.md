@@ -105,6 +105,8 @@ Values from the loaded Django settings module. Secrets are redacted.
 | `MESSAGE_STORAGE` | `'django.contrib.messages.storage.fallback.FallbackStorage'` |
 | `MIDDLEWARE` | `['django.middleware.security.SecurityMiddleware', 'django.contrib.sessions.middleware.SessionMiddleware', 'django.mid...` |
 | `MIGRATION_MODULES` | `{}` |
+| `MJ_APIKEY_PRIVATE` | `**[redacted]**` |
+| `MJ_APIKEY_PUBLIC` | `'0062cd56ca552d7439968bdcb76fd442'` |
 | `MONTH_DAY_FORMAT` | `'F j'` |
 | `NUMBER_GROUPING` | `0` |
 | `PASSWORD_HASHERS` | `**[redacted]**` |

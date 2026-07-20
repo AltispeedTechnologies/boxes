@@ -8,7 +8,7 @@ Resolved from the live URLConf. Access tier uses decorator `access_tier` metadat
 | public | `webhooks/mailjet` | `mailjet_webhooks` | `boxes.views.webhooks.mailjet_webhooks` | POST: accept Mailjet Event API payloads and store SentEmailEvent rows. |
 | public | `webhooks/stripe` | `stripe_webhooks` | `boxes.views.webhooks.stripe_webhooks` | POST: verify Stripe signature and enqueue payment handling. |
 | authenticated | `` | `home` | `boxes.views.index.index` | Render customer home, or send warehouse roles to packages/check-in. |
-| authenticated | `logout/` | `logout` | `boxes.views.auth.sign_out` | Log out the current user and redirect to login. |
+| authenticated | `logout/` | `logout` | `boxes.views.auth.sign_out` | Log out the current user and redirect to the login page (full document). |
 | authenticated | `profile/` | `profile_user` | `boxes.views.user.profile_user` | Self-service profile for the logged-in CustomUser. |
 | authenticated | `profile/emails/update` | `update_profile_emails` | `boxes.views.user.update_profile_emails` | Create/update/remove CustomUserEmail rows for the authenticated user only. |
 | authenticated | `profile/update` | `update_profile` | `boxes.views.user.update_profile` | Update the authenticated user's profile fields (and optional password). |
@@ -19,7 +19,7 @@ Resolved from the live URLConf. Access tier uses decorator `access_tier` metadat
 | delivery | `packages/<int:pk>` | `package_detail` | `boxes.views.packages.package.package_detail` | GET: package detail page with history. |
 | delivery | `packages/<int:pk>/update` | `update_package` | `boxes.views.packages.package.update_package` | POST: update fields on one package. |
 | delivery | `packages/checkin` | `check_in` | `boxes.views.packages.check_in.check_in` | GET: check-in page with queue selector. |
-| delivery | `packages/checkin/create` | `create_package` | `boxes.views.packages.check_in.create_package` | POST: create a package (and queue membership) from form data. |
+| delivery | `packages/checkin/create` | `create_package` | `boxes.views.packages.check_in.create_package` | POST: create a package (and queue membership) from form or JSON body. |
 | delivery | `packages/checkin/submit` | `check_in_packages` | `boxes.views.packages.check_in.check_in_packages` | POST: transition selected packages to checked-in state. |
 | delivery | `packages/label` | `show_label` | `boxes.views.labels.show_label` | GET: label print UI. |
 | delivery | `packages/label/pdf` | `generate_label` | `boxes.views.labels.generate_label` | GET: stream multi-label PDF for requested packages. |
@@ -35,8 +35,9 @@ Resolved from the live URLConf. Access tier uses decorator `access_tier` metadat
 | staff | `accounts/<int:pk>/edit` | `account_edit` | `boxes.views.account.account_edit` | Render staff account edit page. |
 | staff | `accounts/<int:pk>/emails` | `account_emails` | `boxes.views.account.account_emails` | List sent emails related to an account. |
 | staff | `accounts/<int:pk>/ledger` | `account_ledger` | `boxes.views.account.account_ledger` | Render or return ledger rows for an account. |
+| staff | `accounts/<int:pk>/members/create` | `account_members_create_web` | `boxes.views.account.account_members_create_web` | POST (staff): create a new web portal login and link it to this account. |
 | staff | `accounts/<int:pk>/members/disassociate` | `account_members_disassociate` | `boxes.views.account.account_members_disassociate` | POST (staff): soft-disassociate a user from this account by user_id. |
-| staff | `accounts/<int:pk>/members/link` | `account_members_link` | `boxes.views.account.account_members_link` | POST (staff): link a user to this account by user_id. |
+| staff | `accounts/<int:pk>/members/link` | `account_members_link` | `boxes.views.account.account_members_link` | POST (staff): link a user to this account by user_id or username. |
 | staff | `accounts/<int:pk>/update` | `update_account` | `boxes.views.account.update_account` | POST: update account fields (name, billable, comments, etc.). |
 | staff | `accounts/<int:pk>/waiver` | `account_fee_waiver` | `boxes.views.account.account_fee_waiver` | POST: staff credit waiver on account ledger (account_id from URL). |
 | staff | `accounts/aliases/update` | `update_account_aliases` | `boxes.views.account.update_account_aliases` | POST: replace/update account alias list. |
@@ -89,7 +90,8 @@ Resolved from the live URLConf. Access tier uses decorator `access_tier` metadat
 | staff | `reports/stats/chart` | `report_stats_chart` | `boxes.views.reports.backend.report_stats_chart` | POST: return chart data payload for dashboard. |
 | staff | `reports/stripe-totals` | `stripe_totals` | `boxes.views.reports.stripe_totals.stripe_totals` | GET: aggregate succeeded invoice money fields for staff reports. |
 | staff | `users/emails/update` | `update_user_emails` | `boxes.views.user.update_user_emails` | POST (staff): update notification emails for a target user. |
-| staff | `users/new` | `create_user` | `boxes.views.user.create_user` | POST (staff): create user, optional account link, set groups. |
+| staff | `users/new` | `create_user` | `boxes.views.user.create_user` | POST (staff): create billing account + optional portal web login. |
+| staff | `users/search` | `user_search` | `boxes.views.account.user_search` | JSON/Select2 search over users for membership linking. |
 | staff | `users/update` | `update_user` | `boxes.views.user.update_user` | POST (staff): update a target user's profile fields. |
 | customer | `customer/invoices` | `customer_invoices` | `boxes.views.customer.customer_invoices` | GET: past invoices for the active account. |
 | customer | `customer/ledger` | `customer_ledger` | `boxes.views.customer.customer_ledger` | GET: ledger history for the active account. |
@@ -107,4 +109,4 @@ Resolved from the live URLConf. Access tier uses decorator `access_tier` metadat
 | customer | `invoice/new` | `customer_new_invoice` | `boxes.views.customer.customer_new_invoice` | POST: create invoice/PaymentIntent for amount and method. |
 | customer | `session/account` | `session_set_active_account` | `boxes.views.customer.session_set_active_account` | POST: set session active account after membership check. |
 
-_Generated 102 application routes (Django admin omitted)._
+_Generated 104 application routes (Django admin omitted)._

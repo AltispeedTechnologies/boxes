@@ -10,6 +10,23 @@ Auto-import backend business-logic modules.
 
 Account-related non-HTTP helpers.
 
+### `activate_web_user(user, password=None)`
+
+Activate a portal user, optionally setting a new password.
+
+### `create_account_with_web_user(*, actor, username, password, first_name, last_name='', middle_name='', prefix='', suffix='', company='', phone_number='', mobile_number='', email=None, account_name=None, billable=True, comments=None, is_active=True)`
+
+Create a billing Account and a portal login linked as owner.
+
+``account_name`` defaults to the composed person name. Returns dict with
+account, user, and membership.
+
+### `create_billing_account(*, actor, name, billable=True, comments=None, balance=None, owner_user=None)`
+
+Create an Account (+ balance + primary alias), optionally owned by ``owner_user``.
+
+``actor`` is stored as Account.user (creator). Returns the Account.
+
 ### `create_user_from_account(account_id)`
 
 Create an inactive CustomUser linked to an account via UserAccount.
@@ -19,6 +36,20 @@ created. Returns an existing linked user id only when there is exactly one
 membership. Returns None if the account is missing, has an empty name, or
 already has multiple linked users (ambiguous). Creates a user only when
 there are zero memberships.
+
+### `create_web_user(*, username, password, first_name, last_name='', middle_name='', prefix='', suffix='', company='', phone_number='', mobile_number='', email=None, is_active=True, account=None, role='owner', actor=None)`
+
+Create an active portal login (Customer group) and optionally link to ``account``.
+
+Validates password strength and username uniqueness. Returns (user, membership|None).
+
+### `ensure_account_balance(account)`
+
+Create zero ``AccountBalance`` row if missing.
+
+### `ensure_customer_group(user)`
+
+Ensure ``user`` is in the Customer group (portal access).
 
 ## `boxes.backend.invoice`
 
@@ -60,10 +91,15 @@ Link ``user`` to ``account`` idempotently; reactivate if soft-disabled.
 
 ``actor`` is reserved for future audit logging.
 
-### `disassociate_user(account, user, actor=None)`
+### `clear_active_account_if_matches(request, account_id)`
+
+Drop session active account when it matches ``account_id``.
+
+### `disassociate_user(account, user, actor=None, *, allow_last_owner=False)`
 
 Soft-disable membership (``is_active=False``). No-op if missing.
 
+Refuses to deactivate the last active owner unless ``allow_last_owner``.
 ``actor`` is reserved for future audit logging. Returns the membership or None.
 
 ### `get_active_account(request)`
@@ -73,6 +109,10 @@ Resolve the request user active Account from session / memberships.
 Session key: ``active_account_id``. If missing/invalid and the user has
 exactly one active membership, that account is returned. If the user has
 multiple active memberships and no valid session selection, returns None.
+
+### `get_membership(user, account, active_only=True)`
+
+Return UserAccount row for user+account, or None.
 
 ### `list_accounts_for_user(user, active_only=True)`
 
@@ -85,6 +125,10 @@ Return users linked to ``account`` ordered by username.
 ### `require_account_member(user, account)`
 
 Raise PermissionDenied unless ``user`` has an active membership on ``account``.
+
+### `search_users(term, limit=20)`
+
+Staff helper: find CustomUsers by username, name, or email (case-insensitive).
 
 ### `set_active_account(request, account_id)`
 
