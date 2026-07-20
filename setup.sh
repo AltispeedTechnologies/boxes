@@ -58,6 +58,7 @@ init() {
 ensure_system() {
     # Inactive system actor used by automated ledger / on_delete reassignment
     $PYTHON_PATH manage.py shell -c "from boxes.backend.system import ensure_system_user; ensure_system_user(); print('system user ready')"
+    $PYTHON_PATH manage.py bootstrap_demo
 }
 
 load_testdata() {
