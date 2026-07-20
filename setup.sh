@@ -5,6 +5,7 @@
 #   ./setup.sh prod [venv_dir]
 #   ./setup.sh dev [venv_dir]
 #   ./setup.sh update [venv_dir]
+#   ./setup.sh reset [venv_dir]   # flush DB + fixtures (clean instance, no bulk seed)
 #   ./setup.sh check [venv_dir]
 #   ./setup.sh test [venv_dir]
 #   ./setup.sh test-coverage [venv_dir]
@@ -54,8 +55,19 @@ init() {
     $PYTHON_PATH manage.py loaddata initial_data.json
 }
 
+ensure_system() {
+    # Inactive system actor used by automated ledger / on_delete reassignment
+    $PYTHON_PATH manage.py shell -c "from boxes.backend.system import ensure_system_user; ensure_system_user(); print('system user ready')"
+}
+
 load_testdata() {
-    $PYTHON_PATH manage.py seeddata
+    # Prefer synchronous seed so reset/dev works without a running Celery worker
+    $PYTHON_PATH manage.py seeddata --sync
+}
+
+flush_db() {
+    echo "Flushing database (all application data)..."
+    $PYTHON_PATH manage.py flush --no-input
 }
 
 check() {
@@ -74,7 +86,7 @@ run_tests() {
 run_coverage() {
     install_dev
     $PYTHON_PATH -m coverage run manage.py test boxes.tests
-    $PYTHON_PATH -m coverage report --fail-under=40
+    $PYTHON_PATH -m coverage report --fail-under=55
 }
 
 case "$1" in
@@ -82,6 +94,7 @@ case "$1" in
         update_pip
         migrate
         init
+        ensure_system
         processjs
         ;;
     dev)
@@ -89,8 +102,23 @@ case "$1" in
         install_dev
         migrate
         init
+        ensure_system
         load_testdata
         processjs
+        ;;
+    reset)
+        # Clean instance: wipe all rows, reload fixtures, no bulk Faker seed.
+        # Demo logins from initial_data.json: sysadmin / staff / customer (changem3).
+        update_pip
+        install_dev
+        migrate
+        flush_db
+        migrate
+        init
+        ensure_system
+        processjs
+        echo "Database reset complete (fixtures only; no seeddata)."
+        echo "Logins: sysadmin, staff, customer — password changem3"
         ;;
     update)
         update_pip
@@ -107,12 +135,16 @@ case "$1" in
         run_coverage
         ;;
     *)
-        echo "Available Commands:"
-        echo "    check           Production deploy checks"
+        echo "Usage: $0 {prod|dev|reset|update|check|test|test-coverage} [venv_dir]"
+        echo
+        echo "Commands:"
+        echo "    prod            Production setup (migrate + fixtures + static)"
         echo "    dev             Development setup (includes seed data and dev deps)"
-        echo "    prod            Production setup"
-        echo "    update          Upgrade deps, migrate, refresh static JS"
+        echo "    reset           Flush DB and reload fixtures only (clean working instance)"
+        echo "    update          Upgrade packages, migrate, process static"
+        echo "    check           Django deploy checks"
         echo "    test            Run unit tests"
-        echo "    test-coverage   Run unit tests under coverage"
+        echo "    test-coverage   Run tests with coverage (fail under 55%)"
+        exit 1
         ;;
 esac

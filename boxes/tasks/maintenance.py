@@ -1,18 +1,29 @@
 """Picklist aging, seed data, and report refresh tasks."""
 import random
-from boxes.backend import reports as reports_backend
-from boxes.backend.account import create_user_from_account
-from boxes.backend.system import get_system_user
-from boxes.models import (Account, Chart, Package, PackageLedger, PackagePicklist, PackageQueue, Picklist,
-                          PicklistQueue, Queue)
-from boxes.models.chart import CHART_FREQUENCIES
-from boxes.tasks.charges import age_charges
-from celery import shared_task
 from datetime import timedelta
+
+from celery import shared_task
 from django.core.exceptions import MultipleObjectsReturned
 from django.db import transaction
 from django.utils import timezone
 from faker import Faker
+
+from boxes.backend import reports as reports_backend
+from boxes.backend.account import create_user_from_account
+from boxes.backend.system import get_system_user
+from boxes.models import (
+    Account,
+    Chart,
+    Package,
+    PackageLedger,
+    PackagePicklist,
+    PackageQueue,
+    Picklist,
+    PicklistQueue,
+    Queue,
+)
+from boxes.models.chart import CHART_FREQUENCIES
+from boxes.tasks.charges import age_charges
 
 
 @shared_task
@@ -69,73 +80,97 @@ def age_picklists():
 
 
 @shared_task
-def populate_seed_data():
-    """Create demo users/accounts/packages for development."""
+def populate_seed_data(account_count=5000, package_count=20000, run_followups=True):
+    """Create demo accounts/packages for development.
+
+    ``account_count`` / ``package_count`` can be reduced for lightweight seeds.
+    Packages are attached to the newly created accounts (not hardcoded pk=1).
+    When ``run_followups`` is True, enqueue age_picklists / age_charges.
+    """
     fake = Faker()
+    account_count = max(1, int(account_count or 5000))
+    package_count = max(1, int(package_count or 20000))
 
     # Generate unique names and tracking codes
-    fake_names = set(fake.name() for _ in range(5000))
-    fake_tracking_codes = set(fake.ean(length=13) for _ in range(20000))
+    fake_names = set()
+    while len(fake_names) < account_count:
+        fake_names.add(fake.name())
+    fake_tracking_codes = set()
+    while len(fake_tracking_codes) < package_count:
+        fake_tracking_codes.add(fake.ean(length=13))
 
-    # Number of nascent Packages divided by number of nascent Accounts
-    quotient, remainder = divmod(len(fake_tracking_codes), len(fake_names))
+    system_pk = get_system_user().pk
+    accounts = [
+        Account(
+            user_id=system_pk,
+            name=fake_name,
+            balance=0.00,
+            billable=True,
+            comments="",
+        )
+        for fake_name in fake_names
+    ]
+    Account.objects.bulk_create(accounts)
+    # Refresh with real primary keys
+    created_accounts = list(
+        Account.objects.filter(name__in=list(fake_names)).order_by("id")
+    )
+    if not created_accounts:
+        return
 
-    # Create the new Accounts
-    accounts = []
-    account_ids = set()
-    for fake_name in fake_names:
-        new_account = Account(user_id=get_system_user().pk,
-                              name=fake_name,
-                              balance=0.00,
-                              billable=True,
-                              comments="")
-        accounts.append(new_account)
+    account_ids = [a.id for a in created_accounts]
+    n_accounts = len(account_ids)
+    quotient, remainder = divmod(len(fake_tracking_codes), n_accounts)
 
-    # Ensure that an (almost) equal amount of Packages match to each Account
-    current_account, current_step = 1, 1
     packages = []
-    for fake_tracking_code in fake_tracking_codes:
-        new_package = Package(account_id=current_account,
-                              carrier_id=random.randint(1, 4),
-                              package_type_id=random.randint(1, 3),
-                              inside=random.choice([True, False]),
-                              tracking_code=fake_tracking_code,
-                              current_state=1,
-                              price=6.00,
-                              comments="")
-        packages.append(new_package)
-        account_ids.add(current_account)
+    account_index = 0
+    current_step = 1
+    # Max packages for current account slot
+    limit = quotient + (1 if remainder > 0 else 0)
+    if remainder > 0:
+        remainder -= 1
 
-        if current_step >= quotient:
-            if current_step == quotient and remainder > 0:
+    for fake_tracking_code in fake_tracking_codes:
+        packages.append(Package(
+            account_id=account_ids[account_index],
+            carrier_id=random.randint(1, 4),
+            package_type_id=random.randint(1, 3),
+            inside=random.choice([True, False]),
+            tracking_code=fake_tracking_code,
+            current_state=1,
+            price=6.00,
+            comments="",
+        ))
+        if current_step >= limit:
+            current_step = 1
+            account_index = min(account_index + 1, n_accounts - 1)
+            limit = quotient + (1 if remainder > 0 else 0)
+            if remainder > 0:
                 remainder -= 1
-                current_step += 1
-            else:
-                current_step = 1
-                current_account += 1
         else:
             current_step += 1
 
-    Account.objects.bulk_create(accounts)
     Package.objects.bulk_create(packages)
 
     for account_id in account_ids:
         create_user_from_account(account_id)
 
-    for account in accounts:
+    for account in created_accounts:
         account.ensure_primary_alias()
 
     # Identify packages without a corresponding state=1 ledger entry
     ledger_entries = PackageLedger.objects.filter(state=1).values_list("package_id", flat=True)
     missing_packages = Package.objects.exclude(id__in=ledger_entries).values_list("id", flat=True)
 
-    # Create new ledger entries for these packages
-    new_ledger_entries = (PackageLedger(user_id=get_system_user().pk, package_id=package_id, state=1) for package_id in missing_packages)
+    new_ledger_entries = (
+        PackageLedger(user_id=system_pk, package_id=package_id, state=1)
+        for package_id in missing_packages
+    )
     PackageLedger.objects.bulk_create(new_ledger_entries)
 
-    # Start the other tasks
-    age_picklists.delay()
-    age_charges.delay()
+    if run_followups:
+        age_picklists.delay()
+        age_charges.delay()
 
 
 @shared_task
@@ -146,11 +181,11 @@ def regenerate_report_data():
             # Grab the chart data
             chart_data, total_data = reports_backend.report_chart_generate(freq)
 
-            chart, created = Chart.objects.update_or_create(
+            Chart.objects.update_or_create(
                 frequency=freq,
                 defaults={
                     "total_data": total_data,
                     "chart_data": chart_data,
-                    "last_updated": timezone.now()
-                }
+                    "last_updated": timezone.now(),
+                },
             )
