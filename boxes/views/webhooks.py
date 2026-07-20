@@ -39,7 +39,13 @@ def stripe_webhooks(request):
     if not (event.type.startswith("payment_intent") and event.type.split(".")[1] in valid_payment_intent_types):
         return HttpResponse(status=400)
 
-    handle_stripe_webhook.delay(event.data.object)
+    payment_intent = event.data.object
+    # Celery needs a JSON-serializable payload
+    if hasattr(payment_intent, "to_dict_recursive"):
+        payment_intent = payment_intent.to_dict_recursive()
+    elif hasattr(payment_intent, "to_dict"):
+        payment_intent = payment_intent.to_dict()
+    handle_stripe_webhook.delay(payment_intent)
 
     return HttpResponse(status=200)
 

@@ -15,9 +15,10 @@ def all_packages(request):
 @require_http_methods(["GET"])
 def search_packages(request):
     """GET: search packages by query/filters."""
-    req_filter = request.GET.get("filter").strip()
+    req_filter = (request.GET.get("filter") or "").strip()
     if req_filter not in ["tracking_code", "customer", ""]:
-        return
+        # Unknown filter: fall back to customer (do not return None body)
+        req_filter = "customer"
 
     if req_filter == "":
         req_filter = "customer"

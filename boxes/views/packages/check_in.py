@@ -1,3 +1,4 @@
+import json
 """Package check-in UI and creation."""
 from boxes.forms import PackageForm
 from boxes.management.exception_catcher import exception_catcher
@@ -26,8 +27,18 @@ def check_in(request):
 def create_package(request):
     # If the tracking code is None, this means we need to generate one
     # (An empty tracking code should give the user an error)
-    """POST: create a package (and queue membership) from form data."""
-    data = request.POST.copy()
+    """POST: create a package (and queue membership) from form or JSON body."""
+    if request.content_type and "application/json" in request.content_type:
+        try:
+            payload = json.loads(request.body.decode("utf-8") or "{}")
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return JsonResponse({"success": False, "errors": ["Invalid JSON"]})
+        data = {k: ("" if v is None else str(v)) for k, v in payload.items()}
+        # Checkbox-style fields
+        if "inside" in payload:
+            data["inside"] = "on" if payload.get("inside") in (True, "true", "1", "on", 1) else ""
+    else:
+        data = request.POST.copy()
     return_tracking_code = False
     if not data.get("tracking_code"):
         tracking_code, created = PackageSystemTrackingCode.objects.get_or_create(prefix="INT")

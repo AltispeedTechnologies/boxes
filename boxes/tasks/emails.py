@@ -7,6 +7,7 @@ from boxes.models import (
     SentEmailContents, SentEmailPackage, SentEmailResult, UserAccount
 )
 from celery import shared_task
+from django.conf import settings
 from django.db import transaction
 from html import unescape
 from mailjet_rest import Client
@@ -219,13 +220,17 @@ def send_emails():
     candidates, template_objs = _fetch_candidates()
     email_settings = EmailSettings.objects.first()
 
-    api_key = os.environ["MJ_APIKEY_PUBLIC"]
-    api_secret = os.environ["MJ_APIKEY_PRIVATE"]
+    api_key = getattr(settings, "MJ_APIKEY_PUBLIC", None) or os.environ.get("MJ_APIKEY_PUBLIC")
+    api_secret = getattr(settings, "MJ_APIKEY_PRIVATE", None) or os.environ.get("MJ_APIKEY_PRIVATE")
+    if not api_key or not api_secret:
+        raise RuntimeError("Mailjet API keys not configured (MJ_APIKEY_PUBLIC/PRIVATE)")
     mailjet = Client(auth=(api_key, api_secret), version="v3.1")
 
     for account_id, templates in candidates.items():
-        user_accounts = UserAccount.objects.filter(account__id=account_id)
-        users = [user_account.user for user_account in user_accounts]
+        user_accounts = UserAccount.objects.filter(
+            account__id=account_id, is_active=True
+        ).select_related("user")
+        users = [ua.user for ua in user_accounts if ua.user.is_active]
 
         for template_id, package_ids in templates.items():
             template = template_objs[template_id]
