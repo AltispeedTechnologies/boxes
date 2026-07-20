@@ -105,12 +105,16 @@
                 </tbody>
             </table>
         </div>
-        <div class="row g-2 align-items-end">
+        <div class="row g-2 align-items-end mb-4">
             <div class="col-md-3">
                 <label class="form-label" for="link-member-user-id">User ID</label>
                 <input type="number" class="form-control" id="link-member-user-id" min="1" placeholder="User id">
             </div>
             <div class="col-md-3">
+                <label class="form-label" for="link-member-username">or Username</label>
+                <input type="text" class="form-control" id="link-member-username" placeholder="username" autocomplete="off">
+            </div>
+            <div class="col-md-2">
                 <label class="form-label" for="link-member-role">Role</label>
                 <select class="form-select" id="link-member-role">
                     <option value="member">Member</option>
@@ -121,6 +125,64 @@
                 <button type="button" class="btn btn-primary" id="link-member-btn">
                     <i class="fas fa-link"></i> Link existing user
                 </button>
+            </div>
+        </div>
+
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white">
+                <strong>Create web account</strong>
+                <span class="ms-2 small">New portal login linked to this billing account</span>
+            </div>
+            <div class="card-body">
+                <form id="create-web-account-form" autocomplete="off">
+                    <div class="row g-2">
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label" for="web-username">Username</label>
+                            <input type="text" class="form-control" id="web-username" name="username" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label" for="web-password">Password</label>
+                            <input type="password" class="form-control" id="web-password" name="password" required autocomplete="new-password">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label" for="web-password2">Confirm password</label>
+                            <input type="password" class="form-control" id="web-password2" name="password2" required autocomplete="new-password">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label" for="web-role">Role</label>
+                            <select class="form-select" id="web-role" name="role">
+                                <option value="owner" selected>Owner</option>
+                                <option value="member">Member</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label" for="web-first-name">First name</label>
+                            <input type="text" class="form-control" id="web-first-name" name="first_name" value="{{ custom_user.first_name|default:'' }}">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label" for="web-last-name">Last name</label>
+                            <input type="text" class="form-control" id="web-last-name" name="last_name" value="{{ custom_user.last_name|default:'' }}">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <label class="form-label" for="web-email">Email</label>
+                            <input type="email" class="form-control" id="web-email" name="email">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-3 mb-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-success w-100" id="create-web-account-btn">
+                                <i class="fas fa-user-plus"></i> Create web account
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-0 mt-2">
+                        Creates an active Customer-group login that can sign in to the portal for this account.
+                    </p>
+                </form>
             </div>
         </div>
     </div>

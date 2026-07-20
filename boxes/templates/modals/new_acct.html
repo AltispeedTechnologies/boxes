@@ -42,13 +42,37 @@
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label for="company" class="form-label">Phone Number</label>
+                            <label for="phone_number" class="form-label">Phone Number</label>
                             <input type="text" class="form-control" id="phone_number" name="phone_number">
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label for="company" class="form-label">Email Address</label>
-                            <input type="text" class="form-control" id="email" name="email">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="create_web_account" name="create_web_account" value="1">
+                        <label class="form-check-label" for="create_web_account">
+                            Create web login (customer portal account)
+                        </label>
+                    </div>
+                    <div class="row" id="web-account-fields" style="display: none;">
+                        <div class="col-md-4 mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" autocomplete="off">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" autocomplete="new-password">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="password2" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="password2" name="password2" autocomplete="new-password">
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>

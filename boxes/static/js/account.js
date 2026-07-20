@@ -1,6 +1,6 @@
 /**
  * @file account.js
- * @description Staff account detail page interactions (comments save, membership, fee waiver).
+ * @description Staff account detail page interactions (comments, membership, web accounts, fee waiver).
  * @see docs/api/javascript.md
  */
 
@@ -16,6 +16,7 @@ function init_account_page() {
             type: "POST",
             url: "/accounts/" + account_id + "/update",
             payload: payload,
+            content_type: "application/json",
             on_success: function(response) {
                 $("#savingnotes").addClass("d-none");
                 $("#donesavingnotes").show();
@@ -84,15 +85,23 @@ function init_account_page() {
 
         $("#link-member-btn").off("click").on("click", function() {
             var user_id = $("#link-member-user-id").val();
+            var username = ($("#link-member-username").val() || "").trim();
             var role = $("#link-member-role").val() || "member";
-            if (!user_id) {
-                window.display_error_message(["Enter a user id."]);
+            if (!user_id && !username) {
+                window.display_error_message(["Enter a user id or username."]);
                 return;
+            }
+            var payload = {role: role};
+            if (user_id) {
+                payload.user_id = user_id;
+            }
+            if (username) {
+                payload.username = username;
             }
             window.ajax_request({
                 type: "POST",
                 url: "/accounts/" + membership_account_id + "/members/link",
-                payload: JSON.stringify({user_id: user_id, role: role}),
+                payload: JSON.stringify(payload),
                 content_type: "application/json",
                 on_success: function() {
                     window.location.reload();
@@ -109,6 +118,37 @@ function init_account_page() {
                 type: "POST",
                 url: "/accounts/" + membership_account_id + "/members/disassociate",
                 payload: JSON.stringify({user_id: user_id}),
+                content_type: "application/json",
+                on_success: function() {
+                    window.location.reload();
+                }
+            });
+        });
+
+        $("#create-web-account-btn").off("click").on("click", function() {
+            var $form = $("#create-web-account-form");
+            $form.find(".is-invalid").removeClass("is-invalid");
+            var payload = {
+                username: ($("#web-username").val() || "").trim(),
+                password: $("#web-password").val() || "",
+                password2: $("#web-password2").val() || "",
+                role: $("#web-role").val() || "owner",
+                first_name: ($("#web-first-name").val() || "").trim(),
+                last_name: ($("#web-last-name").val() || "").trim(),
+                email: ($("#web-email").val() || "").trim()
+            };
+            if (!payload.username || !payload.password) {
+                window.display_error_message(["Username and password are required."]);
+                return;
+            }
+            if (payload.password !== payload.password2) {
+                window.display_error_message(["Passwords do not match."]);
+                return;
+            }
+            window.ajax_request({
+                type: "POST",
+                url: "/accounts/" + membership_account_id + "/members/create",
+                payload: JSON.stringify(payload),
                 content_type: "application/json",
                 on_success: function() {
                     window.location.reload();

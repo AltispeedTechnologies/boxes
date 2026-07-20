@@ -4,12 +4,14 @@ from boxes.views.account import (
     account_emails,
     account_fee_waiver,
     account_ledger,
+    account_members_create_web,
     account_members_disassociate,
     account_members_link,
     account_packages,
     account_search,
     update_account,
     update_account_aliases,
+    user_search,
 )
 from boxes.views.auth import sign_in, sign_out
 from boxes.views.carrier import carrier_search
@@ -59,6 +61,7 @@ __all__ = [
     "account_emails",
     "account_fee_waiver",
     "account_ledger",
+    "account_members_create_web",
     "account_members_disassociate",
     "account_members_link",
     "account_packages",
@@ -107,4 +110,5 @@ __all__ = [
     "update_profile_emails",
     "update_user",
     "update_user_emails",
+    "user_search",
 ]

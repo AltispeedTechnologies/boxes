@@ -1,11 +1,23 @@
 /**
  * @file modals/new_acct.js
- * @description Modal workflow to create a new account.
+ * @description Modal workflow to create a new account (optional web login).
  * @see docs/api/javascript.md
  */
 
 function new_acct() {
-    $("#createNewCustomerModal .btn-primary").off("click").on("click", function() {
+    var $modal = $("#createNewCustomerModal");
+    var $webToggle = $("#create_web_account");
+    var $webFields = $("#web-account-fields");
+
+    $webToggle.off("change").on("change", function() {
+        if ($(this).is(":checked")) {
+            $webFields.show();
+        } else {
+            $webFields.hide();
+        }
+    });
+
+    $modal.find(".btn-primary").off("click").on("click", function() {
         $("#savingiconnew").show();
         var $form = $("#userform");
 
@@ -13,6 +25,8 @@ function new_acct() {
         $form.serializeArray().forEach(function(item) {
             form_data[item.name] = item.value;
         });
+        // checkbox only present when checked via serialize; force boolean
+        form_data.create_web_account = $webToggle.is(":checked");
 
         window.ajax_request({
             type: "POST",
@@ -29,7 +43,7 @@ function new_acct() {
                 var option = new Option(response.account_name, response.account_id, true, true);
                 $("#create_account_id").append(option);
                 $("#create_account_id").val(response.account_id).trigger("change");
-                $("#createNewCustomerModal").modal("hide");
+                $modal.modal("hide");
             }
         });
     });

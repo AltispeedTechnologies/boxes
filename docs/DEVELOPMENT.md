@@ -193,3 +193,43 @@ Regenerate the reference under `docs/api/` after route/model/view changes:
 ```bash
 ./env/bin/python manage.py generate_docs
 ```
+
+
+## Database reset (clean instance)
+
+```bash
+./setup.sh reset
+```
+
+Flushes all application data, reloads `initial_data.json` (groups, carriers,
+package types, demo logins), and ensures the inactive `system` user exists.
+Does **not** run bulk Faker seed. Demo passwords: `changem3` for
+`sysadmin`, `staff`, `customer`.
+
+For bulk demo parcels after a clean reset:
+
+```bash
+./env/bin/python manage.py seeddata --sync --accounts 50 --packages 200
+```
+
+## Creating web (portal) accounts
+
+Staff can create Customer-group portal logins in two places:
+
+1. **Create New Customer** modal (check-in / account mgmt): tick
+   “Create web login” and supply username + password.
+2. **Account edit → Create web account** card: link a new login to an
+   existing billing account.
+
+APIs (staff, CSRF + session cookie):
+
+- `POST /users/new` JSON — billing account; set `create_web_account` +
+  `username`/`password` for an active portal login.
+- `POST /accounts/<id>/members/create` JSON — web login for existing account.
+- `POST /accounts/<id>/members/link` JSON — `{user_id}` or `{username}` + role.
+- `GET /users/search?term=` — Select2-style user lookup.
+
+Backend helpers live in `boxes.backend.account` and `boxes.backend.membership`.
+The last active **owner** cannot be disassociated unless
+`allow_last_owner=true`.
+

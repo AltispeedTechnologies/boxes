@@ -11,6 +11,7 @@ from boxes.views import (
     account_emails,
     account_fee_waiver,
     account_ledger,
+    account_members_create_web,
     account_members_disassociate,
     account_members_link,
     account_packages,
@@ -59,6 +60,7 @@ from boxes.views import (
     update_profile_emails,
     update_user,
     update_user_emails,
+    user_search,
 )
 from boxes.views.mgmt import (
     account_mgmt,
@@ -283,6 +285,7 @@ staff_urlpatterns = [
     path("accounts/<int:pk>/ledger", account_ledger, name="account_ledger"),
     path("accounts/<int:pk>/update", update_account, name="update_account"),
     path("accounts/<int:pk>/members/link", account_members_link, name="account_members_link"),
+    path("accounts/<int:pk>/members/create", account_members_create_web, name="account_members_create_web"),
     path("accounts/<int:pk>/members/disassociate", account_members_disassociate, name="account_members_disassociate"),
     path("accounts/<int:pk>/waiver", account_fee_waiver, name="account_fee_waiver"),
     path("accounts/aliases/update", update_account_aliases, name="update_account_aliases"),
@@ -316,6 +319,7 @@ staff_urlpatterns = [
 
     # Users
     path("users/new", create_user, name="create_user"),
+    path("users/search", user_search, name="user_search"),
     path("users/update", update_user, name="update_user"),
     path("users/emails/update", update_user_emails, name="update_user_emails"),
 
