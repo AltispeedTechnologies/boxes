@@ -19,4 +19,4 @@ html-sanitizer==2.6.0
 mailjet-rest==1.7.0
 
 # Payment processing
-stripe==15.3.0
+stripe==15.3.1

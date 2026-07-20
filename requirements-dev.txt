@@ -39,7 +39,7 @@ click-plugins==1.1.1.2
     # via celery
 click-repl==0.3.0
     # via celery
-coverage==7.10.6
+coverage==7.15.2
     # via -r requirements-dev.in
 cssselect2==0.9.0
     # via weasyprint
@@ -49,7 +49,7 @@ django-environ==0.14.0
     # via -r requirements.in
 django-mathfilters==1.0.0
     # via -r requirements.in
-faker==40.28.1
+faker==40.31.0
     # via -r requirements-dev.in
 fonttools[woff]==4.63.0
     # via weasyprint
@@ -110,11 +110,11 @@ requests==2.34.2
     #   stripe
 six==1.17.0
     # via python-dateutil
-soupsieve==2.8.4
+soupsieve==2.9
     # via beautifulsoup4
 sqlparse==0.5.5
     # via django
-stripe==15.3.0
+stripe==15.3.1
     # via -r requirements.in
 tinycss2==1.5.1
     # via
