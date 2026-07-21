@@ -8,6 +8,34 @@ from boxes.models import Account, CustomUser, UserAccount
 ACTIVE_ACCOUNT_SESSION_KEY = "active_account_id"
 VALID_ROLES = {UserAccount.ROLE_OWNER, UserAccount.ROLE_MEMBER}
 
+# Staff-facing copy for portal membership roles (no ampersands in UI).
+ROLE_DESCRIPTIONS = {
+    UserAccount.ROLE_OWNER: (
+        "Primary contact for this billing account. Owners share the same portal "
+        "access as members (parcels, payments, invoices). Staff cannot unlink the "
+        "last active owner without an explicit override — promote another member "
+        "to owner first."
+    ),
+    UserAccount.ROLE_MEMBER: (
+        "Additional login on this billing account. Members have the same portal "
+        "access as owners for parcels, payments, and invoices. Members can be "
+        "unlinked freely."
+    ),
+}
+
+ROLE_SHORT_HELP = (
+    "Owner: primary contact; last active owner is protected from unlink. "
+    "Member: additional login with the same portal access; can be unlinked freely."
+)
+
+
+def normalize_role(role):
+    """Return a valid role string or raise ValidationError."""
+    role = (role or UserAccount.ROLE_MEMBER).strip().lower()
+    if role not in VALID_ROLES:
+        raise ValidationError({"role": [f"Invalid role {role!r}. Use owner or member."]})
+    return role
+
 
 def list_accounts_for_user(user, active_only=True):
     """Return accounts linked to ``user`` ordered by name."""
@@ -94,14 +122,13 @@ def associate_user(account, user, role=UserAccount.ROLE_MEMBER, actor=None):
     ``actor`` is reserved for future audit logging.
     """
     del actor  # reserved
-    if role not in VALID_ROLES:
-        raise ValidationError({"role": [f"Invalid role {role!r}."]})
+    role = normalize_role(role)
 
     membership, created = UserAccount.objects.get_or_create(
         user=user,
         account=account,
         defaults={
-            "role": role or UserAccount.ROLE_MEMBER,
+            "role": role,
             "is_active": True,
         },
     )
@@ -144,6 +171,40 @@ def disassociate_user(account, user, actor=None, *, allow_last_owner=False):
     if membership.is_active:
         membership.is_active = False
         membership.save(update_fields=["is_active"])
+    return membership
+
+
+def set_membership_role(account, user, role, actor=None, *, allow_last_owner=False):
+    """Change an active membership role (owner or member).
+
+    Demoting the last active owner is blocked unless ``allow_last_owner``.
+    ``actor`` is reserved for audit logging.
+    """
+    del actor  # reserved
+    role = normalize_role(role)
+    membership = UserAccount.objects.filter(user=user, account=account).first()
+    if membership is None or not membership.is_active:
+        raise ValidationError("Active membership not found for this user and account.")
+
+    if (
+        membership.role == UserAccount.ROLE_OWNER
+        and role != UserAccount.ROLE_OWNER
+        and not allow_last_owner
+    ):
+        other_owners = UserAccount.objects.filter(
+            account=account,
+            role=UserAccount.ROLE_OWNER,
+            is_active=True,
+        ).exclude(pk=membership.pk).exists()
+        if not other_owners:
+            raise ValidationError(
+                "Cannot demote the last active owner. "
+                "Promote another member to owner first, or pass allow_last_owner."
+            )
+
+    if membership.role != role:
+        membership.role = role
+        membership.save(update_fields=["role"])
     return membership
 
 

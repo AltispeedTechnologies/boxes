@@ -155,6 +155,51 @@ function init_account_page() {
                 }
             });
         });
+
+
+        $memberships.off("change", ".member-role-select").on("change", ".member-role-select", function() {
+            var user_id = $(this).data("user-id");
+            var role = $(this).val();
+            window.ajax_request({
+                type: "POST",
+                url: "/accounts/" + membership_account_id + "/members/role",
+                payload: JSON.stringify({user_id: user_id, role: role}),
+                content_type: "application/json",
+                on_success: function() {
+                    if (window.BoxesSetupStatus) {
+                        window.BoxesSetupStatus.refresh();
+                    }
+                }
+            });
+        });
+
+        $("#account-invite-btn").off("click").on("click", function() {
+            var $result = $("#account-invite-result");
+            $result.text("Sending…");
+            window.ajax_request({
+                type: "POST",
+                url: "/users/invite",
+                payload: JSON.stringify({
+                    email: ($("#account-invite-email").val() || "").trim(),
+                    first_name: ($("#account-invite-first").val() || "").trim(),
+                    last_name: ($("#account-invite-last").val() || "").trim(),
+                    role: $("#account-invite-role").val() || "owner",
+                    account_id: membership_account_id,
+                    create_account: false
+                }),
+                content_type: "application/json",
+                on_success: function(response) {
+                    var msg = response.email_sent
+                        ? "Invitation emailed to " + response.email
+                        : "Invite created. Share this link: " + (response.signup_path || "");
+                    if (response.last_error) {
+                        msg += " (" + response.last_error + ")";
+                    }
+                    $result.text(msg);
+                }
+            });
+        });
+
     }
 }
 

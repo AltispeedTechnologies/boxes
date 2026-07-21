@@ -129,6 +129,18 @@ function init_user_detail_page() {
         });
     });
 
+    $root.off("change", ".user-account-role-select").on("change", ".user-account-role-select", function() {
+        var accountId = $(this).data("account-id");
+        var role = $(this).val();
+        window.ajax_request({
+            type: "POST",
+            url: "/users/" + userId + "/accounts/role",
+            payload: JSON.stringify({ account_id: accountId, role: role }),
+            content_type: "application/json",
+            on_success: function() {}
+        });
+    });
+
     $("#link-account-btn").off("click").on("click", function() {
         window.ajax_request({
             type: "POST",
@@ -159,27 +171,6 @@ function init_user_detail_page() {
             }
         });
     });
-
-    $("#send-invite-btn").off("click").on("click", function() {
-        var $result = $("#invite-result");
-        $result.text("Sending…");
-        window.ajax_request({
-            type: "POST",
-            url: "/users/" + userId + "/invite",
-            payload: JSON.stringify({
-                email: $("#invite-email").val()
-            }),
-            content_type: "application/json",
-            on_success: function(response) {
-                var msg = response.email_sent
-                    ? "Invitation emailed to " + response.email
-                    : "Invite created; email may not have sent. Path: " + response.signup_path;
-                if (response.last_error) {
-                    msg += " (" + response.last_error + ")";
-                }
-                $result.text(msg);
-            }
-        });
     });
 }
 

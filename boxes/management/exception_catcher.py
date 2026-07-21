@@ -1,7 +1,7 @@
 """View decorator converting exceptions to JSON error responses."""
 import decimal
 import json
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
 from django.http import JsonResponse
 from functools import wraps
 
@@ -32,10 +32,13 @@ def exception_catcher():
                     return JsonResponse({"success": False, "form_errors": e.message_dict})
                 return JsonResponse({"success": False, "errors": list(e.messages)})
             except (ValueError, TypeError, KeyError, decimal.InvalidOperation):
-                return JsonResponse({"success": False, "errors": ["Invalid input"]})
+                return JsonResponse({"success": False, "errors": ["Invalid input"]}, status=400)
             except ObjectDoesNotExist:
-                return JsonResponse({"success": False, "errors": ["Requested object not found"]})
+                return JsonResponse({"success": False, "errors": ["Requested object not found"]}, status=404)
+            except PermissionDenied as e:
+                msg = str(e) if str(e) else "Forbidden"
+                return JsonResponse({"success": False, "errors": [msg]}, status=403)
             except Exception as e:
-                return JsonResponse({"success": False, "errors": [str(e)]})
+                return JsonResponse({"success": False, "errors": [str(e)]}, status=400)
         return wrapper
     return decorator

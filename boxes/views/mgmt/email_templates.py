@@ -5,6 +5,7 @@ from boxes.views.common import _clean_html
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
+from boxes.backend.setup_status import invalidate_setup_status_cache
 
 
 @require_http_methods(["GET"])
@@ -28,6 +29,7 @@ def add_email_template(request):
     if not template_name:
         return JsonResponse({"success": False, "errors": ["Template name is required"]})
     new_template = EmailTemplate.objects.create(name=template_name, subject="", content="")
+    invalidate_setup_status_cache()
     return JsonResponse({"success": True, "id": new_template.id})
 
 

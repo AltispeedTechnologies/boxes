@@ -1,4 +1,5 @@
 """Staff account list management page."""
+from boxes.backend.membership import ROLE_SHORT_HELP
 from boxes.models import Account
 from django.core.paginator import Paginator
 from django.db.models import Case, When, Value, CharField, F
@@ -34,4 +35,6 @@ def account_mgmt(request):
     page_obj = paginator.get_page(page_number)
 
     return render(request, "mgmt/accounts.html", {"page_obj": page_obj,
-                                                  "query": query})
+                                                  "query": query,
+                                                  "role_help": ROLE_SHORT_HELP,
+                                                  "accounts_users_tab": "accounts"})

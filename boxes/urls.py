@@ -14,6 +14,7 @@ from boxes.views import (
     account_members_create_web,
     account_members_disassociate,
     account_members_link,
+    account_members_set_role,
     account_packages,
     account_search,
     carrier_search,
@@ -68,8 +69,10 @@ from boxes.views import (
     user_mgmt,
     user_search,
     user_unlink_account,
+    user_set_account_role,
 )
 from boxes.views.mgmt import (
+    mgmt_setup_status_api,
     account_mgmt,
     add_email_template,
     carrier_settings,
@@ -295,6 +298,7 @@ staff_urlpatterns = [
     path("accounts/<int:pk>/members/link", account_members_link, name="account_members_link"),
     path("accounts/<int:pk>/members/create", account_members_create_web, name="account_members_create_web"),
     path("accounts/<int:pk>/members/disassociate", account_members_disassociate, name="account_members_disassociate"),
+    path("accounts/<int:pk>/members/role", account_members_set_role, name="account_members_set_role"),
     path("accounts/<int:pk>/waiver", account_fee_waiver, name="account_fee_waiver"),
     path("accounts/aliases/update", update_account_aliases, name="update_account_aliases"),
 
@@ -327,6 +331,7 @@ staff_urlpatterns = [
 
     # Users (login identities; managed separately from billing accounts)
     path("mgmt/users", user_mgmt, name="user_mgmt"),
+    path("mgmt/setup-status", mgmt_setup_status_api, name="mgmt_setup_status_api"),
     path("users/new", create_user, name="create_user"),
     path("users/search", user_search, name="user_search"),
     path("users/update", update_user, name="update_user"),
@@ -337,6 +342,7 @@ staff_urlpatterns = [
     path("users/<int:pk>/invite", send_user_invite, name="send_user_invite_for"),
     path("users/<int:pk>/accounts/link", user_link_account, name="user_link_account"),
     path("users/<int:pk>/accounts/unlink", user_unlink_account, name="user_unlink_account"),
+    path("users/<int:pk>/accounts/role", user_set_account_role, name="user_set_account_role"),
 
     # Reports
     path("reports/data", report_data, name="report_data"),

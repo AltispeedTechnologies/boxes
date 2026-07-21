@@ -1,6 +1,7 @@
 <nav id="app-navbar"
      class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm"
-     data-auth="{% if request.user.is_authenticated %}1{% else %}0{% endif %}">
+     data-auth="{% if request.user.is_authenticated %}1{% else %}0{% endif %}"
+     data-mgmt-setup-url="{% url 'mgmt_setup_status_api' %}">
     <div class="container-fluid">
         {% if request.user.is_authenticated %}
             <a class="navbar-brand d-flex align-items-center gap-2 me-3" href="{% url 'home' %}">
@@ -25,18 +26,98 @@
                         <li class="nav-item"><a class="nav-link fw-bold" href="{% url 'report_data' %}">Reports and Data</a></li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle fw-bold" href="#" id="mgmt_dropdown"
-                               role="button" data-bs-toggle="dropdown" aria-expanded="false">Management</a>
-                            <ul class="dropdown-menu" aria-labelledby="mgmt_dropdown">
-                                <li><a class="dropdown-item" href="{% url 'account_mgmt' %}">Accounts</a></li>
-                                <li><a class="dropdown-item" href="{% url 'user_mgmt' %}">Users</a></li>
-                                <li><a class="dropdown-item" href="{% url 'stripe_totals' %}">Stripe Totals</a></li>
-                                <li><a class="dropdown-item" href="{% url 'carrier_settings' %}">Carriers</a></li>
-                                <li><a class="dropdown-item" href="{% url 'charge_settings' %}">Charges</a></li>
-                                <li><a class="dropdown-item" href="{% url 'email_settings' %}">Emails</a></li>
-                                <li><a class="dropdown-item" href="{% url 'email_template' %}">Email Templates</a></li>
-                                <li><a class="dropdown-item" href="{% url 'general_settings' %}">General</a></li>
-                                <li><a class="dropdown-item" href="{% url 'package_type_settings' %}">Package Types</a></li>
-                                <li><a class="dropdown-item" href="{% url 'pickup_mgmt' %}">Pickup Days</a></li>
+                               role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Management
+                                {% if mgmt_setup.any_incomplete %}
+                                <i class="fas fa-exclamation-triangle text-warning ms-1"
+                                   id="mgmt-dropdown-warn"
+                                   title="{% if mgmt_setup.required_incomplete %}Required setup incomplete{% else %}Recommended setup remaining{% endif %}"
+                                   aria-label="Configuration needed"></i>
+                                {% else %}
+                                <i class="fas fa-exclamation-triangle text-warning ms-1 d-none"
+                                   id="mgmt-dropdown-warn"
+                                   title="Configuration needed"
+                                   aria-label="Configuration needed"></i>
+                                {% endif %}
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="mgmt_dropdown" id="mgmt-dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item d-flex justify-content-between align-items-center gap-2"
+                                       href="{% url 'account_mgmt' %}" data-setup-key="accounts">
+                                        <span>Accounts and Users</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex justify-content-between align-items-center gap-2"
+                                       href="{% url 'user_mgmt' %}" data-setup-key="users">
+                                        <span>Users</span>
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item d-flex justify-content-between align-items-center gap-2"
+                                       href="{% url 'general_settings' %}" data-setup-key="general">
+                                        <span>General</span>
+                                        <i class="fas fa-exclamation-triangle text-warning setup-warn-icon {% if mgmt_setup.items.general.ok %}d-none{% endif %}"
+                                           title="{% for i in mgmt_setup.items.general.issues %}{{ i }} {% empty %}OK{% endfor %}"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex justify-content-between align-items-center gap-2"
+                                       href="{% url 'carrier_settings' %}" data-setup-key="carriers">
+                                        <span>Carriers</span>
+                                        <i class="fas fa-exclamation-triangle text-warning setup-warn-icon {% if mgmt_setup.items.carriers.ok %}d-none{% endif %}"
+                                           title="{% for i in mgmt_setup.items.carriers.issues %}{{ i }} {% empty %}OK{% endfor %}"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex justify-content-between align-items-center gap-2"
+                                       href="{% url 'package_type_settings' %}" data-setup-key="package_types">
+                                        <span>Package Types</span>
+                                        <i class="fas fa-exclamation-triangle text-warning setup-warn-icon {% if mgmt_setup.items.package_types.ok %}d-none{% endif %}"
+                                           title="{% for i in mgmt_setup.items.package_types.issues %}{{ i }} {% empty %}OK{% endfor %}"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex justify-content-between align-items-center gap-2"
+                                       href="{% url 'charge_settings' %}" data-setup-key="charges">
+                                        <span>Charges</span>
+                                        <i class="fas fa-exclamation-triangle text-warning setup-warn-icon {% if mgmt_setup.items.charges.ok %}d-none{% endif %}"
+                                           title="{% for i in mgmt_setup.items.charges.issues %}{{ i }} {% empty %}OK{% endfor %}"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex justify-content-between align-items-center gap-2"
+                                       href="{% url 'email_settings' %}" data-setup-key="emails">
+                                        <span>Emails</span>
+                                        <i class="fas fa-exclamation-triangle text-warning setup-warn-icon {% if mgmt_setup.items.emails.ok %}d-none{% endif %}"
+                                           title="{% for i in mgmt_setup.items.emails.issues %}{{ i }} {% empty %}OK{% endfor %}"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex justify-content-between align-items-center gap-2"
+                                       href="{% url 'email_template' %}" data-setup-key="email_templates">
+                                        <span>Email Templates</span>
+                                        <i class="fas fa-exclamation-triangle text-warning setup-warn-icon {% if mgmt_setup.items.email_templates.ok %}d-none{% endif %}"
+                                           title="{% for i in mgmt_setup.items.email_templates.issues %}{{ i }} {% empty %}OK{% endfor %}"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex justify-content-between align-items-center gap-2"
+                                       href="{% url 'pickup_mgmt' %}" data-setup-key="pickup">
+                                        <span>Pickup Days</span>
+                                        <i class="fas fa-exclamation-triangle text-warning setup-warn-icon {% if mgmt_setup.items.pickup.ok %}d-none{% endif %}"
+                                           title="{% for i in mgmt_setup.items.pickup.issues %}{{ i }} {% empty %}OK{% endfor %}"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex justify-content-between align-items-center gap-2"
+                                       href="{% url 'stripe_totals' %}" data-setup-key="stripe">
+                                        <span>Stripe Totals</span>
+                                        <i class="fas fa-exclamation-triangle text-warning setup-warn-icon {% if mgmt_setup.items.stripe.ok %}d-none{% endif %}"
+                                           title="{% for i in mgmt_setup.items.stripe.issues %}{{ i }} {% empty %}OK{% endfor %}"></i>
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                     </ul>

@@ -12,6 +12,7 @@ from boxes.backend.pickup import (
 )
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import Picklist, PickupDay, PickupScheduleRule
+from boxes.backend.setup_status import invalidate_setup_status_cache
 
 
 def _parse_date(value):
@@ -128,6 +129,7 @@ def update_pickup_rules(request):
             rule.save()
             updated[str(rule.id)] = rule.id
 
+    invalidate_setup_status_cache()
     return JsonResponse({"success": True, "updated_rules": updated})
 
 
@@ -183,4 +185,5 @@ def update_pickup_days(request):
                 set_pickup_day_active(day, bool(is_active))
             updated[str(day.id)] = day.id
 
+    invalidate_setup_status_cache()
     return JsonResponse({"success": True, "updated_days": updated})

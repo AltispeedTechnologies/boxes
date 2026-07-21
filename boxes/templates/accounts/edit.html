@@ -3,6 +3,7 @@
 {% block javascript %}
 {% load static %}
 <script src="{% static 'js/account.js' %}"></script>
+<script src="{% static 'js/user_edit.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -10,16 +11,23 @@
     {% include "accounts/_accountbox.html" %}
     {% include "_messages.html" %}
 
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+        <p class="text-muted small mb-0">
+            Billing account
+            <a href="{% url 'account_mgmt' %}">Accounts and Users</a>
+        </p>
+    </div>
+
     <div class="container mt-4">
         <div class="d-flex align-items-center justify-content-between mb-4">
             <h4>Aliases</h4>
             <div>
                 <i id="savingiconaliases" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
                 <i id="successiconaliases" class="fas fa-check-circle text-success" style="display: none;"></i>
-                <button id="savealiasbtn" class="btn btn-success">
+                <button id="savealiasbtn" class="btn btn-success" type="button">
                     <i class="fas fa-save"></i> Save
                 </button>
-                <button id="newaliasbtn" class="btn btn-primary">
+                <button id="newaliasbtn" class="btn btn-primary" type="button">
                     <i class="fas fa-plus"></i> New
                 </button>
             </div>
@@ -27,7 +35,7 @@
         <div id="aliasesinput" data-account-id="{{ account.id }}" class="row">
             {% for alias in aliases %}
                 {% if not alias.primary %}
-                    <div class="col-md-3 d-flex align-items-center position-relative">
+                    <div class="col-md-3 d-flex align-items-center position-relative mb-2">
                         <input type="text" class="form-control" data-id="{{ alias.id }}" value="{{ alias.alias }}">
                         <i class="fas fa-trash position-absolute end-0 me-4 text-danger" style="display: none; cursor: pointer;"></i>
                     </div>
@@ -38,43 +46,13 @@
 
     <hr />
 
-    <div class="container mt-4">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <h4>Emails</h4>
-            <div>
-                <i id="savingiconemails" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
-                <i id="successiconemails" class="fas fa-check-circle text-success" style="display: none;"></i>
-                <button id="saveemailbtn" class="btn btn-success">
-                    <i class="fas fa-save"></i> Save
-                </button>
-                <button id="newemailbtn" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> New
-                </button>
-            </div>
-        </div>
-        <div id="emailsinput" data-user-id="{{ custom_user.id }}" class="row">
-            {% for email in emails %}
-                {% if not email.primary %}
-                    <div class="col-md-3 d-flex align-items-center position-relative">
-                        <input type="text" class="form-control" data-id="{{ email.id }}" value="{{ email.email }}">
-                        <i class="fas fa-trash position-absolute end-0 me-4 text-danger" style="display: none; cursor: pointer;"></i>
-                    </div>
-                {% endif %}
-            {% endfor %}
-        </div>
-    </div>
-
-    <hr />
-
-
-    <hr />
-
     <div class="container mt-4" id="account-memberships" data-account-id="{{ account.id }}">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-            <h4>Portal Members</h4>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <h4 class="mb-0">Portal members</h4>
         </div>
+        <p class="text-muted small">{{ role_help }}</p>
         <div class="table-responsive mb-3">
-            <table class="table table-sm table-bordered">
+            <table class="table table-sm table-bordered align-middle">
                 <thead>
                     <tr>
                         <th>User</th>
@@ -86,15 +64,30 @@
                 </thead>
                 <tbody>
                     {% for m in memberships %}
-                    <tr class="{% if not m.is_active %}table-secondary{% endif %}">
-                        <td>{{ m.user.first_name }} {{ m.user.last_name }}</td>
-                        <td>{{ m.user.username }} <small class="text-muted">#{{ m.user_id }}</small></td>
-                        <td>{{ m.role }}</td>
+                    <tr class="{% if not m.is_active %}table-secondary{% endif %}" data-user-id="{{ m.user_id }}">
+                        <td>
+                            <a href="{% url 'user_detail' m.user_id %}">{{ m.user.first_name }} {{ m.user.last_name }}</a>
+                        </td>
+                        <td>
+                            <a href="{% url 'user_detail' m.user_id %}">{{ m.user.username }}</a>
+                            <small class="text-muted">#{{ m.user_id }}</small>
+                        </td>
+                        <td style="min-width: 9rem;">
+                            {% if m.is_active %}
+                            <select class="form-select form-select-sm member-role-select" data-user-id="{{ m.user_id }}">
+                                <option value="owner" {% if m.role == "owner" %}selected{% endif %}>Owner</option>
+                                <option value="member" {% if m.role == "member" %}selected{% endif %}>Member</option>
+                            </select>
+                            {% else %}
+                            {{ m.role }}
+                            {% endif %}
+                        </td>
                         <td>{% if m.is_active %}Yes{% else %}No{% endif %}</td>
-                        <td class="text-end">
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-outline-primary btn-sm" href="{% url 'user_detail' m.user_id %}">Open user</a>
                             {% if m.is_active %}
                             <button type="button" class="btn btn-outline-danger btn-sm disassociate-member" data-user-id="{{ m.user_id }}">
-                                Disassociate
+                                Unlink
                             </button>
                             {% endif %}
                         </td>
@@ -105,6 +98,7 @@
                 </tbody>
             </table>
         </div>
+
         <div class="row g-2 align-items-end mb-4">
             <div class="col-md-3">
                 <label class="form-label" for="link-member-user-id">User ID</label>
@@ -128,10 +122,9 @@
             </div>
         </div>
 
-        <div class="card border-primary">
+        <div class="card border-primary mb-3">
             <div class="card-header bg-primary text-white">
-                <strong>Create web account</strong>
-                <span class="ms-2 small">New portal login linked to this billing account</span>
+                <strong>Create login for this account</strong>
             </div>
             <div class="card-body">
                 <form id="create-web-account-form" autocomplete="off">
@@ -161,93 +154,148 @@
                         <div class="col-md-3 mb-2">
                             <label class="form-label" for="web-first-name">First name</label>
                             <input type="text" class="form-control" id="web-first-name" name="first_name" value="{{ custom_user.first_name|default:'' }}">
-                            <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-3 mb-2">
                             <label class="form-label" for="web-last-name">Last name</label>
                             <input type="text" class="form-control" id="web-last-name" name="last_name" value="{{ custom_user.last_name|default:'' }}">
-                            <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-3 mb-2">
                             <label class="form-label" for="web-email">Email</label>
                             <input type="email" class="form-control" id="web-email" name="email">
-                            <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-3 mb-2 d-flex align-items-end">
                             <button type="button" class="btn btn-success w-100" id="create-web-account-btn">
-                                <i class="fas fa-user-plus"></i> Create web account
+                                <i class="fas fa-user-plus"></i> Create login
                             </button>
                         </div>
                     </div>
-                    <p class="text-muted small mb-0 mt-2">
-                        Creates an active Customer-group login that can sign in to the portal for this account.
-                    </p>
                 </form>
+            </div>
+        </div>
+
+        <div class="card border-secondary mb-3">
+            <div class="card-header">
+                <strong>Invite a new user by email</strong>
+                <span class="small text-muted ms-2">For people who do not have a login yet. They register via a one-time link only.</span>
+            </div>
+            <div class="card-body">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label" for="account-invite-email">Email</label>
+                        <input type="email" class="form-control" id="account-invite-email" placeholder="customer@example.com">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" for="account-invite-first">First name</label>
+                        <input type="text" class="form-control" id="account-invite-first">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" for="account-invite-last">Last name</label>
+                        <input type="text" class="form-control" id="account-invite-last">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" for="account-invite-role">Role</label>
+                        <select class="form-select" id="account-invite-role">
+                            <option value="owner" selected>Owner</option>
+                            <option value="member">Member</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-outline-success w-100" id="account-invite-btn">
+                            <i class="fas fa-envelope"></i> Send invite
+                        </button>
+                    </div>
+                </div>
+                <div id="account-invite-result" class="small mt-2"></div>
             </div>
         </div>
     </div>
 
+    {% if custom_user and active_membership_count == 1 %}
+    <hr />
     <div class="container mt-4">
         <div class="d-flex align-items-center justify-content-between mb-2">
-            <h4>Details</h4>
+            <h4>Primary login details
+                <a class="btn btn-sm btn-outline-primary ms-2" href="{% url 'user_detail' custom_user.id %}">Full user page</a>
+            </h4>
             <div>
                 <i id="savingicondetails" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
                 <i id="successicondetails" class="fas fa-check-circle text-success" style="display: none;"></i>
-                <button id="savedetailsbtn" class="btn btn-success">
+                <button id="savedetailsbtn" class="btn btn-success" type="button">
                     <i class="fas fa-save"></i> Save
                 </button>
             </div>
         </div>
+        <p class="text-muted small">Edits the single linked login on this account (including username). For multiple members, open each user from the table above.</p>
+
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <h5 class="mb-0">Notification emails</h5>
+            <div>
+                <i id="savingiconemails" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+                <i id="successiconemails" class="fas fa-check-circle text-success" style="display: none;"></i>
+                <button id="saveemailbtn" class="btn btn-success btn-sm" type="button">Save</button>
+                <button id="newemailbtn" class="btn btn-primary btn-sm" type="button">New</button>
+            </div>
+        </div>
+        <div id="emailsinput" data-user-id="{{ custom_user.id }}" class="row mb-3">
+            {% for email in emails %}
+            <div class="col-md-3 d-flex align-items-center position-relative mb-2">
+                <input type="text" class="form-control" data-id="{{ email.id }}" value="{{ email.email }}">
+                <i class="fas fa-trash position-absolute end-0 me-4 text-danger" style="display: none; cursor: pointer;"></i>
+            </div>
+            {% endfor %}
+        </div>
 
         <form id="userform" data-user-id="{{ custom_user.id }}">
             <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" value="{{ custom_user.username }}">
+                    <div class="invalid-feedback"></div>
+                </div>
                 <div class="col-md-1">
                     <label for="prefix" class="form-label">Prefix</label>
-                    <input type="text" class="form-control" id="prefix" name="prefix" value="{{ custom_user.prefix|default:"" }}">
-                    <div class="invalid-feedback"></div>
+                    <input type="text" class="form-control" id="prefix" name="prefix" value="{{ custom_user.prefix|default:'' }}">
                 </div>
                 <div class="col-md-3">
-                    <label for="first_name" class="form-label">First Name</label>
-                    <input type="text" class="form-control" id="first_name" name="first_name" value="{{ custom_user.first_name|default:"" }}">
+                    <label for="first_name" class="form-label">First name</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" value="{{ custom_user.first_name|default:'' }}">
                     <div class="invalid-feedback"></div>
                 </div>
-                <div class="col-md-3 mb-3">
-                    <label for="middle_name" class="form-label">Middle Name</label>
-                    <input type="text" class="form-control" id="middle_name" name="middle_name" value="{{ custom_user.middle_name|default:"" }}">
-                    <div class="invalid-feedback"></div>
+                <div class="col-md-2 mb-3">
+                    <label for="middle_name" class="form-label">Middle</label>
+                    <input type="text" class="form-control" id="middle_name" name="middle_name" value="{{ custom_user.middle_name|default:'' }}">
                 </div>
-                <div class="col-md-3 mb-3">
-                    <label for="last_name" class="form-label">Last Name</label>
-                    <input type="text" class="form-control" id="last_name" name="last_name" value="{{ custom_user.last_name|default:"" }}">
-                    <div class="invalid-feedback"></div>
+                <div class="col-md-2 mb-3">
+                    <label for="last_name" class="form-label">Last name</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" value="{{ custom_user.last_name|default:'' }}">
                 </div>
                 <div class="col-md-1 mb-3">
                     <label for="suffix" class="form-label">Suffix</label>
-                    <input type="text" class="form-control" id="suffix" name="suffix" value="{{ custom_user.suffix|default:"" }}">
-                    <div class="invalid-feedback"></div>
+                    <input type="text" class="form-control" id="suffix" name="suffix" value="{{ custom_user.suffix|default:'' }}">
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-3 mb-3">
                     <label for="company" class="form-label">Company</label>
-                    <input type="text" class="form-control" id="company" name="company" value="{{ custom_user.company|default:"" }}">
-                    <div class="invalid-feedback"></div>
+                    <input type="text" class="form-control" id="company" name="company" value="{{ custom_user.company|default:'' }}">
                 </div>
                 <div class="col-md-3 mb-3">
-                    <label for="phone_number" class="form-label">Phone Number</label>
-                    <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ custom_user.phone_number|default:"" }}">
-                    <div class="invalid-feedback"></div>
+                    <label for="phone_number" class="form-label">Phone</label>
+                    <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ custom_user.phone_number|default:'' }}">
                 </div>
                 <div class="col-md-3 mb-3">
-                    <label for="mobile_number" class="form-label">Mobile Number</label>
-                    <input type="text" class="form-control" id="mobile_number" name="phone_number" value="{{ custom_user.mobile_number|default:"" }}">
-                    <div class="invalid-feedback"></div>
+                    <label for="mobile_number" class="form-label">Mobile</label>
+                    <input type="text" class="form-control" id="mobile_number" name="mobile_number" value="{{ custom_user.mobile_number|default:'' }}">
                 </div>
             </div>
         </form>
     </div>
+    {% elif active_membership_count > 1 %}
+    <hr />
+    <div class="container mt-3">
+        <p class="text-muted">This account has multiple portal members. Edit names, usernames, and emails on each
+            <a href="{% url 'user_mgmt' %}">user</a> page (links in the table above).</p>
+    </div>
+    {% endif %}
 </div>
-
-{% load static %}
-<script src="{% static 'js/user_edit.js' %}"></script>
 {% endblock %}

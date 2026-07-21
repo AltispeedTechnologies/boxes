@@ -7,6 +7,7 @@ from boxes.views.account import (
     account_members_create_web,
     account_members_disassociate,
     account_members_link,
+    account_members_set_role,
     account_packages,
     account_search,
     update_account,
@@ -59,6 +60,7 @@ from boxes.views.user import (
     user_link_account,
     user_mgmt,
     user_unlink_account,
+    user_set_account_role,
 )
 from boxes.views.webhooks import mailjet_webhooks, stripe_webhooks
 
@@ -70,6 +72,7 @@ __all__ = [
     "account_members_create_web",
     "account_members_disassociate",
     "account_members_link",
+    "account_members_set_role",
     "account_packages",
     "account_search",
     "carrier_search",
@@ -124,4 +127,5 @@ __all__ = [
     "user_mgmt",
     "user_search",
     "user_unlink_account",
+    "user_set_account_role",
 ]

@@ -45,6 +45,11 @@
         </div>
         <form id="userdetailsform" data-user-id="{{ custom_user.id }}">
             <div class="row">
+                <div class="col-md-3 mb-2">
+                    <label class="form-label" for="username">Username</label>
+                    <input class="form-control" id="username" name="username" value="{{ custom_user.username }}">
+                    <div class="invalid-feedback"></div>
+                </div>
                 <div class="col-md-2 mb-2">
                     <label class="form-label" for="prefix">Prefix</label>
                     <input class="form-control" id="prefix" name="prefix" value="{{ custom_user.prefix|default:'' }}">
@@ -58,7 +63,7 @@
                     <label class="form-label" for="middle_name">Middle</label>
                     <input class="form-control" id="middle_name" name="middle_name" value="{{ custom_user.middle_name|default:'' }}">
                 </div>
-                <div class="col-md-3 mb-2">
+                <div class="col-md-2 mb-2">
                     <label class="form-label" for="last_name">Last name</label>
                     <input class="form-control" id="last_name" name="last_name" value="{{ custom_user.last_name|default:'' }}">
                 </div>
@@ -67,19 +72,14 @@
                     <input class="form-control" id="suffix" name="suffix" value="{{ custom_user.suffix|default:'' }}">
                 </div>
                 <div class="col-md-4 mb-2">
-                    <label class="form-label" for="username">Username</label>
-                    <input class="form-control" id="username" name="username" value="{{ custom_user.username }}">
-                    <div class="invalid-feedback"></div>
-                </div>
-                <div class="col-md-4 mb-2">
                     <label class="form-label" for="company">Company</label>
                     <input class="form-control" id="company" name="company" value="{{ custom_user.company|default:'' }}">
                 </div>
-                <div class="col-md-2 mb-2">
+                <div class="col-md-3 mb-2">
                     <label class="form-label" for="phone_number">Phone</label>
                     <input class="form-control" id="phone_number" name="phone_number" value="{{ custom_user.phone_number|default:'' }}">
                 </div>
-                <div class="col-md-2 mb-2">
+                <div class="col-md-3 mb-2">
                     <label class="form-label" for="mobile_number">Mobile</label>
                     <input class="form-control" id="mobile_number" name="mobile_number" value="{{ custom_user.mobile_number|default:'' }}">
                 </div>
@@ -111,7 +111,7 @@
             </div>
             {% endfor %}
         </div>
-        <p class="text-muted small mb-0">Login email field: <code>{{ custom_user.email|default:"(empty)" }}</code></p>
+        <p class="text-muted small mb-0">Django login email field: <code>{{ custom_user.email|default:"(empty)" }}</code></p>
     </div>
 
     <hr />
@@ -169,9 +169,9 @@
 
     <div class="container mt-3" id="user-memberships">
         <h4>Linked billing accounts</h4>
-        <p class="text-muted small">Memberships are optional. Users can exist with no account.</p>
+        <p class="text-muted small">{{ role_help }} Memberships are optional. Users can exist with no account.</p>
         <div class="table-responsive mb-3">
-            <table class="table table-sm table-bordered">
+            <table class="table table-sm table-bordered align-middle">
                 <thead>
                     <tr>
                         <th>Account</th>
@@ -187,7 +187,16 @@
                             <a href="{% url 'account_edit' m.account_id %}">{{ m.account.name }}</a>
                             <small class="text-muted">#{{ m.account_id }}</small>
                         </td>
-                        <td>{{ m.role }}</td>
+                        <td style="min-width: 9rem;">
+                            {% if m.is_active %}
+                            <select class="form-select form-select-sm user-account-role-select" data-account-id="{{ m.account_id }}">
+                                <option value="owner" {% if m.role == "owner" %}selected{% endif %}>Owner</option>
+                                <option value="member" {% if m.role == "member" %}selected{% endif %}>Member</option>
+                            </select>
+                            {% else %}
+                            {{ m.role }}
+                            {% endif %}
+                        </td>
                         <td>{% if m.is_active %}Yes{% else %}No{% endif %}</td>
                         <td class="text-end">
                             {% if m.is_active %}
@@ -222,43 +231,12 @@
         </div>
     </div>
 
-    <hr />
-
-    <div class="container mt-3 mb-2">
-        <h4>Sign-up invitation</h4>
-        <p class="text-muted small">
-            Send a one-time registration link to an email. Self-registration is only allowed via these links.
+    <div class="container mt-4 mb-2">
+        <p class="text-muted small mb-0">
+            To invite someone who does <em>not</em> have a login yet, use
+            <a href="{% url 'user_mgmt' %}">Users → Add user</a> (send sign-up invitation)
+            or invite from an account's Portal members section. Sign-up is link-only.
         </p>
-        <div class="row g-2 align-items-end">
-            <div class="col-md-4">
-                <label class="form-label" for="invite-email">Email</label>
-                <input type="email" class="form-control" id="invite-email"
-                       value="{{ custom_user.email|default:'' }}" placeholder="customer@example.com">
-            </div>
-            <div class="col-md-3">
-                <button type="button" class="btn btn-success" id="send-invite-btn">
-                    <i class="fas fa-envelope"></i> Send invite
-                </button>
-            </div>
-        </div>
-        <div id="invite-result" class="small mt-2"></div>
-        {% if invites %}
-        <div class="table-responsive mt-3">
-            <table class="table table-sm">
-                <thead><tr><th>Email</th><th>Created</th><th>Expires</th><th>Used</th></tr></thead>
-                <tbody>
-                    {% for inv in invites %}
-                    <tr>
-                        <td>{{ inv.email }}</td>
-                        <td>{{ inv.created_at }}</td>
-                        <td>{{ inv.expires_at }}</td>
-                        <td>{% if inv.used_at %}{{ inv.used_at }}{% else %}—{% endif %}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

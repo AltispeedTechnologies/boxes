@@ -19,7 +19,12 @@ from boxes.backend.account import (
     create_web_user,
     ensure_customer_group,
 )
-from boxes.backend.membership import associate_user, disassociate_user
+from boxes.backend.membership import (
+    ROLE_SHORT_HELP,
+    associate_user,
+    disassociate_user,
+    set_membership_role,
+)
 from boxes.backend.signup import (
     create_signup_invite,
     send_signup_invite_email,
@@ -179,6 +184,13 @@ def update_user(request):
                 account.ensure_primary_alias()
 
         user = CustomUser.objects.get(pk=user_id)
+        # Username uniqueness when staff renames a login
+        new_username = (user_data.get("username") or "").strip()
+        if new_username and CustomUser.objects.filter(username__iexact=new_username).exclude(pk=user.pk).exists():
+            return JsonResponse({
+                "success": False,
+                "form_errors": {"username": ["Username already exists."]},
+            })
         form = CustomUserForm(user_data, instance=user)
         if form.is_valid():
             form.save()
@@ -510,12 +522,18 @@ def user_mgmt(request):
         "query": query,
         "filter_mode": filter_mode,
         "pending_invites": pending_invites,
+        "role_help": ROLE_SHORT_HELP,
+        "accounts_users_tab": "users",
     })
 
 
 @require_http_methods(["GET"])
 def user_detail(request, pk):
-    """GET (staff): user detail / edit page (login identity, not billing account)."""
+    """GET (staff): user detail / edit page (login identity, not billing account).
+
+    Sign-up invitations are for **new** logins only — use Management → Accounts
+    and Users → Add user (invite mode) or invite from an account's Portal Members.
+    """
     user = get_object_or_404(CustomUser, pk=pk)
     emails = CustomUserEmail.objects.filter(user=user).order_by("id")
     memberships = (
@@ -525,11 +543,6 @@ def user_detail(request, pk):
     )
     groups = list(user.groups.values_list("name", flat=True))
     all_groups = list(Group.objects.order_by("name").values_list("name", flat=True))
-    invites = SignupInvite.objects.filter(
-        Q(email__iexact=user.email) | Q(used_by=user)
-    ).order_by("-created_at")[:10] if user.email else SignupInvite.objects.filter(
-        used_by=user
-    ).order_by("-created_at")[:10]
 
     return render(request, "mgmt/user_edit.html", {
         "custom_user": user,
@@ -537,7 +550,7 @@ def user_detail(request, pk):
         "memberships": memberships,
         "groups": groups,
         "all_groups": all_groups,
-        "invites": invites,
+        "role_help": ROLE_SHORT_HELP,
     })
 
 
@@ -655,22 +668,63 @@ def user_unlink_account(request, pk):
 
 @require_http_methods(["POST"])
 @exception_catcher()
-def send_user_invite(request, pk=None):
-    """POST (staff): create/send a signup invite (optionally for an existing email).
+def user_set_account_role(request, pk):
+    """POST (staff): change this user's role on a linked account.
 
-    When ``pk`` is provided, prefills from that user (does not replace them).
-    Body may also stand alone with email + name fields.
+    Body JSON: account_id, role (owner|member), optional allow_last_owner.
     """
+    user = get_object_or_404(CustomUser, pk=pk)
+    data = json.loads(request.body) if request.body else {}
+    account_id = data.get("account_id")
+    if not account_id:
+        return JsonResponse({
+            "success": False,
+            "form_errors": {"account_id": ["Account is required."]},
+        })
+    account = get_object_or_404(Account, pk=account_id)
+    allow_last = _as_bool(data.get("allow_last_owner"))
+    try:
+        membership = set_membership_role(
+            account,
+            user,
+            data.get("role"),
+            actor=request.user,
+            allow_last_owner=allow_last,
+        )
+    except ValidationError as exc:
+        msgs = list(exc.messages) if hasattr(exc, "messages") else [str(exc)]
+        if hasattr(exc, "message_dict"):
+            msgs = []
+            for v in exc.message_dict.values():
+                msgs.extend(v if isinstance(v, list) else [v])
+        return JsonResponse({"success": False, "errors": msgs}, status=400)
+    return JsonResponse({
+        "success": True,
+        "membership": {
+            "id": membership.id,
+            "user_id": membership.user_id,
+            "account_id": membership.account_id,
+            "role": membership.role,
+            "is_active": membership.is_active,
+            "account_name": account.name,
+        },
+    })
+
+
+@require_http_methods(["POST"])
+@exception_catcher()
+def send_user_invite(request, pk=None):
+    """POST (staff): create/send a signup invite for a **new** portal login.
+
+    Invites are not for re-inviting an existing CustomUser page (e.g. sysadmin).
+    Optional ``pk`` is ignored for prefill of an existing user identity — pass
+    email and name fields in the body, and optional account_id to pre-link.
+    """
+    del pk  # reserved; invites create new users only
     data = json.loads(request.body) if request.body else {}
     source_user = None
-    if pk is not None:
-        source_user = get_object_or_404(CustomUser, pk=pk)
 
-    email = (data.get("email") or (source_user.email if source_user else "") or "").strip()
-    if not email and source_user:
-        first_extra = CustomUserEmail.objects.filter(user=source_user).order_by("id").first()
-        if first_extra:
-            email = first_extra.email
+    email = (data.get("email") or "").strip()
 
     if not email:
         return JsonResponse({
@@ -686,10 +740,10 @@ def send_user_invite(request, pk=None):
         invite = create_signup_invite(
             email=email,
             actor=request.user,
-            first_name=(data.get("first_name") or (source_user.first_name if source_user else "") or ""),
-            last_name=(data.get("last_name") or (source_user.last_name if source_user else "") or ""),
-            company=(data.get("company") or (source_user.company if source_user else "") or ""),
-            phone_number=(data.get("phone_number") or (source_user.phone_number if source_user else "") or ""),
+            first_name=(data.get("first_name") or "").strip(),
+            last_name=(data.get("last_name") or "").strip(),
+            company=(data.get("company") or "").strip(),
+            phone_number=(data.get("phone_number") or "").strip(),
             account=account,
             role=data.get("role") or UserAccount.ROLE_OWNER,
             create_account=create_account and account is None,

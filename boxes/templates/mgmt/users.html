@@ -9,15 +9,14 @@
 {% block content %}
 <div class="container bg-body shadow rounded p-3 col-md-11" id="usermgmt">
     <div class="row bg-primary bg-gradient rounded mb-3">
-        <h2 class="text-center text-white py-2">Users</h2>
+        <h2 class="text-center text-white py-2">Accounts and Users</h2>
     </div>
 
+    {% include "mgmt/_accounts_users_nav.html" with accounts_users_tab="users" role_help=role_help %}
     {% include "_messages.html" %}
 
     <p class="text-muted small">
-        Login identities (CustomUser) are managed here, separately from billing
-        <a href="{% url 'account_mgmt' %}">Accounts</a>.
-        A user may have zero or many linked accounts.
+        Create logins with credentials, or send a sign-up invitation so the customer registers via a one-time link only.
         {% if pending_invites %}
         <span class="badge text-bg-warning">{{ pending_invites }} pending invite{{ pending_invites|pluralize }}</span>
         {% endif %}
@@ -35,10 +34,10 @@
                 <option value="customer" {% if filter_mode == "customer" %}selected{% endif %}>Customer group</option>
                 <option value="staff" {% if filter_mode == "staff" %}selected{% endif %}>Staff group</option>
             </select>
-            <button class="btn btn-primary" id="searchusers">Search</button>
+            <button class="btn btn-primary" id="searchusers" type="button">Search</button>
         </div>
         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createNewCustomerModal"
-                data-default-create-account="0">
+                data-default-create-account="0" type="button">
             <i class="fas fa-plus"></i> Add user
         </button>
     </div>

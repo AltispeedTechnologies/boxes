@@ -9,7 +9,13 @@ from django.shortcuts import get_object_or_404, render
 from django.views.decorators.http import require_http_methods
 
 from boxes.backend.account import create_web_user, ensure_account_balance
-from boxes.backend.membership import associate_user, disassociate_user, search_users
+from boxes.backend.membership import (
+    ROLE_SHORT_HELP,
+    associate_user,
+    disassociate_user,
+    search_users,
+    set_membership_role,
+)
 from boxes.management.exception_catcher import exception_catcher
 from boxes.models import (
     Account,
@@ -62,13 +68,16 @@ def account_edit(request, pk):
     )
     custom_user = users[0] if users else None
     emails = CustomUserEmail.objects.filter(user=custom_user) if custom_user else []
+    active_memberships = [m for m in memberships if m.is_active]
     return render(request, "accounts/edit.html", {
         "custom_user": custom_user,
         "custom_users": users,
         "memberships": memberships,
+        "active_membership_count": len(active_memberships),
         "account": account,
         "aliases": aliases,
         "emails": emails,
+        "role_help": ROLE_SHORT_HELP,
         "view_type": "edit",
     })
 
@@ -126,6 +135,45 @@ def account_members_disassociate(request, pk):
         return JsonResponse({"success": False, "errors": list(exc.messages)}, status=400)
     if membership is None:
         return JsonResponse({"success": False, "errors": ["Membership not found"]}, status=404)
+    return JsonResponse({
+        "success": True,
+        "membership": {
+            "id": membership.id,
+            "user_id": membership.user_id,
+            "account_id": membership.account_id,
+            "role": membership.role,
+            "is_active": membership.is_active,
+        },
+    })
+
+
+@require_http_methods(["POST"])
+@exception_catcher()
+def account_members_set_role(request, pk):
+    """POST (staff): change a linked user's portal role on this account.
+
+    Body JSON: user_id (required), role (owner|member), optional allow_last_owner.
+    """
+    account = get_object_or_404(Account, pk=pk)
+    data = json.loads(request.body) if request.body else {}
+    user_id = data.get("user_id") or request.POST.get("user_id")
+    if user_id is None:
+        raise ValueError("user_id is required")
+    user = get_object_or_404(CustomUser, pk=user_id)
+    role = data.get("role") or request.POST.get("role")
+    allow_last = bool(data.get("allow_last_owner") or request.POST.get("allow_last_owner"))
+    try:
+        membership = set_membership_role(
+            account, user, role, actor=request.user, allow_last_owner=allow_last
+        )
+    except ValidationError as exc:
+        msgs = list(exc.messages) if hasattr(exc, "messages") else [str(exc)]
+        if hasattr(exc, "message_dict"):
+            msgs = []
+            for v in exc.message_dict.values():
+                msgs.extend(v if isinstance(v, list) else [v])
+        return JsonResponse({"success": False, "errors": msgs}, status=400)
+
     return JsonResponse({
         "success": True,
         "membership": {

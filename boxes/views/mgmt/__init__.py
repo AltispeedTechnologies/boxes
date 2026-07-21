@@ -16,6 +16,7 @@ from boxes.views.mgmt.pickup import (
     update_pickup_days,
     update_pickup_rules,
 )
+from boxes.views.mgmt.setup_status import mgmt_setup_status_api
 from boxes.views.mgmt.types import package_type_settings, update_package_types
 
 __all__ = [
@@ -28,6 +29,7 @@ __all__ = [
     "email_template",
     "email_template_content",
     "general_settings",
+    "mgmt_setup_status_api",
     "package_type_settings",
     "pickup_mgmt",
     "pickup_open_days",

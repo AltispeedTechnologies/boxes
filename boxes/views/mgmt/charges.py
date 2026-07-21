@@ -6,6 +6,7 @@ from boxes.models import AccountChargeSettings, GlobalSettings, PackageType
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
+from boxes.backend.setup_status import invalidate_setup_status_cache
 
 
 
@@ -117,4 +118,5 @@ def save_charge_settings(request):
     globalsettings.pass_on_fees = data["misc_charges"]["pass_on_fees"]
     globalsettings.save()
 
+    invalidate_setup_status_cache()
     return JsonResponse({"success": True})

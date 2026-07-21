@@ -1,0 +1,15 @@
+{% if mgmt_setup and mgmt_setup.any_incomplete %}
+<div class="alert {% if mgmt_setup.required_incomplete %}alert-warning{% else %}alert-info{% endif %} border d-flex align-items-start gap-2 mb-3" role="status" id="mgmt-setup-banner">
+    <i class="fas fa-exclamation-triangle mt-1 flex-shrink-0" aria-hidden="true"></i>
+    <div class="flex-grow-1">
+        <strong>{% if mgmt_setup.required_incomplete %}Required setup incomplete{% else %}Recommended setup{% endif %}</strong>
+        <ul class="mb-0 mt-1 small">
+            {% for issue in mgmt_setup.all_issues %}
+            <li>{{ issue }}</li>
+            {% endfor %}
+        </ul>
+        {% if setup_item_key and mgmt_setup.items|default_if_none:None %}
+        {% endif %}
+    </div>
+</div>
+{% endif %}

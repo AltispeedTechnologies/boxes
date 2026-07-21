@@ -33,6 +33,7 @@
 
         <!-- Application-wide JS (BoxesPage, CSRF, Select2 helpers, htmx hooks) -->
         <script src="{% static 'js/app.js' %}"></script>
+        <script src="{% static 'js/setup_status.js' %}"></script>
 
         <!-- Page-specific JS (full document navigation only; prefer BoxesPage.register) -->
         {% block javascript %}{% endblock javascript %}

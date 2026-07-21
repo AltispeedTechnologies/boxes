@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from io import BytesIO
 from PIL import Image
+from boxes.backend.setup_status import invalidate_setup_status_cache
 
 
 @require_http_methods(["GET"])
@@ -54,6 +55,7 @@ def save_general_settings(request):
 
     # Save the settings instance
     settings.save()
+    invalidate_setup_status_cache()
 
 
 # Utility function for resizing and saving images

@@ -1,0 +1,16 @@
+{# Shared tab bar for Accounts and Users (no ampersands in UI copy). #}
+<ul class="nav nav-pills mb-3" id="accounts-users-tabs">
+    <li class="nav-item">
+        <a class="nav-link {% if accounts_users_tab == 'accounts' %}active{% endif %}"
+           href="{% url 'account_mgmt' %}">Accounts</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if accounts_users_tab == 'users' %}active{% endif %}"
+           href="{% url 'user_mgmt' %}">Users</a>
+    </li>
+</ul>
+<p class="text-muted small mb-3">
+    <strong>Accounts</strong> are billing and parcel entities.
+    <strong>Users</strong> are login identities that can link to zero or more accounts.
+    <span class="d-block mt-1">{{ role_help|default:"Owner: primary contact; last active owner is protected from unlink. Member: additional login with the same portal access." }}</span>
+</p>

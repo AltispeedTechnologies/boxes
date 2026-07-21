@@ -10,6 +10,7 @@ from django.db.models.functions import Concat
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
+from boxes.backend.setup_status import invalidate_setup_status_cache
 
 
 @require_http_methods(["GET"])

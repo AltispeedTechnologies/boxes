@@ -5,6 +5,7 @@ from boxes.models import Carrier
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
+from boxes.backend.setup_status import invalidate_setup_status_cache
 
 
 @require_http_methods(["GET"])
@@ -44,4 +45,5 @@ def update_carriers(request):
             carrier.allow_duplicate_tracking = allow_duplicate_tracking
             carrier.save()
 
+    invalidate_setup_status_cache()
     return JsonResponse({"success": True, "updated_carriers": updated_carriers})
