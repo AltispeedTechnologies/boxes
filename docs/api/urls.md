@@ -5,6 +5,7 @@ Resolved from the live URLConf. Access tier uses decorator `access_tier` metadat
 | Tier | Path | Name | Callable | Summary |
 |------|------|------|----------|---------|
 | public | `login/` | `login` | `boxes.views.auth.sign_in` | Render login form or authenticate and redirect (honors ``next``). |
+| public | `signup/<str:token>/` | `signup` | `boxes.views.auth.signup` | Public self-registration **only** via a valid staff-issued invite token. |
 | public | `webhooks/mailjet` | `mailjet_webhooks` | `boxes.views.webhooks.mailjet_webhooks` | POST: accept Mailjet Event API payloads and store SentEmailEvent rows. |
 | public | `webhooks/stripe` | `stripe_webhooks` | `boxes.views.webhooks.stripe_webhooks` | POST: verify Stripe signature and enqueue payment handling. |
 | authenticated | `` | `home` | `boxes.views.index.index` | Render customer home, or send warehouse roles to packages/check-in. |
@@ -62,6 +63,7 @@ Resolved from the live URLConf. Access tier uses decorator `access_tier` metadat
 | staff | `mgmt/pickup/days/update` | `update_pickup_days` | `boxes.views.mgmt.pickup.update_pickup_days` | POST: create/update pickup days (date, is_active, notes, picklist). |
 | staff | `mgmt/pickup/open` | `pickup_open_days` | `boxes.views.mgmt.pickup.pickup_open_days` | GET: JSON open pickup dates in a window (start/end query params). |
 | staff | `mgmt/pickup/rules/update` | `update_pickup_rules` | `boxes.views.mgmt.pickup.update_pickup_rules` | POST: create/update/delete schedule rules from JSON payload. |
+| staff | `mgmt/users` | `user_mgmt` | `boxes.views.user.user_mgmt` | GET (staff): list/search portal and staff users independently of accounts. |
 | staff | `modals/actions` | `get_actions_modals` | `boxes.views.modals.get_actions_modals` | Return row-action modal markup. |
 | staff | `modals/bulk` | `get_bulk_modals` | `boxes.views.modals.get_bulk_modals` | Return bulk-action modal markup. |
 | staff | `modals/picklistmgmt` | `get_picklist_mgmt_modals` | `boxes.views.modals.get_picklist_mgmt_modals` | Return picklist management modal markup. |
@@ -89,8 +91,14 @@ Resolved from the live URLConf. Access tier uses decorator `access_tier` metadat
 | staff | `reports/new/submit` | `report_new_submit` | `boxes.views.reports.backend.report_new_submit` | POST: create a new Report from config JSON. |
 | staff | `reports/stats/chart` | `report_stats_chart` | `boxes.views.reports.backend.report_stats_chart` | POST: return chart data payload for dashboard. |
 | staff | `reports/stripe-totals` | `stripe_totals` | `boxes.views.reports.stripe_totals.stripe_totals` | GET: aggregate succeeded invoice money fields for staff reports. |
+| staff | `users/<int:pk>/accounts/link` | `user_link_account` | `boxes.views.user.user_link_account` | POST (staff): link this user to a billing account by account_id. |
+| staff | `users/<int:pk>/accounts/unlink` | `user_unlink_account` | `boxes.views.user.user_unlink_account` | POST (staff): soft-disassociate this user from a billing account. |
+| staff | `users/<int:pk>/edit` | `user_detail` | `boxes.views.user.user_detail` | GET (staff): user detail / edit page (login identity, not billing account). |
+| staff | `users/<int:pk>/invite` | `send_user_invite_for` | `boxes.views.user.send_user_invite` | POST (staff): create/send a signup invite (optionally for an existing email). |
+| staff | `users/<int:pk>/status` | `update_user_status` | `boxes.views.user.update_user_status` | POST (staff): activate/deactivate user and optional password / groups. |
 | staff | `users/emails/update` | `update_user_emails` | `boxes.views.user.update_user_emails` | POST (staff): update notification emails for a target user. |
-| staff | `users/new` | `create_user` | `boxes.views.user.create_user` | POST (staff): create billing account + optional portal web login. |
+| staff | `users/invite` | `send_user_invite` | `boxes.views.user.send_user_invite` | POST (staff): create/send a signup invite (optionally for an existing email). |
+| staff | `users/new` | `create_user` | `boxes.views.user.create_user` | POST (staff): create user and/or billing account, or send a signup invite. |
 | staff | `users/search` | `user_search` | `boxes.views.account.user_search` | JSON/Select2 search over users for membership linking. |
 | staff | `users/update` | `update_user` | `boxes.views.user.update_user` | POST (staff): update a target user's profile fields. |
 | customer | `customer/invoices` | `customer_invoices` | `boxes.views.customer.customer_invoices` | GET: past invoices for the active account. |
@@ -109,4 +117,4 @@ Resolved from the live URLConf. Access tier uses decorator `access_tier` metadat
 | customer | `invoice/new` | `customer_new_invoice` | `boxes.views.customer.customer_new_invoice` | POST: create invoice/PaymentIntent for amount and method. |
 | customer | `session/account` | `session_set_active_account` | `boxes.views.customer.session_set_active_account` | POST: set session active account after membership check. |
 
-_Generated 104 application routes (Django admin omitted)._
+_Generated 112 application routes (Django admin omitted)._

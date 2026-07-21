@@ -2,8 +2,10 @@
 
 Invite activation is intentionally a stub: staff prepare the account, set a
 password (or unusable password), and complete onboarding via Django admin.
-Full password-reset token email is not wired yet; Mailjet is used for package
-notifications only. Use Django admin to set a password and flip ``is_active``.
+Prefer staff UI **Management → Users → Send invite** (or POST /users/new with
+``send_invite``) for tokenized self-registration at ``/signup/<token>/``.
+This command remains a low-level helper for deactivating a user until a password
+is set in admin.
 """
 from django.core.management.base import BaseCommand, CommandError
 

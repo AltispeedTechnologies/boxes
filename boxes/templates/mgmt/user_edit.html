@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/user_edit.js' %}"></script>
+<script src="{% static 'js/mgmt/user_detail.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="bg-body shadow rounded p-3" id="userdetail" data-user-id="{{ custom_user.id }}">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+        <div>
+            <h3 class="mb-1">{{ custom_user.username }}
+                <small class="text-muted">#{{ custom_user.id }}</small>
+            </h3>
+            <p class="text-muted mb-0">
+                Login identity
+                {% if custom_user.is_active %}
+                <span class="badge text-bg-success">Active</span>
+                {% else %}
+                <span class="badge text-bg-secondary">Inactive</span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary" href="{% url 'user_mgmt' %}">
+                <i class="fas fa-arrow-left"></i> All users
+            </a>
+            <a class="btn btn-outline-primary" href="{% url 'account_mgmt' %}">Accounts</a>
+        </div>
+    </div>
+
+    {% include "_messages.html" %}
+
+    <div class="container mt-2">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <h4>Profile</h4>
+            <div>
+                <i id="savingicondetails" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+                <i id="successicondetails" class="fas fa-check-circle text-success" style="display: none;"></i>
+                <button id="savedetailsbtn" class="btn btn-success" type="button">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+        <form id="userdetailsform" data-user-id="{{ custom_user.id }}">
+            <div class="row">
+                <div class="col-md-2 mb-2">
+                    <label class="form-label" for="prefix">Prefix</label>
+                    <input class="form-control" id="prefix" name="prefix" value="{{ custom_user.prefix|default:'' }}">
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="form-label" for="first_name">First name</label>
+                    <input class="form-control" id="first_name" name="first_name" value="{{ custom_user.first_name|default:'' }}">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label" for="middle_name">Middle</label>
+                    <input class="form-control" id="middle_name" name="middle_name" value="{{ custom_user.middle_name|default:'' }}">
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="form-label" for="last_name">Last name</label>
+                    <input class="form-control" id="last_name" name="last_name" value="{{ custom_user.last_name|default:'' }}">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label" for="suffix">Suffix</label>
+                    <input class="form-control" id="suffix" name="suffix" value="{{ custom_user.suffix|default:'' }}">
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="form-label" for="username">Username</label>
+                    <input class="form-control" id="username" name="username" value="{{ custom_user.username }}">
+                    <div class="invalid-feedback"></div>
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="form-label" for="company">Company</label>
+                    <input class="form-control" id="company" name="company" value="{{ custom_user.company|default:'' }}">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label" for="phone_number">Phone</label>
+                    <input class="form-control" id="phone_number" name="phone_number" value="{{ custom_user.phone_number|default:'' }}">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label" for="mobile_number">Mobile</label>
+                    <input class="form-control" id="mobile_number" name="mobile_number" value="{{ custom_user.mobile_number|default:'' }}">
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <hr />
+
+    <div class="container mt-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <h4>Notification emails</h4>
+            <div>
+                <i id="savingiconemails" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
+                <i id="successiconemails" class="fas fa-check-circle text-success" style="display: none;"></i>
+                <button id="saveemailbtn" class="btn btn-success" type="button">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button id="newemailbtn" class="btn btn-primary" type="button">
+                    <i class="fas fa-plus"></i> New
+                </button>
+            </div>
+        </div>
+        <div id="emailsinput" data-user-id="{{ custom_user.id }}" class="row">
+            {% for email in emails %}
+            <div class="col-md-3 d-flex align-items-center position-relative mb-2">
+                <input type="text" class="form-control" data-id="{{ email.id }}" value="{{ email.email }}">
+                <i class="fas fa-trash position-absolute end-0 me-4 text-danger" style="display: none; cursor: pointer;"></i>
+            </div>
+            {% endfor %}
+        </div>
+        <p class="text-muted small mb-0">Login email field: <code>{{ custom_user.email|default:"(empty)" }}</code></p>
+    </div>
+
+    <hr />
+
+    <div class="container mt-3">
+        <h4>Access</h4>
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="user-is-active"
+                           {% if custom_user.is_active %}checked{% endif %}>
+                    <label class="form-check-label" for="user-is-active">Active login</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Groups</label>
+                <div class="d-flex flex-wrap gap-3">
+                    {% for g in all_groups %}
+                    <div class="form-check">
+                        <input class="form-check-input user-group-check" type="checkbox"
+                               value="{{ g }}" id="group-{{ g }}"
+                               {% if g in groups %}checked{% endif %}>
+                        <label class="form-check-label" for="group-{{ g }}">{{ g }}</label>
+                    </div>
+                    {% empty %}
+                    <span class="text-muted">No groups defined. Load initial_data.</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button type="button" class="btn btn-primary" id="save-access-btn">
+                    <i class="fas fa-save"></i> Save access
+                </button>
+            </div>
+        </div>
+        <div class="row g-2 mt-3">
+            <div class="col-md-3">
+                <label class="form-label" for="set-password">Set password</label>
+                <input type="password" class="form-control" id="set-password" autocomplete="new-password">
+                <div class="invalid-feedback"></div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="set-password2">Confirm</label>
+                <input type="password" class="form-control" id="set-password2" autocomplete="new-password">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="button" class="btn btn-outline-warning" id="set-password-btn">
+                    Update password
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="container mt-3" id="user-memberships">
+        <h4>Linked billing accounts</h4>
+        <p class="text-muted small">Memberships are optional. Users can exist with no account.</p>
+        <div class="table-responsive mb-3">
+            <table class="table table-sm table-bordered">
+                <thead>
+                    <tr>
+                        <th>Account</th>
+                        <th>Role</th>
+                        <th>Active</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in memberships %}
+                    <tr class="{% if not m.is_active %}table-secondary{% endif %}">
+                        <td>
+                            <a href="{% url 'account_edit' m.account_id %}">{{ m.account.name }}</a>
+                            <small class="text-muted">#{{ m.account_id }}</small>
+                        </td>
+                        <td>{{ m.role }}</td>
+                        <td>{% if m.is_active %}Yes{% else %}No{% endif %}</td>
+                        <td class="text-end">
+                            {% if m.is_active %}
+                            <button type="button" class="btn btn-outline-danger btn-sm unlink-account"
+                                    data-account-id="{{ m.account_id }}">Unlink</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-muted">No linked accounts.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label" for="link-account-id">Account ID</label>
+                <input type="number" class="form-control" id="link-account-id" min="1" placeholder="Account id">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="link-account-role">Role</label>
+                <select class="form-select" id="link-account-role">
+                    <option value="member" selected>Member</option>
+                    <option value="owner">Owner</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="button" class="btn btn-primary" id="link-account-btn">
+                    <i class="fas fa-link"></i> Link account
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="container mt-3 mb-2">
+        <h4>Sign-up invitation</h4>
+        <p class="text-muted small">
+            Send a one-time registration link to an email. Self-registration is only allowed via these links.
+        </p>
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label" for="invite-email">Email</label>
+                <input type="email" class="form-control" id="invite-email"
+                       value="{{ custom_user.email|default:'' }}" placeholder="customer@example.com">
+            </div>
+            <div class="col-md-3">
+                <button type="button" class="btn btn-success" id="send-invite-btn">
+                    <i class="fas fa-envelope"></i> Send invite
+                </button>
+            </div>
+        </div>
+        <div id="invite-result" class="small mt-2"></div>
+        {% if invites %}
+        <div class="table-responsive mt-3">
+            <table class="table table-sm">
+                <thead><tr><th>Email</th><th>Created</th><th>Expires</th><th>Used</th></tr></thead>
+                <tbody>
+                    {% for inv in invites %}
+                    <tr>
+                        <td>{{ inv.email }}</td>
+                        <td>{{ inv.created_at }}</td>
+                        <td>{{ inv.expires_at }}</td>
+                        <td>{% if inv.used_at %}{{ inv.used_at }}{% else %}—{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -66,7 +66,7 @@ JSON/Select2 search over users for membership linking.
 
 ## `boxes.views.auth`
 
-Session login and logout views.
+Session login/logout and token-gated self-registration.
 
 ### `sign_in(request)`
 
@@ -75,6 +75,13 @@ Render login form or authenticate and redirect (honors ``next``).
 ### `sign_out(request)`
 
 Log out the current user and redirect to the login page (full document).
+
+### `signup(request, token)`
+
+Public self-registration **only** via a valid staff-issued invite token.
+
+There is no open registration path without a token. Used/expired tokens
+show an error page; successful signup logs the user in and sends them home.
 
 ## `boxes.views.carrier`
 
@@ -560,26 +567,28 @@ GET: aggregate succeeded invoice money fields for staff reports.
 
 ## `boxes.views.user`
 
-Profile self-service and staff user create/update endpoints.
+Profile self-service and staff user create/update/management endpoints.
 
 ### `create_user(request)`
 
-POST (staff): create billing account + optional portal web login.
+POST (staff): create user and/or billing account, or send a signup invite.
 
-Body JSON:
-  - name fields (first_name required unless username-only legacy path)
-  - company, phone_number, email
-  - username / password: when both provided, create an active web login
-  - create_web_account (bool): force web login; requires username+password
-  - billable (bool, default true)
-  - comments
+Body JSON supports several modes:
 
-Without username+password, creates a billing Account with an inactive
-placeholder membership user (legacy check-in path).
+**Invite (preferred self-registration)**
+  - send_invite=true, email required
+  - create_account (bool, default false): also create a billing Account to
+    link when the invitee registers
+  - optional name/company/phone fields prefill the invite
 
-### `generate_username()`
+**Web user without account**
+  - create_account=false, username+password (or create_web_account=true)
+  - creates an active Customer-group login with no billing Account
 
-Generate a unique username string for new users.
+**Account + optional web login** (legacy / check-in "new customer")
+  - create_account=true (default when send_invite is false)
+  - with username+password or create_web_account: active portal login
+  - without credentials: inactive placeholder membership user
 
 ### `profile_user(request)`
 
@@ -590,6 +599,13 @@ entity linked through UserAccount. Profile edits only touch the user
 (and notification emails). If the user is linked to exactly one Account,
 name changes are mirrored onto that account's display name / primary
 alias — the same rule staff edit uses.
+
+### `send_user_invite(request, pk=None)`
+
+POST (staff): create/send a signup invite (optionally for an existing email).
+
+When ``pk`` is provided, prefills from that user (does not replace them).
+Body may also stand alone with email + name fields.
 
 ### `update_profile(request)`
 
@@ -606,6 +622,26 @@ POST (staff): update a target user's profile fields.
 ### `update_user_emails(request)`
 
 POST (staff): update notification emails for a target user.
+
+### `update_user_status(request, pk)`
+
+POST (staff): activate/deactivate user and optional password / groups.
+
+### `user_detail(request, pk)`
+
+GET (staff): user detail / edit page (login identity, not billing account).
+
+### `user_link_account(request, pk)`
+
+POST (staff): link this user to a billing account by account_id.
+
+### `user_mgmt(request)`
+
+GET (staff): list/search portal and staff users independently of accounts.
+
+### `user_unlink_account(request, pk)`
+
+POST (staff): soft-disassociate this user from a billing account.
 
 ## `boxes.views.webhooks`
 

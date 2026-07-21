@@ -49,10 +49,12 @@ from boxes.views import (
     profile_user,
     remove_package_picklist,
     remove_picklist,
+    send_user_invite,
     session_set_active_account,
     show_label,
     sign_in,
     sign_out,
+    signup,
     stripe_webhooks,
     update_account,
     update_account_aliases,
@@ -60,7 +62,12 @@ from boxes.views import (
     update_profile_emails,
     update_user,
     update_user_emails,
+    update_user_status,
+    user_detail,
+    user_link_account,
+    user_mgmt,
     user_search,
+    user_unlink_account,
 )
 from boxes.views.mgmt import (
     account_mgmt,
@@ -199,6 +206,7 @@ def decorate_urlpatterns(urlpatterns, decorator):
 
 public_urlpatterns = [
     path("login/", sign_in, name="login"),
+    path("signup/<str:token>/", signup, name="signup"),
     path("webhooks/stripe", stripe_webhooks, name="stripe_webhooks"),
     path("webhooks/mailjet", mailjet_webhooks, name="mailjet_webhooks"),
 ]
@@ -317,11 +325,18 @@ staff_urlpatterns = [
     # Queue rename
     path("queues/<int:pk>/update", update_queue_name, name="update_queue_name"),
 
-    # Users
+    # Users (login identities; managed separately from billing accounts)
+    path("mgmt/users", user_mgmt, name="user_mgmt"),
     path("users/new", create_user, name="create_user"),
     path("users/search", user_search, name="user_search"),
     path("users/update", update_user, name="update_user"),
     path("users/emails/update", update_user_emails, name="update_user_emails"),
+    path("users/invite", send_user_invite, name="send_user_invite"),
+    path("users/<int:pk>/edit", user_detail, name="user_detail"),
+    path("users/<int:pk>/status", update_user_status, name="update_user_status"),
+    path("users/<int:pk>/invite", send_user_invite, name="send_user_invite_for"),
+    path("users/<int:pk>/accounts/link", user_link_account, name="user_link_account"),
+    path("users/<int:pk>/accounts/unlink", user_unlink_account, name="user_unlink_account"),
 
     # Reports
     path("reports/data", report_data, name="report_data"),

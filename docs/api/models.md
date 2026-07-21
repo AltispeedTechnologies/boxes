@@ -20,6 +20,7 @@ Billing and parcel entity for a customer.
 | `invoice` | ForeignKey | True |  | boxes.Invoice |  |
 | `sentemail` | ForeignKey | True |  | boxes.SentEmail |  |
 | `package` | ForeignKey | True |  | boxes.Package |  |
+| `signup_invites` | ForeignKey | True |  | boxes.SignupInvite |  |
 | `id` | BigAutoField | False |  |  |  |
 | `user` | ForeignKey | False |  | boxes.CustomUser |  |
 | `name` | CharField | False |  |  |  |
@@ -162,6 +163,8 @@ Extends Django ``AbstractUser`` with warehouse profile fields. Role checks use *
 | `packageledger` | ForeignKey | True |  | boxes.PackageLedger |  |
 | `pickup_reservations` | ForeignKey | True |  | boxes.PackagePickupReservation |  |
 | `customuseremail` | ForeignKey | True |  | boxes.CustomUserEmail |  |
+| `sent_signup_invites` | ForeignKey | True |  | boxes.SignupInvite |  |
+| `accepted_signup_invites` | ForeignKey | True |  | boxes.SignupInvite |  |
 | `id` | BigAutoField | False |  |  |  |
 | `password` | CharField | False |  |  |  |
 | `last_login` | DateTimeField | True |  |  |  |
@@ -607,6 +610,44 @@ Raw provider response JSON for a send attempt.
 | `id` | BigAutoField | False |  |  |  |
 | `sent_email` | ForeignKey | False |  | boxes.SentEmail |  |
 | `response` | JSONField | False |  |  |  |
+
+## SignupInvite
+
+`boxes.SignupInvite` — db table `boxes_signupinvite`
+
+One-time sign-up invitation. Registration is only allowed via a valid token.
+
+Staff create invites (and optionally a billing Account to link on accept).
+Customers complete registration at ``/signup/<token>/`` only — there is no
+open public registration endpoint.
+
+| Field | Type | Null | Default | Related | Help |
+|-------|------|------|---------|---------|------|
+| `id` | BigAutoField | False |  |  |  |
+| `token` | CharField | False | (callable) |  |  |
+| `email` | CharField | False |  |  |  |
+| `first_name` | CharField | False | '' |  |  |
+| `last_name` | CharField | False | '' |  |  |
+| `middle_name` | CharField | False | '' |  |  |
+| `prefix` | CharField | False | '' |  |  |
+| `suffix` | CharField | False | '' |  |  |
+| `company` | CharField | False | '' |  |  |
+| `phone_number` | CharField | False | '' |  |  |
+| `mobile_number` | CharField | False | '' |  |  |
+| `account` | ForeignKey | True |  | boxes.Account |  |
+| `role` | CharField | False | 'owner' |  |  |
+| `created_by` | ForeignKey | True |  | boxes.CustomUser |  |
+| `created_at` | DateTimeField | False | (callable) |  |  |
+| `expires_at` | DateTimeField | False | (callable) |  |  |
+| `used_at` | DateTimeField | True |  |  |  |
+| `used_by` | ForeignKey | True |  | boxes.CustomUser |  |
+| `email_sent_at` | DateTimeField | True |  |  |  |
+| `last_error` | CharField | False | '' |  |  |
+
+**Methods**
+
+- `is_expired(self)` — True if past expires_at.
+- `is_usable(self)` — True if not used and not expired.
 
 ## StripePaymentMethod
 

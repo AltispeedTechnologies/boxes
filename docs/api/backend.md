@@ -203,6 +203,39 @@ Returns ``{"x_data": [...], "y_data": {carrier: [counts...]}}`` for charting.
 
 Build chart series data for the given timeframe filter.
 
+## `boxes.backend.signup`
+
+Signup invite creation, email delivery, and token-gated registration.
+
+### `complete_signup(*, token, username, password, password2=None, first_name=None, last_name=None, company=None, phone_number=None, mobile_number=None)`
+
+Create an active portal user from a valid invite token.
+
+Returns dict with user, invite, membership (optional). Raises ValidationError
+on bad token or form data.
+
+### `create_signup_invite(*, email, actor=None, first_name='', last_name='', middle_name='', prefix='', suffix='', company='', phone_number='', mobile_number='', account=None, role='owner', create_account=False, account_name=None, billable=True, comments=None, expires_days=14)`
+
+Create a SignupInvite (and optionally a billing Account to link on accept).
+
+Does **not** create a CustomUser — the invitee registers via the signed link.
+Returns the SignupInvite instance.
+
+### `get_valid_invite(token)`
+
+Return a usable SignupInvite or raise ValidationError.
+
+### `invite_signup_url(invite, request=None)`
+
+Absolute (when request given) or path-only signup URL for ``invite``.
+
+### `send_signup_invite_email(invite, request=None)`
+
+Deliver the invite email. Returns True if a provider accepted the message.
+
+Honors GlobalSettings.email_sending. Tries Mailjet first, then Django
+``send_mail``. Updates ``email_sent_at`` / ``last_error`` on the invite.
+
 ## `boxes.backend.system`
 
 Helpers for automated actors and singleton configuration rows.

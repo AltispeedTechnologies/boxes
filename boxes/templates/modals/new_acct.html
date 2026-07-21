@@ -52,13 +52,38 @@
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
+
                     <hr>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="create_web_account" name="create_web_account" value="1">
-                        <label class="form-check-label" for="create_web_account">
-                            Create web login (customer portal account)
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="create_account" name="create_account" value="1" checked>
+                        <label class="form-check-label" for="create_account">
+                            Create billing account
                         </label>
+                        <div class="form-text">Uncheck to create a login only (no parcels/billing account).</div>
                     </div>
+
+                    <div class="mb-2">
+                        <label class="form-label d-block">Portal access</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="portal_mode" id="portal_none" value="none" checked>
+                            <label class="form-check-label" for="portal_none">
+                                None (billing/check-in only; inactive placeholder login if account is created)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="portal_mode" id="portal_credentials" value="credentials">
+                            <label class="form-check-label" for="portal_credentials">
+                                Create login credentials now
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="portal_mode" id="portal_invite" value="invite">
+                            <label class="form-check-label" for="portal_invite">
+                                Send sign-up invitation email (customer registers via link only)
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="row" id="web-account-fields" style="display: none;">
                         <div class="col-md-4 mb-3">
                             <label for="username" class="form-label">Username</label>
@@ -76,12 +101,17 @@
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
+
+                    <div id="invite-hint" class="alert alert-info py-2 small" style="display: none;">
+                        An email with a one-time registration link will be sent. Open registration is not available —
+                        only this invite link can create the login.
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <i id="savingiconnew" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Discard</button>
-                <button type="button" class="btn btn-primary">Create</button>
+                <button type="button" class="btn btn-primary" id="createCustomerBtn">Create</button>
             </div>
         </div>
     </div>

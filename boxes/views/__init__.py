@@ -13,7 +13,7 @@ from boxes.views.account import (
     update_account_aliases,
     user_search,
 )
-from boxes.views.auth import sign_in, sign_out
+from boxes.views.auth import sign_in, sign_out, signup
 from boxes.views.carrier import carrier_search
 from boxes.views.customer import (
     customer_billing_portal,
@@ -49,10 +49,16 @@ from boxes.views.picklists import (
 from boxes.views.user import (
     create_user,
     profile_user,
+    send_user_invite,
     update_profile,
     update_profile_emails,
     update_user,
     update_user_emails,
+    update_user_status,
+    user_detail,
+    user_link_account,
+    user_mgmt,
+    user_unlink_account,
 )
 from boxes.views.webhooks import mailjet_webhooks, stripe_webhooks
 
@@ -99,10 +105,12 @@ __all__ = [
     "profile_user",
     "remove_package_picklist",
     "remove_picklist",
+    "send_user_invite",
     "session_set_active_account",
     "show_label",
     "sign_in",
     "sign_out",
+    "signup",
     "stripe_webhooks",
     "update_account",
     "update_account_aliases",
@@ -110,5 +118,10 @@ __all__ = [
     "update_profile_emails",
     "update_user",
     "update_user_emails",
+    "update_user_status",
+    "user_detail",
+    "user_link_account",
+    "user_mgmt",
     "user_search",
+    "user_unlink_account",
 ]

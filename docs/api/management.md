@@ -1,5 +1,12 @@
 # Management commands (generated)
 
+## `manage.py bootstrap_demo`
+
+Ensure system user, Customer group membership, and a demo billing account for the fixture customer login (idempotent).
+
+The actual logic of the command. Subclasses must implement
+this method.
+
 ## `manage.py generate_docs`
 
 Generate API reference docs under docs/api/ from the running codebase (routes, models, views, backend, tasks, settings, JS).

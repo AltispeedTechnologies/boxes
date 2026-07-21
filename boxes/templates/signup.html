@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Register · Boxes{% endblock title %}
+
+{% block main_class %}app-main--auth{% endblock main_class %}
+{% block main_container_class %}container-fluid px-3{% endblock main_container_class %}
+
+{% block content %}
+<div class="login-page">
+    <div class="login-card form-wrapper">
+        {% if invalid %}
+            <div class="login-brand text-center">
+                <img class="login-logo" src="/media/images/login_logo.png" alt="Boxes" width="72" height="72" />
+                <h1 class="login-title h3 mb-1">Invitation unavailable</h1>
+                <p class="text-muted small mb-0">This sign-up link cannot be used.</p>
+            </div>
+            <div class="alert alert-danger mt-3 mb-0">
+                {% for err in errors %}
+                    <div>{{ err }}</div>
+                {% empty %}
+                    <div>Invalid or expired sign-up link.</div>
+                {% endfor %}
+            </div>
+            <div class="d-grid mt-4">
+                <a class="btn btn-outline-primary" href="{% url 'login' %}" hx-boost="false">Back to sign in</a>
+            </div>
+        {% else %}
+            <form method="POST" action="{% url 'signup' token=token %}" novalidate hx-boost="false">
+                {% csrf_token %}
+                <div class="login-brand text-center">
+                    <img class="login-logo" src="/media/images/login_logo.png" alt="Boxes" width="72" height="72" />
+                    <h1 class="login-title h3 mb-1">Create your account</h1>
+                    <p class="text-muted small mb-0">
+                        Invitation for <strong>{{ invite.email }}</strong>
+                    </p>
+                </div>
+
+                {% if form_errors.non_field %}
+                <div class="alert alert-danger mt-3">
+                    {% for err in form_errors.non_field %}<div>{{ err }}</div>{% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="mb-3 mt-3">
+                    <label for="id_username" class="form-label">Username</label>
+                    <input type="text" class="form-control form-control-lg{% if form_errors.username %} is-invalid{% endif %}"
+                           id="id_username" name="username" value="{{ form_data.username }}"
+                           autocomplete="username" required>
+                    {% if form_errors.username %}
+                    <div class="invalid-feedback d-block">{{ form_errors.username|first }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_first_name" class="form-label">First name</label>
+                        <input type="text" class="form-control{% if form_errors.first_name %} is-invalid{% endif %}"
+                               id="id_first_name" name="first_name" value="{{ form_data.first_name }}" required>
+                        {% if form_errors.first_name %}
+                        <div class="invalid-feedback d-block">{{ form_errors.first_name|first }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_last_name" class="form-label">Last name</label>
+                        <input type="text" class="form-control" id="id_last_name" name="last_name"
+                               value="{{ form_data.last_name }}">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_company" class="form-label">Company</label>
+                    <input type="text" class="form-control" id="id_company" name="company"
+                           value="{{ form_data.company }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_phone_number" class="form-label">Phone</label>
+                    <input type="text" class="form-control" id="id_phone_number" name="phone_number"
+                           value="{{ form_data.phone_number }}">
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_password1" class="form-label">Password</label>
+                    <input type="password" class="form-control form-control-lg{% if form_errors.password1 %} is-invalid{% endif %}"
+                           id="id_password1" name="password1" autocomplete="new-password" required>
+                    {% if form_errors.password1 %}
+                    <div class="invalid-feedback d-block">
+                        {% for e in form_errors.password1 %}<div>{{ e }}</div>{% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_password2" class="form-label">Confirm password</label>
+                    <input type="password" class="form-control form-control-lg" id="id_password2"
+                           name="password2" autocomplete="new-password" required>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg btn-login">Register</button>
+                </div>
+                <p class="text-center text-muted small mt-3 mb-0">
+                    Already registered? <a href="{% url 'login' %}" hx-boost="false">Sign in</a>
+                </p>
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

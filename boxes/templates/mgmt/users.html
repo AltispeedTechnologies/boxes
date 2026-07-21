@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/modals/new_acct.js' %}"></script>
+<script src="{% static 'js/mgmt/users.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container bg-body shadow rounded p-3 col-md-11" id="usermgmt">
+    <div class="row bg-primary bg-gradient rounded mb-3">
+        <h2 class="text-center text-white py-2">Users</h2>
+    </div>
+
+    {% include "_messages.html" %}
+
+    <p class="text-muted small">
+        Login identities (CustomUser) are managed here, separately from billing
+        <a href="{% url 'account_mgmt' %}">Accounts</a>.
+        A user may have zero or many linked accounts.
+        {% if pending_invites %}
+        <span class="badge text-bg-warning">{{ pending_invites }} pending invite{{ pending_invites|pluralize }}</span>
+        {% endif %}
+    </p>
+
+    <div class="d-flex flex-wrap justify-content-between gap-2">
+        <div class="d-flex flex-wrap gap-1">
+            <input class="form-control" id="userquery" style="min-width: 14rem;"
+                   placeholder="Search users..." value="{{ query }}">
+            <select class="form-select" id="userfilter" style="width: auto;">
+                <option value="all" {% if filter_mode == "all" %}selected{% endif %}>All</option>
+                <option value="active" {% if filter_mode == "active" %}selected{% endif %}>Active</option>
+                <option value="inactive" {% if filter_mode == "inactive" %}selected{% endif %}>Inactive</option>
+                <option value="no_account" {% if filter_mode == "no_account" %}selected{% endif %}>No account link</option>
+                <option value="customer" {% if filter_mode == "customer" %}selected{% endif %}>Customer group</option>
+                <option value="staff" {% if filter_mode == "staff" %}selected{% endif %}>Staff group</option>
+            </select>
+            <button class="btn btn-primary" id="searchusers">Search</button>
+        </div>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createNewCustomerModal"
+                data-default-create-account="0">
+            <i class="fas fa-plus"></i> Add user
+        </button>
+    </div>
+
+    {% include "_paginate.html" %}
+
+    <div class="table-responsive mt-3">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Username</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Active</th>
+                    <th>Accounts</th>
+                    <th class="text-nowrap" style="width: 1%;"></th>
+                </tr>
+            </thead>
+            <tbody id="users">
+                {% for u in page_obj %}
+                <tr class="{% if not u.is_active %}table-secondary{% endif %}">
+                    <td>
+                        <a href="{% url 'user_detail' u.id %}">{{ u.username }}</a>
+                        <small class="text-muted">#{{ u.id }}</small>
+                    </td>
+                    <td>{{ u.first_name }} {{ u.last_name }}</td>
+                    <td>{{ u.email|default:"" }}</td>
+                    <td>{% if u.is_active %}<span class="text-success">Yes</span>{% else %}<span class="text-danger">No</span>{% endif %}</td>
+                    <td>
+                        {% if u.active_account_count %}
+                            {{ u.active_account_count }} active
+                            {% if u.account_count != u.active_account_count %}
+                            <span class="text-muted">({{ u.account_count }} total)</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">None</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-nowrap">
+                        <a role="button" class="btn btn-primary btn-sm" href="{% url 'user_detail' u.id %}">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-muted">No users found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% include "modals/new_acct.html" %}
+{% endblock %}

@@ -139,6 +139,19 @@ Parsed from `boxes/static/js` file headers and `function` declarations.
 
 - `function init_types_mgmt_page()`
 
+## `mgmt/user_detail.js`
+
+@file mgmt/user_detail.js; @description Staff user detail: access, password, account links, invites.
+
+- `function init_user_detail_page()`
+
+## `mgmt/users.js`
+
+@file mgmt/users.js; @description Management users list search/filter.
+
+- `function search_users()`
+- `function init_user_mgmt_page()`
+
 ## `modals/edit_queue_name.js`
 
 @file modals/edit_queue_name.js; @description Modal to rename a check-in queue.; @see docs/api/javascript.md
@@ -153,8 +166,10 @@ Parsed from `boxes/static/js` file headers and `function` declarations.
 
 ## `modals/new_acct.js`
 
-@file modals/new_acct.js; @description Modal workflow to create a new account (optional web login).; @see docs/api/javascript.md
+@file modals/new_acct.js; @description Modal workflow to create a user and/or billing account, or send a signup invite.; @see docs/api/javascript.md
 
+- `function new_acct_portal_mode()`
+- `function new_acct_sync_fields()`
 - `function new_acct()`
 
 ## `modals/picklist_mgmt.js`
