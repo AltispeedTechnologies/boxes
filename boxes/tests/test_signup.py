@@ -125,29 +125,30 @@ class SignupInviteBackendTest(TestCase):
         self.assertIsNotNone(invite.email_sent_at)
 
 
-@override_settings(
-    ALLOWED_HOSTS=["*"],
-    SECURE_SSL_REDIRECT=False,
-    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
-)
-
     def test_invite_url_uses_allowed_hosts(self):
+        """Invite links use ALLOWED_HOSTS (app host), not marketing website."""
         from boxes.backend.signup import invite_signup_url, create_signup_invite
         from django.test import override_settings
+
         with override_settings(ALLOWED_HOSTS=["boxes.example.test"], SECURE_SSL_REDIRECT=False):
             inv = create_signup_invite(
-                email="urlhost@example.com", actor=self.staff, first_name="U", create_account=False
+                email="urlhost@example.com",
+                actor=self.staff,
+                first_name="U",
+                create_account=False,
             )
             url = invite_signup_url(inv)
-            self.assertEqual(
-                url,
-                f"http://boxes.example.test/signup/{inv.token}/",
-            )
+            self.assertEqual(url, f"http://boxes.example.test/signup/{inv.token}/")
         with override_settings(ALLOWED_HOSTS=["boxes.example.test"], SECURE_SSL_REDIRECT=True):
             url = invite_signup_url(inv)
             self.assertTrue(url.startswith("https://boxes.example.test/signup/"))
 
 
+@override_settings(
+    ALLOWED_HOSTS=["*"],
+    SECURE_SSL_REDIRECT=False,
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+)
 class CreateUserAndMgmtAPITest(TestCase):
     def setUp(self):
         ensure_group("Customer")
