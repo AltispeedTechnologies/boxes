@@ -8,6 +8,18 @@
 <script src="https://cdn.jsdelivr.net/npm/jodit@4.11.15/es2021/jodit.fat.min.js" integrity="sha256-XOx8YcTCLc+16zoWPslqThFsIuRWE8/rVO4Nsp7H3G8=" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit@4.11.15/es2021/jodit.fat.min.css" integrity="sha256-gXiQe1vtPBjMOEY9cpsy0YrPtkdPJTa6z/HxD818QuU=" crossorigin="anonymous">
 
+<style>
+/* Merge-field chips: fixed inline badges (not free-floating drag targets) */
+.jodit-wysiwyg .custom-block[data-token] {
+    display: inline-block;
+    vertical-align: baseline;
+    cursor: default;
+    -webkit-user-drag: none;
+    user-select: none;
+    white-space: nowrap;
+}
+</style>
+
 <div class="container bg-body shadow rounded p-3" id="emailtemplatemgmt">
     <div class="row bg-primary bg-gradient rounded mb-3">
         <h2 class="text-center text-white py-2">Configure Email Templates</h2>

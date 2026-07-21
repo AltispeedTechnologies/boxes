@@ -24,7 +24,7 @@ SPECIAL_ATTRIBUTES = {
     "a": ["href", "name", "target", "rel"],
     "img": ["src", "alt", "height", "width"],
     "font": ["color", "style"],
-    "span": ["contenteditable", "style", "class", "data-token"]
+    "span": ["contenteditable", "draggable", "style", "class", "data-token"]
 }
 
 # Apply common attributes to all tags and update with special cases
@@ -41,7 +41,7 @@ def _clean_html(html):
         "separate": {"a", "div", "p", "span"},
         "style_filter": [
             "font-family", "background-color", "color", "text-decoration",
-            "font-weight", "font-style", "text-align", "height", "width"
+            "font-weight", "font-style", "text-align", "height", "width", "user-select", "-webkit-user-drag"
         ]
     })
     return sanitizer.sanitize(html)

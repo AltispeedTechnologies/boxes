@@ -19,6 +19,81 @@ const EMAIL_TOKEN_BUTTONS = [
     {name: "comment", text: "Comment", token: "comment"}
 ];
 
+/** @type {Object.<string, string>} token → display label */
+const EMAIL_TOKEN_LABELS = EMAIL_TOKEN_BUTTONS.reduce(function(map, spec) {
+    map[spec.token] = spec.text;
+    return map;
+}, {});
+
+/**
+ * Canonical HTML for a merge-field chip (same for toolbar insert and load).
+ * @param {string} token
+ * @returns {string}
+ */
+function build_token_chip_html(token) {
+    const text = EMAIL_TOKEN_LABELS[token] || token;
+    return (
+        '<span contenteditable="false" draggable="false" ' +
+        'style="user-select: none; -webkit-user-drag: none;" ' +
+        'class="custom-block bg-light mx-1 p-2" data-token="' +
+        token + '">' + text + "</span>"
+    );
+}
+
+/**
+ * Convert stored brace placeholders and legacy chips into editor chips.
+ *
+ * Templates may store either:
+ * - `{first_name}` brace placeholders (seed / hand-edited), or
+ * - chip `<span data-token="...">` HTML from the toolbar.
+ *
+ * On load, always show the same non-editable chips as the toolbar inserts.
+ * @param {string} html
+ * @returns {string}
+ */
+function normalize_email_template_html(html) {
+    if (!html) {
+        return "";
+    }
+    let out = String(html);
+
+    // Canonicalize existing data-token chips (stable label + drag guards).
+    out = out.replace(
+        /<span\b[^>]*\bdata-token=["']([a-z_]+)["'][^>]*>[\s\S]*?<\/span>/gi,
+        function(match, token) {
+            if (!Object.prototype.hasOwnProperty.call(EMAIL_TOKEN_LABELS, token)) {
+                return match;
+            }
+            return build_token_chip_html(token);
+        }
+    );
+
+    // Legacy custom-block chips without data-token: map "First Name" → chip.
+    out = out.replace(
+        /<span\b[^>]*class=["'][^"']*custom-block[^"']*["'][^>]*>([^<]+)<\/span>/gi,
+        function(match, label) {
+            if (/\bdata-token\s*=/i.test(match)) {
+                return match;
+            }
+            const key = String(label).trim().toLowerCase().replace(/\s+/g, "_");
+            if (!Object.prototype.hasOwnProperty.call(EMAIL_TOKEN_LABELS, key)) {
+                return match;
+            }
+            return build_token_chip_html(key);
+        }
+    );
+
+    // Brace placeholders e.g. {first_name} → chips (not unknown braces).
+    out = out.replace(/\{([a-z_]+)\}/g, function(match, token) {
+        if (!Object.prototype.hasOwnProperty.call(EMAIL_TOKEN_LABELS, token)) {
+            return match;
+        }
+        return build_token_chip_html(token);
+    });
+
+    return out;
+}
+
 /**
  * Build a Jodit toolbar control that inserts a stable token chip.
  * @param {{name: string, text: string, token: string}} spec
@@ -29,12 +104,8 @@ function make_token_btn(spec) {
         name: spec.name,
         text: spec.text,
         tooltip: "Insert " + spec.text,
-        exec: (editor) => {
-            const chip =
-                '<span contenteditable="false" style="user-select: none;" ' +
-                'class="custom-block bg-light mx-1 p-2" data-token="' +
-                spec.token + '">' + spec.text + "</span>";
-            editor.selection.insertHTML(chip);
+        exec: function(editor) {
+            editor.selection.insertHTML(build_token_chip_html(spec.token));
         }
     };
 }
@@ -88,6 +159,8 @@ function ensure_email_template_editor() {
     emailTemplateEditor = Jodit.make("#content-editor", {
         height: 400,
         toolbarAdaptive: false,
+        // Prevent native drag of chips / images from rearranging content oddly.
+        disablePlugins: ["drag-and-drop", "drag-and-drop-element"],
         buttons: [
             "bold", "italic", "underline", "strikethrough", "|",
             "link", "|",
@@ -101,11 +174,16 @@ function ensure_email_template_editor() {
         mark_email_template_dirty();
     });
 
+    // Initial textarea content uses {token} braces; rewrite to chips once.
+    emailTemplateSuppressDirty = true;
+    emailTemplateEditor.value = normalize_email_template_html(emailTemplateEditor.value || "");
+    emailTemplateSuppressDirty = false;
+
     return emailTemplateEditor;
 }
 
 /**
- * Set editor HTML via editor.value only.
+ * Set editor HTML via editor.value, normalizing tokens to chips.
  * @param {string} html
  */
 function set_editor_value(html) {
@@ -114,7 +192,7 @@ function set_editor_value(html) {
         return;
     }
     emailTemplateSuppressDirty = true;
-    editor.value = html || "";
+    editor.value = normalize_email_template_html(html || "");
     emailTemplateSuppressDirty = false;
 }
 
@@ -241,5 +319,9 @@ function init_email_template_mgmt_page() {
         });
     });
 }
+
+// Expose for unit tests / console battle-testing.
+window.normalize_email_template_html = normalize_email_template_html;
+window.build_token_chip_html = build_token_chip_html;
 
 $(init_email_template_mgmt_page);

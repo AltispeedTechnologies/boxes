@@ -144,6 +144,19 @@ class PrepareEmailContentTests(TestCase):
         self.assertIn('data-token="first_name"', cleaned)
         self.assertIn("custom-block", cleaned)
 
+    def test_clean_html_preserves_chip_drag_attrs(self):
+        html = (
+            '<span contenteditable="false" draggable="false" '
+            'style="user-select: none; -webkit-user-drag: none;" '
+            'class="custom-block bg-light mx-1 p-2" data-token="first_name">'
+            "First Name</span>"
+        )
+        cleaned = _clean_html(html)
+        self.assertIn('data-token="first_name"', cleaned)
+        self.assertIn('draggable="false"', cleaned)
+        self.assertIn("user-select", cleaned)
+        self.assertIn("First Name", cleaned)
+
 
 @override_settings(
     ALLOWED_HOSTS=["*"],
