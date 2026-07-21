@@ -112,6 +112,26 @@ SECURE_REFERRER_POLICY="no-referrer-when-downgrade"
 SECURE_CROSS_ORIGIN_OPENER_POLICY="None"
 ```
 
+
+### Pitfall: SPF and DKIM (deliverability / spam)
+
+Even with valid API keys and a verified From address, messages often land in
+spam until the **sending domain** has SPF and DKIM (and preferably DMARC)
+configured. In Mailjet, use the domain authentication / DNS setup for the
+domain of `EmailSettings.sender_email`, then publish the TXT records Mailjet
+provides at your DNS host. Re-check Mailjet until the domain shows as
+authenticated. This is separate from verifying an individual sender address.
+
+### Invite and other email links
+
+Signup invite links must point at the **app host**, not the marketing website
+stored in General settings (`GlobalSettings.website`). The app builds absolute
+links from ``ALLOWED_HOSTS`` in `/etc/boxes.env` (scheme from
+``SECURE_SSL_REDIRECT``: `http` when SSL redirect is off, otherwise `https`).
+Example: `ALLOWED_HOSTS="boxes.example.internal"` yields invite URLs like
+`http://boxes.example.internal/signup/<token>/`.
+
+
 ## Configuring NGINX
 
 Here is an example NGINX configuration file for a simple HTTP server:

@@ -92,20 +92,48 @@ def create_signup_invite(
     return invite
 
 
-def invite_signup_url(invite, request=None):
-    """Absolute (when request given) or path-only signup URL for ``invite``."""
-    path = reverse("signup", kwargs={"token": invite.token})
+
+def app_public_origin(request=None):
+    """Absolute origin for in-app links (signup invites, etc.).
+
+    Uses existing deployment config — not marketing ``GlobalSettings.website``:
+
+    1. Request host when it is listed in ``ALLOWED_HOSTS``.
+    2. Otherwise first non-local entry in ``ALLOWED_HOSTS`` with
+       ``http``/``https`` from ``SECURE_SSL_REDIRECT``.
+    """
+    allowed = [h for h in (getattr(settings, "ALLOWED_HOSTS", None) or []) if h]
+
     if request is not None:
-        return request.build_absolute_uri(path)
-    try:
-        site = (GlobalSettings.load().website or "").strip().rstrip("/")
-        if site:
-            if not site.startswith("http"):
-                site = "https://" + site
-            return f"{site}{path}"
-    except Exception:  # pragma: no cover
-        pass
+        try:
+            host = request.get_host()  # may include :port
+            host_name = host.split(":")[0]
+            if host_name in allowed or "*" in allowed:
+                return request.build_absolute_uri("/").rstrip("/")
+            for a in allowed:
+                if a.startswith(".") and (host_name == a[1:] or host_name.endswith(a)):
+                    return request.build_absolute_uri("/").rstrip("/")
+        except Exception:
+            logger.debug("app_public_origin: could not use request host", exc_info=True)
+
+    skip = {"*", "127.0.0.1", "localhost", ".localhost", "testserver"}
+    for host in allowed:
+        if host in skip or host.startswith("."):
+            continue
+        scheme = "https" if getattr(settings, "SECURE_SSL_REDIRECT", False) else "http"
+        return f"{scheme}://{host}"
+    return ""
+
+
+def invite_signup_url(invite, request=None):
+    """Absolute signup URL for email bodies (app host from ALLOWED_HOSTS)."""
+    path = reverse("signup", kwargs={"token": invite.token})
+    origin = app_public_origin(request)
+    if origin:
+        return f"{origin}{path}"
+    logger.warning("invite_signup_url: no ALLOWED_HOSTS origin; email link is path-only")
     return path
+
 
 
 def _sender_identity():

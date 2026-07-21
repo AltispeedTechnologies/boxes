@@ -59,3 +59,9 @@ When debugging silent non-delivery:
 3. For invites, check `SignupInvite.last_error` / `email_sent_at`.
 4. Ensure Celery workers process `boxes.tasks.emails.send_emails` for queue mail.
 
+## Pitfall: SPF / DKIM
+
+Verify the sending domain in Mailjet (SPF + DKIM DNS records) so transactional
+mail is less likely to be classified as spam. Address verification alone is
+often insufficient for inbox placement.
+
