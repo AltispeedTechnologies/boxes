@@ -47,12 +47,6 @@
                                         <span>Accounts and Users</span>
                                     </a>
                                 </li>
-                                <li>
-                                    <a class="dropdown-item d-flex justify-content-between align-items-center gap-2"
-                                       href="{% url 'user_mgmt' %}" data-setup-key="users">
-                                        <span>Users</span>
-                                    </a>
-                                </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item d-flex justify-content-between align-items-center gap-2"
@@ -60,6 +54,14 @@
                                         <span>General</span>
                                         <i class="fas fa-exclamation-triangle text-warning setup-warn-icon {% if mgmt_setup.items.general.ok %}d-none{% endif %}"
                                            title="{% for i in mgmt_setup.items.general.issues %}{{ i }} {% empty %}OK{% endfor %}"></i>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex justify-content-between align-items-center gap-2"
+                                       href="{% url 'general_settings' %}#env-api-keys" data-setup-key="env_keys">
+                                        <span>API keys (env)</span>
+                                        <i class="fas fa-exclamation-triangle text-warning setup-warn-icon {% if mgmt_setup.items.env_keys.ok %}d-none{% endif %}"
+                                           title="{% for i in mgmt_setup.items.env_keys.issues %}{{ i }} {% empty %}OK{% endfor %}"></i>
                                     </a>
                                 </li>
                                 <li>

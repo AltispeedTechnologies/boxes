@@ -7,7 +7,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body container">
-                <form id="userform">
+                <div id="new-customer-alert" class="alert d-none" role="alert"></div>
+                <p class="text-muted small" id="new-customer-help">
+                    Choose whether to create a <strong>billing account</strong> (parcels and balance)
+                    and/or a <strong>portal login</strong>. Required fields depend on your choices below.
+                </p>
+                <form id="userform" autocomplete="off">
                     <div class="row">
                         <div class="col-md-1">
                             <label for="prefix" class="form-label">Prefix</label>
@@ -15,17 +20,17 @@
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-3">
-                            <label for="first_name" class="form-label">First Name</label>
+                            <label for="first_name" class="form-label">First name <span class="text-danger req-mark" data-req="name">*</span></label>
                             <input type="text" class="form-control" id="first_name" name="first_name">
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label for="middle_name" class="form-label">Middle Name</label>
+                            <label for="middle_name" class="form-label">Middle name</label>
                             <input type="text" class="form-control" id="middle_name" name="middle_name">
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label for="last_name" class="form-label">Last Name</label>
+                            <label for="last_name" class="form-label">Last name</label>
                             <input type="text" class="form-control" id="last_name" name="last_name">
                             <div class="invalid-feedback"></div>
                         </div>
@@ -42,12 +47,12 @@
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label for="phone_number" class="form-label">Phone Number</label>
+                            <label for="phone_number" class="form-label">Phone number</label>
                             <input type="text" class="form-control" id="phone_number" name="phone_number">
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label for="email" class="form-label">Email Address</label>
+                            <label for="email" class="form-label">Email <span class="text-danger req-mark d-none" data-req="email">*</span></label>
                             <input type="email" class="form-control" id="email" name="email">
                             <div class="invalid-feedback"></div>
                         </div>
@@ -59,58 +64,73 @@
                         <label class="form-check-label" for="create_account">
                             Create billing account
                         </label>
-                        <div class="form-text">Uncheck to create a login only (no parcels/billing account).</div>
+                        <div class="form-text">
+                            Needed for parcels, balances, and check-in. Uncheck only when adding a login that will be linked to an account later.
+                        </div>
                     </div>
 
                     <div class="mb-2">
-                        <label class="form-label d-block">Portal access</label>
+                        <label class="form-label d-block fw-semibold">Portal login</label>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="portal_mode" id="portal_none" value="none" checked>
                             <label class="form-check-label" for="portal_none">
-                                None (billing/check-in only; inactive placeholder login if account is created)
+                                No portal login yet
                             </label>
+                            <div class="form-text ms-4">
+                                Billing/check-in only. Creates an inactive placeholder membership when a billing account is created.
+                            </div>
                         </div>
-                        <div class="form-check">
+                        <div class="form-check mt-2">
                             <input class="form-check-input" type="radio" name="portal_mode" id="portal_credentials" value="credentials">
                             <label class="form-check-label" for="portal_credentials">
                                 Create login credentials now
                             </label>
+                            <div class="form-text ms-4">
+                                Requires username and password. Customer can sign in immediately.
+                            </div>
                         </div>
-                        <div class="form-check">
+                        <div class="form-check mt-2">
                             <input class="form-check-input" type="radio" name="portal_mode" id="portal_invite" value="invite">
                             <label class="form-check-label" for="portal_invite">
-                                Send sign-up invitation email (customer registers via link only)
+                                Send sign-up invitation email
                             </label>
+                            <div class="form-text ms-4">
+                                Requires email. Customer sets their own username and password via a one-time link (no open registration).
+                            </div>
                         </div>
                     </div>
 
                     <div class="row" id="web-account-fields" style="display: none;">
                         <div class="col-md-4 mb-3">
-                            <label for="username" class="form-label">Username</label>
+                            <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="username" name="username" autocomplete="off">
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label for="password" class="form-label">Password</label>
+                            <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
                             <input type="password" class="form-control" id="password" name="password" autocomplete="new-password">
                             <div class="invalid-feedback"></div>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label for="password2" class="form-label">Confirm Password</label>
+                            <label for="password2" class="form-label">Confirm password <span class="text-danger">*</span></label>
                             <input type="password" class="form-control" id="password2" name="password2" autocomplete="new-password">
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
 
                     <div id="invite-hint" class="alert alert-info py-2 small" style="display: none;">
-                        An email with a one-time registration link will be sent. Open registration is not available —
-                        only this invite link can create the login.
+                        A one-time registration link will be emailed. If mail cannot be sent, the link is shown so staff can share it manually.
+                    </div>
+
+                    <div id="new-customer-summary" class="border rounded p-2 bg-light small mb-0">
+                        <strong>What will be created:</strong>
+                        <span id="new-customer-summary-text">Billing account for check-in (no portal login yet).</span>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <i id="savingiconnew" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Discard</button>
+                <i id="savingiconnew" class="fas fa-spinner fa-spin text-warning" style="display: none;" aria-hidden="true"></i>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="createCustomerBtn">Create</button>
             </div>
         </div>

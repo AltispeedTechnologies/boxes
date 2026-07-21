@@ -277,6 +277,18 @@ def create_user(request):
             "form_errors": {"password": ["Passwords do not match."]},
         })
 
+    # Explicit no-op: no account, no credentials, no invite
+    if not send_invite and not create_account and not create_web and not (username and password):
+        return JsonResponse({
+            "success": False,
+            "form_errors": {
+                "__all__": [
+                    "Choose at least one action: create a billing account, "
+                    "create login credentials, or send a sign-up invitation."
+                ]
+            },
+        })
+
     # ---- Invite path: no user created until customer accepts the link ----
     if send_invite:
         if not email:
@@ -425,8 +437,8 @@ def create_user(request):
             "success": False,
             "form_errors": {
                 "__all__": [
-                    "Provide username/password to create a user without an account, "
-                    "or set create_account true to create a billing account."
+                    "Nothing to create: enable Create billing account, or choose "
+                    "Create login credentials now, or Send sign-up invitation email."
                 ]
             },
         })

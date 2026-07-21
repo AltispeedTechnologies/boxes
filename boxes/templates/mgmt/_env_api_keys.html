@@ -1,0 +1,54 @@
+<div class="container bg-body shadow rounded p-3 col-md-8 mt-3 mb-4" id="env-api-keys">
+    <div class="row bg-secondary bg-gradient rounded mb-3">
+        <h3 class="text-center text-white py-2 h5 mb-0">API keys and environment</h3>
+    </div>
+    <p class="text-muted small">
+        Integration keys are loaded from <code>/etc/boxes.env</code> on the server (not from this form).
+        Values are never shown here — only whether each key is set and looks valid.
+    </p>
+    {% if env_api_keys.hard_missing %}
+    <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        One or more required API keys are missing or invalid. Payments and/or email will not work until
+        <code>/etc/boxes.env</code> is corrected and services are restarted.
+    </div>
+    {% elif env_api_keys.any_missing %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        Optional environment settings are incomplete (see table).
+    </div>
+    {% else %}
+    <div class="alert alert-success py-2">
+        <i class="fas fa-check-circle"></i>
+        Required API keys appear to be set correctly in the environment.
+    </div>
+    {% endif %}
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Variable</th>
+                    <th>Status</th>
+                    <th>Used for</th>
+                    <th>Detail</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in env_api_keys.checks %}
+                <tr class="{% if not c.ok %}table-warning{% endif %}">
+                    <td><code>{{ c.name }}</code></td>
+                    <td>
+                        {% if c.ok %}
+                        <span class="text-success"><i class="fas fa-check"></i> OK</span>
+                        {% else %}
+                        <span class="text-danger"><i class="fas fa-exclamation-triangle"></i> Needs attention</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ c.required_for }}</td>
+                    <td class="small">{{ c.detail }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,4 +1,4 @@
-"""Management setup completeness: what staff must configure for a usable install.
+"""Management setup completeness: DB settings and /etc/boxes.env API keys.
 
 Used by the navbar Management dropdown (warning icons), mgmt page banners, and
 ``GET /mgmt/setup-status`` for robust client-side refresh after saves.
@@ -12,7 +12,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.urls import NoReverseMatch, reverse
 
-CACHE_KEY = "boxes_mgmt_setup_status_v1"
+CACHE_KEY = "boxes_mgmt_setup_status_v2"
 CACHE_TTL_SECONDS = 45
 
 # GlobalSettings.load() default name — treat as unconfigured branding
@@ -32,13 +32,14 @@ class SetupItem:
     url: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        d = asdict(self)
-        return d
+        return asdict(self)
 
 
 def invalidate_setup_status_cache() -> None:
     """Drop cached setup status (call after any mgmt settings save)."""
     cache.delete(CACHE_KEY)
+    # Also drop previous key version if present
+    cache.delete("boxes_mgmt_setup_status_v1")
 
 
 def _url(name: str) -> str:
@@ -47,6 +48,124 @@ def _url(name: str) -> str:
     except NoReverseMatch:
         return ""
 
+
+def _truthy_str(value) -> bool:
+    if value is None:
+        return False
+    s = str(value).strip()
+    if not s or s.lower() in ("none", "null", "undefined", "changeme", "your-key-here"):
+        return False
+    return True
+
+
+def env_api_key_status() -> dict[str, Any]:
+    """Inspect Django settings loaded from /etc/boxes.env for integration keys.
+
+    Does **not** return secret values — only presence and basic format checks.
+    """
+    checks: list[dict[str, Any]] = []
+
+    def add(name: str, ok: bool, detail: str, required_for: str):
+        checks.append({
+            "name": name,
+            "ok": ok,
+            "detail": detail,
+            "required_for": required_for,
+        })
+
+    # Mailjet
+    mj_pub = getattr(settings, "MJ_APIKEY_PUBLIC", None)
+    mj_priv = getattr(settings, "MJ_APIKEY_PRIVATE", None)
+    if not _truthy_str(mj_pub):
+        add("MJ_APIKEY_PUBLIC", False, "Not set in /etc/boxes.env", "Outbound email (Mailjet)")
+    elif len(str(mj_pub).strip()) < 16:
+        add("MJ_APIKEY_PUBLIC", False, "Value looks too short to be a real API key", "Outbound email (Mailjet)")
+    else:
+        add("MJ_APIKEY_PUBLIC", True, "Set", "Outbound email (Mailjet)")
+
+    if not _truthy_str(mj_priv):
+        add("MJ_APIKEY_PRIVATE", False, "Not set in /etc/boxes.env", "Outbound email (Mailjet)")
+    elif len(str(mj_priv).strip()) < 16:
+        add("MJ_APIKEY_PRIVATE", False, "Value looks too short to be a real API key", "Outbound email (Mailjet)")
+    else:
+        add("MJ_APIKEY_PRIVATE", True, "Set", "Outbound email (Mailjet)")
+
+    # Stripe
+    stripe_key = getattr(settings, "STRIPE_API_KEY", None)
+    if not _truthy_str(stripe_key):
+        add("STRIPE_API_KEY", False, "Not set in /etc/boxes.env", "Customer card payments")
+    else:
+        sk = str(stripe_key).strip()
+        if not (sk.startswith("sk_") or sk.startswith("rk_")):
+            add(
+                "STRIPE_API_KEY",
+                False,
+                "Does not look like a Stripe secret key (expected sk_… or rk_…)",
+                "Customer card payments",
+            )
+        else:
+            add("STRIPE_API_KEY", True, "Set (format looks valid)", "Customer card payments")
+
+    stripe_wh = getattr(settings, "STRIPE_ENDPOINT_SECRET", None)
+    if not _truthy_str(stripe_wh):
+        add(
+            "STRIPE_ENDPOINT_SECRET",
+            False,
+            "Not set in /etc/boxes.env",
+            "Stripe webhooks (payment confirmation)",
+        )
+    else:
+        wh = str(stripe_wh).strip()
+        if not wh.startswith("whsec_"):
+            add(
+                "STRIPE_ENDPOINT_SECRET",
+                False,
+                "Does not look like a Stripe webhook secret (expected whsec_…)",
+                "Stripe webhooks (payment confirmation)",
+            )
+        else:
+            add("STRIPE_ENDPOINT_SECRET", True, "Set (format looks valid)", "Stripe webhooks")
+
+    # Optional Mailjet webhook auth
+    mj_wh_secret = getattr(settings, "MAILJET_WEBHOOK_SECRET", None)
+    mj_wh_user = getattr(settings, "MAILJET_WEBHOOK_USER", None)
+    mj_wh_pass = getattr(settings, "MAILJET_WEBHOOK_PASSWORD", None)
+    if _truthy_str(mj_wh_secret) or (_truthy_str(mj_wh_user) and _truthy_str(mj_wh_pass)):
+        add(
+            "MAILJET_WEBHOOK_AUTH",
+            True,
+            "Webhook auth configured",
+            "Mailjet delivery webhooks",
+        )
+    else:
+        add(
+            "MAILJET_WEBHOOK_AUTH",
+            False,
+            "MAILJET_WEBHOOK_SECRET or USER/PASSWORD not set (webhooks may be open or rejected)",
+            "Mailjet delivery webhooks",
+        )
+
+    missing = [c for c in checks if not c["ok"]]
+    # Hard failures for payments/email (not optional webhook auth alone)
+    hard_names = {
+        "MJ_APIKEY_PUBLIC",
+        "MJ_APIKEY_PRIVATE",
+        "STRIPE_API_KEY",
+        "STRIPE_ENDPOINT_SECRET",
+    }
+    hard_missing = [c for c in missing if c["name"] in hard_names]
+
+    return {
+        "checks": checks,
+        "any_missing": len(missing) > 0,
+        "hard_missing": len(hard_missing) > 0,
+        "issues": [
+            f"{c['name']}: {c['detail']} ({c['required_for']})" for c in missing
+        ],
+        "hard_issues": [
+            f"{c['name']}: {c['detail']} ({c['required_for']})" for c in hard_missing
+        ],
+    }
 
 
 def _check_general() -> SetupItem:
@@ -79,13 +198,10 @@ def _check_general() -> SetupItem:
     )
 
 
-
-
 def _check_carriers() -> SetupItem:
     from boxes.models import Carrier
 
-    qs = Carrier.objects.filter(is_active=True)
-    count = qs.count()
+    count = Carrier.objects.filter(is_active=True).count()
     issues = []
     if count < 1:
         issues.append("Add at least one active carrier for package check-in.")
@@ -123,7 +239,6 @@ def _check_charges() -> SetupItem:
 
     count = AccountChargeSettings.objects.count()
     issues = []
-    # Not required for bare check-in, but needed for automatic storage/aging fees
     if count < 1:
         issues.append(
             "No charge rules configured. Storage and late fees will not age automatically."
@@ -147,7 +262,6 @@ def _check_emails() -> SetupItem:
     es = EmailSettings.objects.order_by("pk").first()
 
     if not gs.email_sending:
-        # Explicitly off — treat as configured (no outbound expected)
         return SetupItem(
             key="emails",
             label="Emails",
@@ -168,20 +282,19 @@ def _check_emails() -> SetupItem:
         if es.check_in_template_id is None:
             issues.append("Choose a default check-in email template.")
 
-    template_count = EmailTemplate.objects.count()
-    if template_count < 1:
+    if EmailTemplate.objects.count() < 1:
         issues.append("Create at least one email template.")
 
-    public = getattr(settings, "MJ_APIKEY_PUBLIC", None)
-    private = getattr(settings, "MJ_APIKEY_PRIVATE", None)
-    if not public or not private:
-        issues.append("Mailjet API keys are not set in the environment (needed to send mail).")
+    env = env_api_key_status()
+    for c in env["checks"]:
+        if c["name"].startswith("MJ_APIKEY") and not c["ok"]:
+            issues.append(f"{c['name']} is not set properly in /etc/boxes.env.")
 
     return SetupItem(
         key="emails",
         label="Emails",
         url_name="email_settings",
-        required=False,  # warehouse can run without email
+        required=False,
         ok=len(issues) == 0,
         issues=issues,
         url=_url("email_settings"),
@@ -196,15 +309,18 @@ def _check_email_templates() -> SetupItem:
     issues = []
     if count < 1:
         issues.append("Create at least one email template for notifications and invites.")
-    # Required only when email sending is on
     required = bool(gs.email_sending)
+    # Empty subject/content still "exists" but warn
+    empty = EmailTemplate.objects.filter(subject="").count() + EmailTemplate.objects.filter(content="").count()
+    if count >= 1 and empty > 0:
+        issues.append("One or more email templates have an empty subject or body.")
     return SetupItem(
         key="email_templates",
         label="Email Templates",
         url_name="email_template",
         required=required,
-        ok=count >= 1,
-        issues=issues if count < 1 else [],
+        ok=count >= 1 and empty == 0,
+        issues=issues,
         url=_url("email_template"),
     )
 
@@ -236,44 +352,49 @@ def _check_pickup() -> SetupItem:
 
 
 def _check_stripe() -> SetupItem:
-    key = getattr(settings, "STRIPE_API_KEY", None)
+    env = env_api_key_status()
     issues = []
-    if not key:
-        issues.append("STRIPE_API_KEY is not set. Customer card payments will not work.")
+    for c in env["checks"]:
+        if c["name"].startswith("STRIPE_") and not c["ok"]:
+            issues.append(f"{c['name']}: {c['detail']} — set in /etc/boxes.env")
     return SetupItem(
         key="stripe",
         label="Stripe Totals",
         url_name="stripe_totals",
         required=False,
-        ok=bool(key),
+        ok=len(issues) == 0,
         issues=issues,
         url=_url("stripe_totals"),
     )
 
 
+def _check_env_keys() -> SetupItem:
+    """Dedicated Management item for environment/API keys (not DB settings)."""
+    env = env_api_key_status()
+    # Show under General as well via banner; menu key for completeness
+    return SetupItem(
+        key="env_keys",
+        label="API keys (/etc/boxes.env)",
+        url_name="general_settings",
+        required=False,
+        ok=not env["hard_missing"],
+        issues=env["hard_issues"] or (
+            env["issues"] if env["any_missing"] else []
+        ),
+        url=_url("general_settings"),
+    )
+
+
 def compute_setup_status(*, use_cache: bool = True) -> dict[str, Any]:
-    """Return full setup status dict for navbar and API.
-
-    Structure::
-
-        {
-          "items": { key: SetupItem dict, ... },
-          "order": [key, ...],  # Management menu order
-          "required_incomplete": bool,
-          "any_incomplete": bool,
-          "required_issues": [str, ...],
-          "all_issues": [str, ...],
-        }
-    """
+    """Return full setup status dict for navbar and API."""
     if use_cache:
         cached = cache.get(CACHE_KEY)
         if cached is not None:
             return cached
 
-    # Order matches Management dropdown (operational first, then config)
     builders = [
-        ("accounts", None),  # operational — never warn for "setup"
-        ("users", None),
+        ("accounts", None),
+        ("env_keys", _check_env_keys),
         ("stripe", _check_stripe),
         ("carriers", _check_carriers),
         ("charges", _check_charges),
@@ -287,7 +408,6 @@ def compute_setup_status(*, use_cache: bool = True) -> dict[str, Any]:
     items: dict[str, dict] = {}
     order: list[str] = []
 
-    # Operational entries always ok (no setup flag)
     items["accounts"] = SetupItem(
         key="accounts",
         label="Accounts and Users",
@@ -299,17 +419,6 @@ def compute_setup_status(*, use_cache: bool = True) -> dict[str, Any]:
     ).to_dict()
     order.append("accounts")
 
-    items["users"] = SetupItem(
-        key="users",
-        label="Users",
-        url_name="user_mgmt",
-        required=False,
-        ok=True,
-        issues=[],
-        url=_url("user_mgmt"),
-    ).to_dict()
-    order.append("users")
-
     for key, builder in builders:
         if builder is None:
             continue
@@ -318,8 +427,8 @@ def compute_setup_status(*, use_cache: bool = True) -> dict[str, Any]:
         items[item.key] = item.to_dict()
         order.append(item.key)
 
-    required_issues = []
-    all_issues = []
+    required_issues: list[str] = []
+    all_issues: list[str] = []
     required_incomplete = False
     any_incomplete = False
     for key in order:
@@ -331,6 +440,8 @@ def compute_setup_status(*, use_cache: bool = True) -> dict[str, Any]:
                 required_incomplete = True
                 required_issues.extend(it["issues"])
 
+    env = env_api_key_status()
+
     result = {
         "items": items,
         "order": order,
@@ -338,6 +449,7 @@ def compute_setup_status(*, use_cache: bool = True) -> dict[str, Any]:
         "any_incomplete": any_incomplete,
         "required_issues": required_issues,
         "all_issues": all_issues,
+        "env_api_keys": env,
     }
     cache.set(CACHE_KEY, result, CACHE_TTL_SECONDS)
     return result

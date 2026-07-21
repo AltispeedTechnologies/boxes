@@ -8,14 +8,17 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 from io import BytesIO
 from PIL import Image
-from boxes.backend.setup_status import invalidate_setup_status_cache
+from boxes.backend.setup_status import env_api_key_status, invalidate_setup_status_cache
 
 
 @require_http_methods(["GET"])
 def general_settings(request):
     """GET: general settings page."""
     settings = GlobalSettings.load()
-    return render(request, "mgmt/general.html", {"settings": settings})
+    return render(request, "mgmt/general.html", {
+        "settings": settings,
+        "env_api_keys": env_api_key_status(),
+    })
 
 
 @require_http_methods(["POST"])

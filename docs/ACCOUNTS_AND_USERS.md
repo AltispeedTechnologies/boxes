@@ -1,6 +1,6 @@
 # Accounts and Users
 
-Boxes separates **billing accounts** from **login users**. They are managed together under **Management → Accounts and Users** (Accounts tab and Users tab).
+Boxes separates **billing accounts** from **login users**. They are managed together under **Management → Accounts and Users** (one menu item; Accounts tab and Users tab on the page).
 
 ## Concepts
 

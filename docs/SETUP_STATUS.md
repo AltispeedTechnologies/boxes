@@ -29,3 +29,17 @@ Fresh installs need configuration before Boxes is fully usable. The **Management
 3. **Client refresh** — `static/js/setup_status.js` hooks successful AJAX to mgmt URLs and refreshes icons via `GET /mgmt/setup-status?refresh=1`. Opening the Management dropdown also soft-refreshes.  
 
 Implementation: `boxes/backend/setup_status.py`.
+
+
+## API keys in /etc/boxes.env
+
+Keys are **not** edited in the web UI. **Management → General** (and the **API keys (env)** menu item) show whether each variable is set and looks valid:
+
+| Variable | Purpose |
+|----------|---------|
+| `MJ_APIKEY_PUBLIC` / `MJ_APIKEY_PRIVATE` | Mailjet outbound email |
+| `STRIPE_API_KEY` | Customer card payments |
+| `STRIPE_ENDPOINT_SECRET` | Stripe webhooks (`whsec_…`) |
+| `MAILJET_WEBHOOK_SECRET` or USER/PASSWORD | Optional webhook auth |
+
+Secret values are never displayed. Fix by editing `/etc/boxes.env` on the server and restarting gunicorn/celery.
