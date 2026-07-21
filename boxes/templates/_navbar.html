@@ -58,8 +58,8 @@
                                 </li>
                                 <li>
                                     <a class="dropdown-item d-flex justify-content-between align-items-center gap-2"
-                                       href="{% url 'general_settings' %}#env-api-keys" data-setup-key="env_keys">
-                                        <span>API keys (env)</span>
+                                       href="{% url 'env_api_keys' %}" data-setup-key="env_keys">
+                                        <span>API Keys and Environment</span>
                                         <i class="fas fa-exclamation-triangle text-warning setup-warn-icon {% if mgmt_setup.items.env_keys.ok %}d-none{% endif %}"
                                            title="{% for i in mgmt_setup.items.env_keys.issues %}{{ i }} {% empty %}OK{% endfor %}"></i>
                                     </a>

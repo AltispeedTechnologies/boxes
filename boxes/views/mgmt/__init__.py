@@ -9,6 +9,7 @@ from boxes.views.mgmt.email_templates import (
     email_template_content,
     update_email_template,
 )
+from boxes.views.mgmt.env_keys import env_api_keys
 from boxes.views.mgmt.general import general_settings, save_general_settings
 from boxes.views.mgmt.pickup import (
     pickup_mgmt,
@@ -28,6 +29,7 @@ __all__ = [
     "email_settings",
     "email_template",
     "email_template_content",
+    "env_api_keys",
     "general_settings",
     "mgmt_setup_status_api",
     "package_type_settings",

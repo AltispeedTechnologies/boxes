@@ -12,7 +12,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.urls import NoReverseMatch, reverse
 
-CACHE_KEY = "boxes_mgmt_setup_status_v2"
+CACHE_KEY = "boxes_mgmt_setup_status_v3"
 CACHE_TTL_SECONDS = 45
 
 # GlobalSettings.load() default name — treat as unconfigured branding
@@ -371,17 +371,16 @@ def _check_stripe() -> SetupItem:
 def _check_env_keys() -> SetupItem:
     """Dedicated Management item for environment/API keys (not DB settings)."""
     env = env_api_key_status()
-    # Show under General as well via banner; menu key for completeness
     return SetupItem(
         key="env_keys",
-        label="API keys (/etc/boxes.env)",
-        url_name="general_settings",
+        label="API Keys and Environment",
+        url_name="env_api_keys",
         required=False,
         ok=not env["hard_missing"],
         issues=env["hard_issues"] or (
             env["issues"] if env["any_missing"] else []
         ),
-        url=_url("general_settings"),
+        url=_url("env_api_keys"),
     )
 
 
