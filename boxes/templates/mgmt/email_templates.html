@@ -1,15 +1,18 @@
 {% extends "base.html" %}
 
+{% load static %}
+
+{% block page_attrs %}data-page="email-templates"{% endblock %}
+
 {% block content %}
 {% include "mgmt/_setup_banner.html" %}
 
-{% load static %}
-<!-- From: https://www.jsdelivr.com/package/npm/jodit -->
+<!-- Jodit must load with this page (including htmx-boosted navigations). -->
 <script src="https://cdn.jsdelivr.net/npm/jodit@4.11.15/es2021/jodit.fat.min.js" integrity="sha256-XOx8YcTCLc+16zoWPslqThFsIuRWE8/rVO4Nsp7H3G8=" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jodit@4.11.15/es2021/jodit.fat.min.css" integrity="sha256-gXiQe1vtPBjMOEY9cpsy0YrPtkdPJTa6z/HxD818QuU=" crossorigin="anonymous">
 
 <style>
-/* Merge-field chips: fixed inline badges (not free-floating drag targets) */
+/* Merge-field chips: compact inline badges, not free-floating drag targets */
 .jodit-wysiwyg .custom-block[data-token] {
     display: inline-block;
     vertical-align: baseline;
@@ -17,10 +20,13 @@
     -webkit-user-drag: none;
     user-select: none;
     white-space: nowrap;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    line-height: 1.4;
 }
 </style>
 
-<div class="container bg-body shadow rounded p-3" id="emailtemplatemgmt">
+<div class="container bg-body shadow rounded p-3" id="emailtemplatemgmt" data-page="email-templates">
     <div class="row bg-primary bg-gradient rounded mb-3">
         <h2 class="text-center text-white py-2">Configure Email Templates</h2>
     </div>
@@ -46,25 +52,32 @@
     </div>
     <div class="row mb-3">
         <div class="col-md-3">
-            <label for="emailSubject" class="form-label">Email Subject:</label>
+            <label for="email_subject" class="form-label">Email Subject:</label>
         </div>
         <div class="col-md-9">
             <input type="text"
                    class="form-control"
                    id="email_subject"
                    name="email_subject"
-                   placeholder="Enter email subject here"
+                   placeholder="Enter email subject here (use {first_name}, {tracking_code}, …)"
                    value="{{ subject }}">
+            <div class="form-text">
+                Subject line uses brace tokens such as <code>{first_name}</code> or <code>{tracking_code}</code>.
+            </div>
         </div>
     </div>
     <div class="row">
         <div class="col-12">
             <textarea name="content" id="content-editor">{{ initial_content }}</textarea>
+            <div class="form-text mt-1">
+                Click a field name in the toolbar to insert it at the cursor. Saved templates store
+                <code>{token}</code> placeholders; the editor shows them as labeled chips.
+            </div>
         </div>
     </div>
     <div class="row mt-3">
         <div class="col-12">
-            <button id="save-btn" class="btn btn-primary">
+            <button id="save-btn" class="btn btn-primary" type="button">
                 <i class="fas fa-save"></i> Save
             </button>
             <i id="savingicon" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>

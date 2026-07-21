@@ -2,13 +2,18 @@
  * @file mgmt/email_template.js
  * @description Jodit email template editor and save/load.
  * @see docs/api/javascript.md
+ *
+ * Merge fields are stored as `{token}` braces in the DB and shown as labeled
+ * chips in the editor. Toolbar insert and load use the same chip markup.
+ * The Jodit instance is destroyed on unmount so htmx navigations work.
  */
 
-/** Single Jodit instance for the email template page. */
+/** Single Jodit instance for the email template page (null when unmounted). */
 let emailTemplateEditor = null;
 let emailTemplateDirty = false;
 let emailTemplateCurrentId = null;
 let emailTemplateSuppressDirty = false;
+let emailTemplateChipGuardBound = false;
 
 const EMAIL_TOKEN_BUTTONS = [
     {name: "first_name", text: "First Name", token: "first_name"},
@@ -35,19 +40,13 @@ function build_token_chip_html(token) {
     return (
         '<span contenteditable="false" draggable="false" ' +
         'style="user-select: none; -webkit-user-drag: none;" ' +
-        'class="custom-block bg-light mx-1 p-2" data-token="' +
+        'class="custom-block bg-light mx-1 px-2 py-1" data-token="' +
         token + '">' + text + "</span>"
     );
 }
 
 /**
  * Convert stored brace placeholders and legacy chips into editor chips.
- *
- * Templates may store either:
- * - `{first_name}` brace placeholders (seed / hand-edited), or
- * - chip `<span data-token="...">` HTML from the toolbar.
- *
- * On load, always show the same non-editable chips as the toolbar inserts.
  * @param {string} html
  * @returns {string}
  */
@@ -57,7 +56,6 @@ function normalize_email_template_html(html) {
     }
     let out = String(html);
 
-    // Canonicalize existing data-token chips (stable label + drag guards).
     out = out.replace(
         /<span\b[^>]*\bdata-token=["']([a-z_]+)["'][^>]*>[\s\S]*?<\/span>/gi,
         function(match, token) {
@@ -68,7 +66,6 @@ function normalize_email_template_html(html) {
         }
     );
 
-    // Legacy custom-block chips without data-token: map "First Name" → chip.
     out = out.replace(
         /<span\b[^>]*class=["'][^"']*custom-block[^"']*["'][^>]*>([^<]+)<\/span>/gi,
         function(match, label) {
@@ -83,13 +80,53 @@ function normalize_email_template_html(html) {
         }
     );
 
-    // Brace placeholders e.g. {first_name} → chips (not unknown braces).
     out = out.replace(/\{([a-z_]+)\}/g, function(match, token) {
         if (!Object.prototype.hasOwnProperty.call(EMAIL_TOKEN_LABELS, token)) {
             return match;
         }
         return build_token_chip_html(token);
     });
+
+    return out;
+}
+
+/**
+ * Convert editor chips back to stable `{token}` braces for storage.
+ * @param {string} html
+ * @returns {string}
+ */
+function denormalize_email_template_html(html) {
+    if (!html) {
+        return "";
+    }
+    let out = String(html);
+
+    out = out.replace(
+        /<span\b[^>]*\bdata-token=["']([a-z_]+)["'][^>]*>[\s\S]*?<\/span>/gi,
+        function(match, token) {
+            if (!Object.prototype.hasOwnProperty.call(EMAIL_TOKEN_LABELS, token)) {
+                return match;
+            }
+            return "{" + token + "}";
+        }
+    );
+
+    out = out.replace(
+        /<span\b[^>]*class=["'][^"']*custom-block[^"']*["'][^>]*>([^<]+)<\/span>/gi,
+        function(match, label) {
+            if (/\bdata-token\s*=/i.test(match)) {
+                return match;
+            }
+            const key = String(label).trim().toLowerCase().replace(/\s+/g, "_");
+            if (!Object.prototype.hasOwnProperty.call(EMAIL_TOKEN_LABELS, key)) {
+                return match;
+            }
+            return "{" + key + "}";
+        }
+    );
+
+    // Strip Jodit zero-width artifacts
+    out = out.replace(/\uFEFF/g, "");
 
     return out;
 }
@@ -105,7 +142,7 @@ function make_token_btn(spec) {
         text: spec.text,
         tooltip: "Insert " + spec.text,
         exec: function(editor) {
-            editor.selection.insertHTML(build_token_chip_html(spec.token));
+            editor.selection.insertHTML(build_token_chip_html(spec.token) + "\u200b");
         }
     };
 }
@@ -139,13 +176,62 @@ function hide_add_template_modal() {
 }
 
 /**
- * Create the single Jodit instance if not already created.
+ * Destroy the Jodit instance if present (htmx leave / remount).
+ */
+function destroy_email_template_editor() {
+    if (!emailTemplateEditor) {
+        return;
+    }
+    try {
+        if (typeof emailTemplateEditor.destruct === "function") {
+            emailTemplateEditor.destruct();
+        }
+    } catch (err) {
+        // Editor may already be detached after an htmx swap.
+    }
+    emailTemplateEditor = null;
+}
+
+/**
+ * True when the live Jodit container is still in the document.
+ * @returns {boolean}
+ */
+function email_template_editor_is_live() {
+    if (!emailTemplateEditor) {
+        return false;
+    }
+    try {
+        const container = emailTemplateEditor.container || emailTemplateEditor.editor;
+        return !!(container && document.body.contains(container));
+    } catch (err) {
+        return false;
+    }
+}
+
+/**
+ * Prevent native drag of merge-field chips inside the editor.
+ * @param {Event} event
+ */
+function email_template_chip_drag_guard(event) {
+    const t = event.target;
+    if (!t || !t.closest) {
+        return;
+    }
+    if (t.closest(".custom-block[data-token], .jodit-wysiwyg [data-token]")) {
+        event.preventDefault();
+    }
+}
+
+/**
+ * Create the single Jodit instance if not already created for this DOM.
  * @returns {object|null}
  */
 function ensure_email_template_editor() {
-    if (emailTemplateEditor) {
+    if (email_template_editor_is_live()) {
         return emailTemplateEditor;
     }
+    destroy_email_template_editor();
+
     const textarea = document.getElementById("content-editor");
     if (!textarea || typeof Jodit === "undefined") {
         return null;
@@ -159,7 +245,6 @@ function ensure_email_template_editor() {
     emailTemplateEditor = Jodit.make("#content-editor", {
         height: 400,
         toolbarAdaptive: false,
-        // Prevent native drag of chips / images from rearranging content oddly.
         disablePlugins: ["drag-and-drop", "drag-and-drop-element"],
         buttons: [
             "bold", "italic", "underline", "strikethrough", "|",
@@ -173,6 +258,12 @@ function ensure_email_template_editor() {
     emailTemplateEditor.events.on("change", function() {
         mark_email_template_dirty();
     });
+
+    // Block dragstart on chips (contenteditable=false nodes can still drag).
+    if (!emailTemplateChipGuardBound) {
+        document.addEventListener("dragstart", email_template_chip_drag_guard, true);
+        emailTemplateChipGuardBound = true;
+    }
 
     // Initial textarea content uses {token} braces; rewrite to chips once.
     emailTemplateSuppressDirty = true;
@@ -197,7 +288,7 @@ function set_editor_value(html) {
 }
 
 /**
- * Read editor HTML via editor.value only.
+ * Read editor HTML and convert chips to brace tokens for storage.
  * @returns {string}
  */
 function get_editor_value() {
@@ -205,7 +296,7 @@ function get_editor_value() {
     if (!editor) {
         return "";
     }
-    return editor.value || "";
+    return denormalize_email_template_html(editor.value || "");
 }
 
 /**
@@ -239,39 +330,43 @@ function load_email_template(id) {
 }
 
 /**
- * Initialize email template editor page.
+ * Bind page controls (safe to call on remount).
  */
-function init_email_template_mgmt_page() {
+function bind_email_template_mgmt_page() {
     const editor = ensure_email_template_editor();
     if (!editor) {
         return;
     }
 
-    $("#template-selector").select2();
-    window.select2properheight("#template-selector");
+    const $selector = $("#template-selector");
+    if ($selector.length && !$selector.hasClass("select2-hidden-accessible")) {
+        $selector.select2();
+        if (typeof window.select2properheight === "function") {
+            window.select2properheight("#template-selector");
+        }
+    }
 
-    emailTemplateCurrentId = $("#template-selector").val() || null;
+    emailTemplateCurrentId = $selector.val() || null;
     clear_email_template_dirty();
 
     $("#email_subject").off("input.emailtpl change.emailtpl").on("input.emailtpl change.emailtpl", function() {
         mark_email_template_dirty();
     });
 
-    $("#template-selector").off("change.emailtpl").on("change.emailtpl", function() {
+    $selector.off("change.emailtpl").on("change.emailtpl", function() {
         const id = $(this).val();
         if (emailTemplateDirty) {
             const discard = window.confirm("You have unsaved changes. Discard them and switch templates?");
             if (!discard) {
-                // Revert selection without re-entering this handler's dirty check
-                $("#template-selector").val(emailTemplateCurrentId).trigger("change.select2");
+                $selector.val(emailTemplateCurrentId).trigger("change.select2");
                 return;
             }
         }
         load_email_template(id);
     });
 
-    $("#save-btn").off("click").on("click", function() {
-        const template_id = $("#template-selector").val();
+    $("#save-btn").off("click.emailtpl").on("click.emailtpl", function() {
+        const template_id = $selector.val();
         if (!template_id) {
             return;
         }
@@ -300,7 +395,7 @@ function init_email_template_mgmt_page() {
         });
     });
 
-    $("#addTemplateForm").off("submit").on("submit", function(event) {
+    $("#addTemplateForm").off("submit.emailtpl").on("submit.emailtpl", function(event) {
         event.preventDefault();
         const template_name = $("#templateName").val();
 
@@ -309,10 +404,9 @@ function init_email_template_mgmt_page() {
             url: "/mgmt/email/templates/add",
             payload: {name: template_name},
             on_success: function(response) {
-                // New template is empty; avoid dirty prompt when selecting it
                 clear_email_template_dirty();
                 const new_option = new Option(template_name, response.id, true, true);
-                $("#template-selector").append(new_option).trigger("change");
+                $selector.append(new_option).trigger("change");
                 $("#templateName").val("");
                 hide_add_template_modal();
             }
@@ -320,8 +414,29 @@ function init_email_template_mgmt_page() {
     });
 }
 
-// Expose for unit tests / console battle-testing.
+/**
+ * Initialize email template editor page (full document load).
+ */
+function init_email_template_mgmt_page() {
+    bind_email_template_mgmt_page();
+}
+
+// Expose for console battle-testing.
 window.normalize_email_template_html = normalize_email_template_html;
+window.denormalize_email_template_html = denormalize_email_template_html;
 window.build_token_chip_html = build_token_chip_html;
+
+if (window.BoxesPage && typeof window.BoxesPage.register === "function") {
+    window.BoxesPage.register("email-templates", {
+        mount: function() {
+            bind_email_template_mgmt_page();
+        },
+        unmount: function() {
+            destroy_email_template_editor();
+            emailTemplateDirty = false;
+            emailTemplateCurrentId = null;
+        }
+    });
+}
 
 $(init_email_template_mgmt_page);
