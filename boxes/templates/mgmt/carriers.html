@@ -1,32 +1,49 @@
 {% extends "base.html" %}
 
+{% load static %}
+
+{% block javascript %}
+<script src="{% static 'js/mgmt/carriers.js' %}"></script>
+{% endblock %}
+
+{% block page_attrs %}data-page="carriers"{% endblock %}
+
 {% block content %}
 {% include "mgmt/_setup_banner.html" %}
 
-<div class="container bg-body shadow rounded p-3 col-md-10" id="carriermgmt">
+<div class="container bg-body shadow rounded p-3 col-md-10" id="carriermgmt" data-page="carriers">
     <div class="row bg-primary bg-gradient rounded mb-3">
         <h2 class="text-center text-white py-2">Edit Carriers</h2>
     </div>
 
     {% include "_messages.html" %}
 
-    <div class="d-flex justify-content-end mb-3">
-        <div class="me-2 align-self-center">
+    <p class="text-muted small mb-3">
+        Edit any field directly, including Active and Allow Dup Tracking. Changes apply when you click Save.
+    </p>
+
+    <div class="d-flex justify-content-end mb-3 gap-2 flex-wrap">
+        <div class="me-auto align-self-center">
+            <span id="carriers-dirty-hint" class="text-warning small d-none">
+                <i class="fas fa-exclamation-circle"></i> Unsaved changes
+            </span>
+        </div>
+        <div class="align-self-center">
             <i id="savingicon" class="fas fa-spinner fa-spin text-warning" style="display: none;"></i>
             <i id="successicon" class="fas fa-check-circle text-success" style="display: none;"></i>
         </div>
-        <button type="button" class="btn btn-success me-2" id="addcarrier">
+        <button type="button" class="btn btn-success" id="addcarrier">
             <i class="fas fa-plus"></i> Add
         </button>
-        <button class="btn btn-primary" id="savecarriers">
+        <button type="button" class="btn btn-primary" id="savecarriers" disabled>
             <i class="fas fa-save"></i> Save
         </button>
     </div>
     <div class="table-responsive mt-3">
-        <table class="table table-bordered">
-            <thead class="table-light align-top">
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
                 <tr>
-                    <th>Name</th>
+                    <th>Name <span class="text-danger">*</span></th>
                     <th>Phone Number</th>
                     <th>Website</th>
                     <th class="text-center">Active</th>
@@ -36,74 +53,82 @@
             </thead>
             <tbody id="carriers">
                 {% for carrier in carriers %}
-                    <tr data-id="{{ carrier.id }}">
+                    <tr data-id="{{ carrier.id }}"
+                        data-original-name="{{ carrier.name|escape }}"
+                        data-original-phone="{{ carrier.phone_number|default_if_none:''|escape }}"
+                        data-original-website="{{ carrier.website|default_if_none:''|escape }}"
+                        data-original-active="{% if carrier.is_active %}1{% else %}0{% endif %}"
+                        data-original-dup="{% if carrier.allow_duplicate_tracking %}1{% else %}0{% endif %}">
                         <td data-type="name">
-                            <span class="text">
-                                {{ carrier.name }}
-                            </span>
-                            <input class="form-control name d-none" maxlength="32"></input>
+                            <input type="text" class="form-control name" maxlength="32"
+                                   value="{{ carrier.name }}" autocomplete="off" aria-label="Carrier name">
                         </td>
                         <td data-type="phone_number">
-                            <span class="text">
-                                {{ carrier.phone_number }}
-                            </span>
-                            <input class="form-control phone_number d-none" maxlength="15"></input>
+                            <input type="text" class="form-control phone_number" maxlength="15"
+                                   value="{{ carrier.phone_number|default_if_none:'' }}"
+                                   autocomplete="off" aria-label="Phone number">
                         </td>
                         <td data-type="website">
-                            <span class="text">
-                                {{ carrier.website }}
-                            </span>
-                            <input class="form-control website d-none" maxlength="32"></input>
+                            <input type="text" class="form-control website" maxlength="32"
+                                   value="{{ carrier.website|default_if_none:'' }}"
+                                   autocomplete="off" aria-label="Website">
                         </td>
                         <td class="text-center" data-type="is_active">
-                            <input type="checkbox" class="form-check-input is_active" {% if carrier.is_active %}checked{% endif %}>
+                            <input type="checkbox" class="form-check-input is_active"
+                                   {% if carrier.is_active %}checked{% endif %}
+                                   aria-label="Active">
                         </td>
                         <td class="text-center" data-type="allow_duplicate_tracking">
-                            <input type="checkbox" class="form-check-input allow_duplicate_tracking" {% if carrier.allow_duplicate_tracking %}checked{% endif %}>
+                            <input type="checkbox" class="form-check-input allow_duplicate_tracking"
+                                   {% if carrier.allow_duplicate_tracking %}checked{% endif %}
+                                   aria-label="Allow duplicate tracking">
                         </td>
-                        <td class="text-nowrap" style="width: 1%;">
-                            <button class="btn btn-primary editrow">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-success confirmrow d-none">
-                                <i class="fas fa-check-square"></i>
+                        <td class="text-nowrap text-end" style="width: 1%;">
+                            <button type="button" class="btn btn-outline-secondary btn-sm resetrow d-none"
+                                    title="Reset this row" data-bs-tooltip="yes">
+                                <i class="fas fa-undo"></i>
                             </button>
                         </td>
                     </tr>
                 {% endfor %}
-                <tr class="visually-hidden">
-                    <td class="text-nowrap" data-type="name">
-                        <span class="text d-none"></span>
-                        <input class="form-control name is-invalid" maxlength="32"></input>
-                    </td>
-                    <td data-type="phone_number">
-                        <span class="text d-none"></span>
-                        <input class="form-control phone_number" maxlength="15"></input>
-                    </td>
-                    <td data-type="website">
-                        <span class="text d-none"></span>
-                        <input class="form-control website" maxlength="32"></input>
-                    </td>
-                    <td class="text-center" data-type="is_active">
-                        <input type="checkbox" class="form-check-input is_active" checked>
-                    </td>
-                    <td class="text-center" data-type="allow_duplicate_tracking">
-                        <input type="checkbox" class="form-check-input allow_duplicate_tracking">
-                    </td>
-                    <td class="text-nowrap" style="width: 1%;">
-                        <button class="btn btn-primary editrow d-none">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-success confirmrow" disabled>
-                            <i class="fas fa-check-square"></i>
-                        </button>
-                    </td>
-                </tr>
             </tbody>
         </table>
     </div>
-</div>
 
-{% load static %}
-<script src="{% static 'js/mgmt/carriers.js' %}"></script>
+    {# Template row for Add (not in DOM table body until cloned) #}
+    <template id="carrier-row-template">
+        <tr data-id="" data-new="1"
+            data-original-name=""
+            data-original-phone=""
+            data-original-website=""
+            data-original-active="1"
+            data-original-dup="0">
+            <td data-type="name">
+                <input type="text" class="form-control name is-invalid" maxlength="32"
+                       value="" autocomplete="off" aria-label="Carrier name">
+            </td>
+            <td data-type="phone_number">
+                <input type="text" class="form-control phone_number" maxlength="15"
+                       value="" autocomplete="off" aria-label="Phone number">
+            </td>
+            <td data-type="website">
+                <input type="text" class="form-control website" maxlength="32"
+                       value="" autocomplete="off" aria-label="Website">
+            </td>
+            <td class="text-center" data-type="is_active">
+                <input type="checkbox" class="form-check-input is_active" checked aria-label="Active">
+            </td>
+            <td class="text-center" data-type="allow_duplicate_tracking">
+                <input type="checkbox" class="form-check-input allow_duplicate_tracking"
+                       aria-label="Allow duplicate tracking">
+            </td>
+            <td class="text-nowrap text-end" style="width: 1%;">
+                <button type="button" class="btn btn-outline-danger btn-sm removerow"
+                        title="Remove this new row" data-bs-tooltip="yes">
+                    <i class="fas fa-times"></i>
+                </button>
+            </td>
+        </tr>
+    </template>
+</div>
 {% endblock %}
