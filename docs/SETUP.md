@@ -67,6 +67,33 @@ CELERY_BROKER_PASSWORD="{{ rabbitmq_password }}"
 CELERY_BROKER_VHOST="{{ rabbitmq_vhost }}"
 ```
 
+### Pitfall: Mailjet sender must be verified
+
+API keys alone are not enough for outbound mail. Mailjet only accepts
+messages whose **From** address (or domain) is verified in the Mailjet
+account. That address is configured in the app under **Management → Emails**
+as `EmailSettings.sender_email` (invite code may fall back to other defaults
+if settings are incomplete).
+
+If `sender_email` is a mailbox that was never added and **activated** as a
+sender in Mailjet, the REST API returns errors such as an invalid From
+address, and customers never receive check-in, invite, or pickup messages.
+
+**Setup checklist:**
+
+1. Set `MJ_APIKEY_PUBLIC` / `MJ_APIKEY_PRIVATE` in `/etc/boxes.env`.
+2. In the Mailjet dashboard, add and **verify/activate** the address you will
+   use as From (or authenticate the whole sending domain).
+3. In Boxes, set **Management → Emails → sender email** to that same verified
+   address (display name is free text).
+4. Enable outbound sending (`GlobalSettings.email_sending` / email settings UI).
+5. Confirm Celery workers are running so `send_emails` drains `EmailQueue`.
+
+Do not commit personal or production mailbox addresses into example configs
+in git; only document the verification requirement.
+
+
+
 (Replace elements surrounded in {{ }} with actual values. You'll use these values in the next steps.)
 
 Ensure you create `/var/log/mikes-boxes.log` and set the permissions to be the same user as the above repository.

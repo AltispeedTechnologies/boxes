@@ -43,3 +43,19 @@ Keys are **not** edited in the web UI. **Management → General** (and the **API
 | `MAILJET_WEBHOOK_SECRET` or USER/PASSWORD | Optional webhook auth |
 
 Secret values are never displayed. Fix by editing `/etc/boxes.env` on the server and restarting gunicorn/celery.
+
+
+## Pitfall: verified Mailjet From address
+
+Even when `MJ_APIKEY_*` show as OK under **API keys (env)**, outbound mail fails
+if **Management → Emails → sender email** is not a **verified sender** (or a
+mailbox on a verified domain) in Mailjet. The management UI checks env key
+presence/format only; it does not call Mailjet to validate the From address.
+
+When debugging silent non-delivery:
+
+1. Confirm sender email in **Emails** matches a verified Mailjet sender.
+2. Inspect recent `SentEmail` rows (`success`, `SentEmailResult.response`).
+3. For invites, check `SignupInvite.last_error` / `email_sent_at`.
+4. Ensure Celery workers process `boxes.tasks.emails.send_emails` for queue mail.
+

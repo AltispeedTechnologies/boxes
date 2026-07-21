@@ -68,6 +68,16 @@ Staff management screens live under `/mgmt/*`. There is no separate settings ser
 | `sender_email` | From address for Mailjet |
 | `check_in_template` | FK → EmailTemplate used when packages are checked in (nullable `SET_NULL`) |
 
+
+### Pitfall: `sender_email` and Mailjet
+
+`sender_email` is the SMTP/API **From** address. It must match a sender that
+Mailjet has verified for the API keys in `/etc/boxes.env`. Using an arbitrary
+customer-facing contact address that is not verified will cause API send
+failures even when keys and templates are correct. See [SETUP.md](SETUP.md)
+(Mailjet sender pitfall).
+
+
 ### `NotificationRule` fields
 
 | Field | Purpose |
