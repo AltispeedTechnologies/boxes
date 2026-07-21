@@ -78,7 +78,7 @@ class CreateCustomerModalAPITest(TestCase):
         self.assertIsNone(body.get("account_id"))
         self.assertFalse(UserAccount.objects.filter(user__username="modal_solo").exists())
 
-    @patch("boxes.backend.signup._send_via_mailjet", return_value=False)
+    @patch("boxes.backend.signup._send_via_mailjet", return_value=(False, {"error": "mock"}, None))
     def test_invite_only(self, _mj):
         r = self.post({
             "first_name": "Invitee",
@@ -116,13 +116,18 @@ class CreateCustomerModalAPITest(TestCase):
         self.assertContains(r, 'href="/mgmt/users"')  # tab still OK
         self.assertNotContains(r, 'data-setup-key="users"')
 
-    def test_env_api_keys_on_general(self):
-        r = self.client.get("/mgmt/general")
+    def test_env_api_keys_page(self):
+        r = self.client.get("/mgmt/env-keys")
         self.assertEqual(r.status_code, 200)
-        self.assertContains(r, "API keys and environment")
+        self.assertContains(r, "API Keys and Environment")
         self.assertContains(r, "STRIPE_API_KEY")
         self.assertContains(r, "MJ_APIKEY_PUBLIC")
         self.assertContains(r, "/etc/boxes.env")
+        # Not attached to General anymore
+        g = self.client.get("/mgmt/general")
+        self.assertEqual(g.status_code, 200)
+        self.assertNotContains(g, "env-api-keys")
+
 
 
 @override_settings(ALLOWED_HOSTS=["*"], SECURE_SSL_REDIRECT=False)

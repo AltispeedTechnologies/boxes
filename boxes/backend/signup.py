@@ -11,7 +11,14 @@ from django.urls import reverse
 from django.utils import timezone
 
 from boxes.backend.account import create_billing_account, create_web_user
-from boxes.models import EmailSettings, GlobalSettings, UserAccount
+from boxes.models import (
+    EmailSettings,
+    GlobalSettings,
+    SentEmail,
+    SentEmailContents,
+    SentEmailResult,
+    UserAccount,
+)
 from boxes.models.signup import SignupInvite
 
 logger = logging.getLogger(__name__)
@@ -171,16 +178,44 @@ def _build_invite_email_bodies(invite, signup_url):
     return subject, text, html
 
 
+def _record_sent_email(
+    *,
+    account=None,
+    subject,
+    recipient,
+    success,
+    html="",
+    message_uuid=None,
+    response=None,
+):
+    """Write SentEmail (+ contents/result) so invite mail appears in email logs."""
+    sent_email = SentEmail.objects.create(
+        account=account,
+        subject=subject or "",
+        email=recipient or "",
+        success=bool(success),
+        message_uuid=message_uuid,
+    )
+    if html:
+        SentEmailContents.objects.create(sent_email=sent_email, html=html)
+    if response is not None:
+        SentEmailResult.objects.create(sent_email=sent_email, response=response)
+    return sent_email
+
+
 def _send_via_mailjet(from_email, from_name, to_email, to_name, subject, text, html):
-    """Send one message via Mailjet REST; return True on success."""
+    """Send one message via Mailjet REST.
+
+    Returns ``(success, response_body, message_uuid)``.
+    """
     public = getattr(settings, "MJ_APIKEY_PUBLIC", None)
     private = getattr(settings, "MJ_APIKEY_PRIVATE", None)
     if not public or not private:
-        return False
+        return False, {"error": "Mailjet API keys not configured"}, None
     try:
         from mailjet_rest import Client
     except ImportError:
-        return False
+        return False, {"error": "mailjet_rest not installed"}, None
 
     mailjet = Client(auth=(public, private), version="v3.1")
     payload = {
@@ -197,17 +232,34 @@ def _send_via_mailjet(from_email, from_name, to_email, to_name, subject, text, h
     result = mailjet.send.create(data=payload)
     try:
         body = result.json()
-        return body.get("Messages", [{}])[0].get("Status") == "success"
     except Exception:
         logger.exception("Mailjet invite send parse failed")
-        return False
+        return (
+            False,
+            {"error": "invalid_json", "status_code": getattr(result, "status_code", None)},
+            None,
+        )
+
+    try:
+        message = (body.get("Messages") or [{}])[0]
+        success = message.get("Status") == "success"
+        message_uuid = None
+        if success:
+            to_list = message.get("To") or []
+            if to_list:
+                message_uuid = to_list[0].get("MessageUUID")
+        return success, body, message_uuid
+    except Exception:
+        logger.exception("Mailjet invite send status parse failed")
+        return False, body, None
 
 
 def send_signup_invite_email(invite, request=None):
     """Deliver the invite email. Returns True if a provider accepted the message.
 
     Honors GlobalSettings.email_sending. Tries Mailjet first, then Django
-    ``send_mail``. Updates ``email_sent_at`` / ``last_error`` on the invite.
+    ``send_mail``. Updates ``email_sent_at`` / ``last_error`` on the invite
+    and records a ``SentEmail`` row for the email logs page.
     """
     gs = GlobalSettings.load()
     if not gs.email_sending:
@@ -219,11 +271,23 @@ def send_signup_invite_email(invite, request=None):
     subject, text, html = _build_invite_email_bodies(invite, signup_url)
     from_email, from_name = _sender_identity()
     to_name = " ".join(p for p in [invite.first_name, invite.last_name] if p).strip()
+    account = invite.account  # may be None for user-only invites
 
-    sent = _send_via_mailjet(
+    sent, mj_body, message_uuid = _send_via_mailjet(
         from_email, from_name, invite.email, to_name, subject, text, html
     )
-    if not sent:
+
+    if sent:
+        _record_sent_email(
+            account=account,
+            subject=subject,
+            recipient=invite.email,
+            success=True,
+            html=html,
+            message_uuid=message_uuid,
+            response=mj_body or {"provider": "mailjet", "status": "success"},
+        )
+    else:
         try:
             n = send_mail(
                 subject=subject,
@@ -234,11 +298,56 @@ def send_signup_invite_email(invite, request=None):
                 fail_silently=False,
             )
             sent = n > 0
+            _record_sent_email(
+                account=account,
+                subject=subject,
+                recipient=invite.email,
+                success=sent,
+                html=html,
+                message_uuid=None,
+                response={
+                    "provider": "django",
+                    "sent_count": n,
+                    "mailjet": mj_body,
+                },
+            )
         except Exception as exc:
             logger.exception("Django send_mail failed for invite %s", invite.pk)
             invite.last_error = str(exc)[:512]
             invite.save(update_fields=["last_error"])
+            _record_sent_email(
+                account=account,
+                subject=subject,
+                recipient=invite.email,
+                success=False,
+                html=html,
+                message_uuid=None,
+                response={
+                    "provider": "django",
+                    "error": str(exc)[:512],
+                    "mailjet": mj_body,
+                },
+            )
             return False
+
+        if not sent:
+            # django path already recorded; keep last_error below
+            pass
+
+    # Mailjet failed and no django branch recorded yet (should not happen after
+    # the else above always records). If Mailjet-only path ever short-circuits:
+    if not sent and not SentEmail.objects.filter(
+        email=invite.email, subject=subject
+    ).order_by("-id").exists():
+        _record_sent_email(
+            account=account,
+            subject=subject,
+            recipient=invite.email,
+            success=False,
+            html=html,
+            message_uuid=None,
+            response=mj_body or {"error": "send_failed"},
+        )
 
     if sent:
         invite.email_sent_at = timezone.now()

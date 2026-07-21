@@ -32,8 +32,14 @@ class EmailQueue(models.Model):
 
 
 class SentEmail(models.Model):
-    """Audit row for an attempted send (success, Mailjet uuid, recipient)."""
-    account = models.ForeignKey("Account", on_delete=models.CASCADE)
+    """Audit row for an attempted send (success, Mailjet uuid, recipient).
+
+    ``account`` is set for package notifications; signup invites may omit it
+    when no billing account is linked yet.
+    """
+    account = models.ForeignKey(
+        "Account", on_delete=models.SET_NULL, null=True, blank=True
+    )
     subject = models.CharField()
     email = models.CharField()
     timestamp = models.DateTimeField(default=timezone.now)

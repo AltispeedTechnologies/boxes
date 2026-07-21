@@ -114,7 +114,7 @@ class SignupInviteBackendTest(TestCase):
         with self.assertRaises(ValidationError):
             get_valid_invite(invite.token)
 
-    @patch("boxes.backend.signup._send_via_mailjet", return_value=False)
+    @patch("boxes.backend.signup._send_via_mailjet", return_value=(False, {"error": "mock"}, None))
     def test_send_invite_email_django_fallback(self, _mock_mj):
         invite = create_signup_invite(email="mail@example.com", actor=self.staff, first_name="Mail")
         sent = send_signup_invite_email(invite)
@@ -123,6 +123,25 @@ class SignupInviteBackendTest(TestCase):
         self.assertIn(invite.token, mail.outbox[0].body)
         invite.refresh_from_db()
         self.assertIsNotNone(invite.email_sent_at)
+
+    @patch("boxes.backend.signup._send_via_mailjet", return_value=(False, {"error": "mock"}, None))
+    def test_send_invite_email_writes_sent_email_log(self, _mock_mj):
+        """Signup invite emails appear in the SentEmail log (email logs page)."""
+        from boxes.models import SentEmail, SentEmailContents
+
+        invite = create_signup_invite(
+            email="logme@example.com", actor=self.staff, first_name="Log", create_account=False
+        )
+        sent = send_signup_invite_email(invite)
+        self.assertTrue(sent)
+        row = SentEmail.objects.filter(email="logme@example.com").order_by("-id").first()
+        self.assertIsNotNone(row)
+        self.assertTrue(row.success)
+        self.assertIn("invited", row.subject.lower())
+        self.assertIsNone(row.account_id)
+        self.assertTrue(SentEmailContents.objects.filter(sent_email=row).exists())
+        html = SentEmailContents.objects.get(sent_email=row).html
+        self.assertIn(invite.token, html)
 
 
     def test_invite_url_uses_allowed_hosts(self):
@@ -176,7 +195,7 @@ class CreateUserAndMgmtAPITest(TestCase):
         self.assertTrue(user.is_customer())
         self.assertFalse(UserAccount.objects.filter(user=user).exists())
 
-    @patch("boxes.backend.signup._send_via_mailjet", return_value=False)
+    @patch("boxes.backend.signup._send_via_mailjet", return_value=(False, {"error": "mock"}, None))
     def test_create_user_send_invite(self, _mock_mj):
         response = self.client.post(
             "/users/new",
