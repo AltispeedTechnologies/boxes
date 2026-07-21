@@ -19,22 +19,130 @@ from boxes.models import Account, CustomUser, SignupInvite, UserAccount
 from boxes.tests.helpers import ensure_group, make_account, make_user
 
 
+@override_settings(
+    ALLOWED_HOSTS=["*"],
+    SECURE_SSL_REDIRECT=False,
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+)
+class SignupInviteBackendTest(TestCase):
+    def setUp(self):
+        ensure_group("Customer")
+        ensure_group("Staff")
+        self.staff = make_user(username="invite_staff", groups=["Staff", "Customer"])
 
+    def test_create_invite_without_account(self):
+        invite = create_signup_invite(
+            email="new@example.com",
+            actor=self.staff,
+            first_name="New",
+            last_name="Person",
+            create_account=False,
+        )
+        self.assertIsNone(invite.account_id)
+        self.assertTrue(invite.is_usable())
+        self.assertEqual(invite.email, "new@example.com")
+
+    def test_create_invite_with_account(self):
+        invite = create_signup_invite(
+            email="withacct@example.com",
+            actor=self.staff,
+            first_name="With",
+            create_account=True,
+            account_name="With Account Co",
+        )
+        self.assertIsNotNone(invite.account_id)
+        self.assertEqual(invite.account.name, "With Account Co")
+        # No user yet
+        self.assertFalse(
+            UserAccount.objects.filter(account=invite.account, is_active=True).exists()
+        )
+
+    def test_complete_signup_user_only(self):
+        invite = create_signup_invite(
+            email="solo@example.com",
+            actor=self.staff,
+            first_name="Solo",
+            create_account=False,
+        )
+        result = complete_signup(
+            token=invite.token,
+            username="solo_user",
+            password="changem3-strong!",
+            password2="changem3-strong!",
+        )
+        user = result["user"]
+        self.assertTrue(user.is_active)
+        self.assertTrue(user.is_customer())
+        self.assertEqual(user.email, "solo@example.com")
+        self.assertIsNone(result["membership"])
+        self.assertFalse(UserAccount.objects.filter(user=user).exists())
+        invite.refresh_from_db()
+        self.assertIsNotNone(invite.used_at)
+        self.assertEqual(invite.used_by_id, user.id)
+
+    def test_complete_signup_links_account(self):
+        account = make_account(user=self.staff, name="Linked Co")
+        invite = create_signup_invite(
+            email="linked@example.com",
+            actor=self.staff,
+            first_name="Linked",
+            account=account,
+            role=UserAccount.ROLE_OWNER,
+        )
+        result = complete_signup(
+            token=invite.token,
+            username="linked_user",
+            password="changem3-strong!",
+        )
+        self.assertTrue(
+            UserAccount.objects.filter(
+                user=result["user"], account=account, is_active=True, role="owner"
+            ).exists()
+        )
+
+    def test_invite_token_single_use(self):
+        invite = create_signup_invite(email="once@example.com", actor=self.staff, first_name="Once")
+        complete_signup(token=invite.token, username="once1", password="changem3-strong!")
+        with self.assertRaises(ValidationError):
+            complete_signup(token=invite.token, username="once2", password="changem3-strong!")
+
+    def test_expired_invite(self):
+        invite = create_signup_invite(email="exp@example.com", actor=self.staff, first_name="Exp")
+        SignupInvite.objects.filter(pk=invite.pk).update(
+            expires_at=timezone.now() - timedelta(hours=1)
+        )
+        with self.assertRaises(ValidationError):
+            get_valid_invite(invite.token)
+
+    @patch("boxes.backend.signup._send_via_mailjet", return_value=False)
+    def test_send_invite_email_django_fallback(self, _mock_mj):
+        invite = create_signup_invite(email="mail@example.com", actor=self.staff, first_name="Mail")
+        sent = send_signup_invite_email(invite)
+        self.assertTrue(sent)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(invite.token, mail.outbox[0].body)
+        invite.refresh_from_db()
+        self.assertIsNotNone(invite.email_sent_at)
+
+
+@override_settings(
+    ALLOWED_HOSTS=["*"],
+    SECURE_SSL_REDIRECT=False,
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+)
 
     def test_invite_url_uses_allowed_hosts(self):
-        """Invite links use ALLOWED_HOSTS (app host), not marketing website."""
         from boxes.backend.signup import invite_signup_url, create_signup_invite
         from django.test import override_settings
-
         with override_settings(ALLOWED_HOSTS=["boxes.example.test"], SECURE_SSL_REDIRECT=False):
             inv = create_signup_invite(
-                email="urlhost@example.com",
-                actor=self.staff,
-                first_name="U",
-                create_account=False,
+                email="urlhost@example.com", actor=self.staff, first_name="U", create_account=False
             )
             url = invite_signup_url(inv)
-            self.assertEqual(url, f"http://boxes.example.test/signup/{inv.token}/")
+            self.assertEqual(
+                url,
+                f"http://boxes.example.test/signup/{inv.token}/",
+            )
         with override_settings(ALLOWED_HOSTS=["boxes.example.test"], SECURE_SSL_REDIRECT=True):
             url = invite_signup_url(inv)
             self.assertTrue(url.startswith("https://boxes.example.test/signup/"))
