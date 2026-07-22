@@ -91,8 +91,15 @@ Parsed from `boxes/static/js` file headers and `function` declarations.
 
 ## `mgmt/carriers.js`
 
-@file mgmt/carriers.js; @description Carrier management form save/add/remove.; @see docs/api/javascript.md
+@file mgmt/carriers.js; @description Carrier management: always-inline fields, independent Active;              toggles, dirty tracking, and bulk save.; @see docs/api/javascript.md
 
+- `function carrier_row_values()` — Read field values from a carrier table row. @param {JQuery} $row @returns {{name: string, phone_number: string, website: string, is_active: boolean, allow_duplicate_tracking: boolean}}
+- `function carrier_row_is_dirty()` — Whether a row differs from its data-original-* snapshot. @param {JQuery} $row @returns {boolean}
+- `function carrier_row_validate()` — Validate name field styling on a row. @param {JQuery} $row @returns {boolean} true if valid
+- `function carrier_refresh_ui_state()` — Update Save button, dirty hint, and per-row reset visibility.
+- `function carrier_row_commit_original()` — Snapshot current values as the row's "original" (after successful save). @param {JQuery} $row
+- `function carrier_row_reset()` — Restore a row from its data-original-* attributes. @param {JQuery} $row
+- `function bind_carrier_mgmt_page()` — Bind carriers page handlers (safe on remount).
 - `function init_carrier_mgmt_page()`
 
 ## `mgmt/charges.js`
@@ -109,17 +116,24 @@ Parsed from `boxes/static/js` file headers and `function` declarations.
 
 ## `mgmt/email_template.js`
 
-@file mgmt/email_template.js; @description Jodit email template editor and save/load.; @see docs/api/javascript.md
+@file mgmt/email_template.js; @description Jodit email template editor and save/load.; @see docs/api/javascript.md; Merge fields are stored as `{token}` braces in the DB and shown as labeled; chips in the editor. Toolbar insert and load use the same chip markup.; The Jodit instance is destroyed on unmount so htmx navigations work.
 
+- `function build_token_chip_html()` — Canonical HTML for a merge-field chip (same for toolbar insert and load). @param {string} token @returns {string}
+- `function normalize_email_template_html()` — Convert stored brace placeholders and legacy chips into editor chips. @param {string} html @returns {string}
+- `function denormalize_email_template_html()` — Convert editor chips back to stable `{token}` braces for storage. @param {string} html @returns {string}
 - `function make_token_btn()` — Build a Jodit toolbar control that inserts a stable token chip. @param {{name: string, text: string, token: string}} spec @returns {object}
 - `function mark_email_template_dirty()` — Mark the editor form dirty unless updates are suppressed (load/reset).
 - `function clear_email_template_dirty()` — Clear dirty flag after load or successful save.
 - `function hide_add_template_modal()` — Hide the add-template modal via Bootstrap 5 API.
-- `function ensure_email_template_editor()` — Create the single Jodit instance if not already created. @returns {object|null}
-- `function set_editor_value()` — Set editor HTML via editor.value only. @param {string} html
-- `function get_editor_value()` — Read editor HTML via editor.value only. @returns {string}
+- `function destroy_email_template_editor()` — Destroy the Jodit instance if present (htmx leave / remount).
+- `function email_template_editor_is_live()` — True when the live Jodit container is still in the document. @returns {boolean}
+- `function email_template_chip_drag_guard()` — Prevent native drag of merge-field chips inside the editor. @param {Event} event
+- `function ensure_email_template_editor()` — Create the single Jodit instance if not already created for this DOM. @returns {object|null}
+- `function set_editor_value()` — Set editor HTML via editor.value, normalizing tokens to chips. @param {string} html
+- `function get_editor_value()` — Read editor HTML and convert chips to brace tokens for storage. @returns {string}
 - `function load_email_template()` — Load a template's subject/body into the form. @param {string|number} id
-- `function init_email_template_mgmt_page()` — Initialize email template editor page.
+- `function bind_email_template_mgmt_page()` — Bind page controls (safe to call on remount).
+- `function init_email_template_mgmt_page()` — Initialize email template editor page (full document load).
 
 ## `mgmt/general.js`
 
@@ -166,10 +180,17 @@ Parsed from `boxes/static/js` file headers and `function` declarations.
 
 ## `modals/new_acct.js`
 
-@file modals/new_acct.js; @description Modal workflow to create a user and/or billing account, or send a signup invite.; @see docs/api/javascript.md
+@file modals/new_acct.js; @description Create customer / user / invite modal with client-side validation;              and clear "what will be created" summary.; @see docs/api/javascript.md
 
 - `function new_acct_portal_mode()`
+- `function new_acct_clear_feedback()`
+- `function new_acct_show_alert()`
+- `function new_acct_set_field_error()`
+- `function new_acct_apply_form_errors()`
+- `function new_acct_update_summary()`
 - `function new_acct_sync_fields()`
+- `function new_acct_client_validate()`
+- `function new_acct_build_payload()`
 - `function new_acct()`
 
 ## `modals/picklist_mgmt.js`
@@ -231,6 +252,11 @@ Parsed from `boxes/static/js` file headers and `function` declarations.
 
 - `function change_selected_filter()`
 - `function init_searchbox_page()` — Initialize package search box and Select2.
+
+## `setup_status.js`
+
+@file setup_status.js; @description Refresh Management navbar warning icons after settings saves.
+
 
 ## `table_select.js`
 

@@ -120,8 +120,12 @@ class CreateCustomerModalAPITest(TestCase):
         r = self.client.get("/mgmt/env-keys")
         self.assertEqual(r.status_code, 200)
         self.assertContains(r, "API Keys and Environment")
-        self.assertContains(r, "STRIPE_API_KEY")
+        self.assertContains(r, "STRIPE_SECRET_KEY")
         self.assertContains(r, "MJ_APIKEY_PUBLIC")
+        self.assertContains(r, "STRIPE_PUBLISHABLE_KEY")
+        self.assertContains(r, "STRIPE_WEBHOOK_SECRET")
+        self.assertContains(r, "/webhooks/stripe")
+        self.assertContains(r, "/webhooks/mailjet")
         self.assertContains(r, "/etc/boxes.env")
         # Not attached to General anymore
         g = self.client.get("/mgmt/general")
@@ -144,8 +148,12 @@ class SetupStatusEnvKeysTest(TestCase):
         status = env_api_key_status()
         self.assertIn("checks", status)
         names = {c["name"] for c in status["checks"]}
-        self.assertIn("STRIPE_API_KEY", names)
+        self.assertIn("STRIPE_SECRET_KEY", names)
+        self.assertIn("STRIPE_PUBLISHABLE_KEY", names)
+        self.assertIn("STRIPE_WEBHOOK_SECRET", names)
         self.assertIn("MJ_APIKEY_PUBLIC", names)
+        self.assertIn("webhooks", status)
+        self.assertEqual(len(status["webhooks"]), 2)
 
     def test_setup_status_has_env_keys_not_users(self):
         from boxes.backend.setup_status import compute_setup_status, invalidate_setup_status_cache

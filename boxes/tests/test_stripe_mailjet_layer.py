@@ -10,7 +10,7 @@ from boxes.tasks.stripe import handle_stripe_webhook, process_successful_invoice
 from boxes.tests.helpers import link_user, make_account, make_package, make_user
 
 
-@override_settings(ALLOWED_HOSTS=["*"], SECURE_SSL_REDIRECT=False, STRIPE_ENDPOINT_SECRET="whsec_test")
+@override_settings(ALLOWED_HOSTS=["*"], SECURE_SSL_REDIRECT=False, STRIPE_WEBHOOK_SECRET="whsec_test")
 class StripeWebhookLayerTest(TestCase):
     def setUp(self):
         self.user = make_user(username="payuser", groups=["Customer"])

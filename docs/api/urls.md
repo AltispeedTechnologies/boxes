@@ -39,6 +39,7 @@ Resolved from the live URLConf. Access tier uses decorator `access_tier` metadat
 | staff | `accounts/<int:pk>/members/create` | `account_members_create_web` | `boxes.views.account.account_members_create_web` | POST (staff): create a new web portal login and link it to this account. |
 | staff | `accounts/<int:pk>/members/disassociate` | `account_members_disassociate` | `boxes.views.account.account_members_disassociate` | POST (staff): soft-disassociate a user from this account by user_id. |
 | staff | `accounts/<int:pk>/members/link` | `account_members_link` | `boxes.views.account.account_members_link` | POST (staff): link a user to this account by user_id or username. |
+| staff | `accounts/<int:pk>/members/role` | `account_members_set_role` | `boxes.views.account.account_members_set_role` | POST (staff): change a linked user's portal role on this account. |
 | staff | `accounts/<int:pk>/update` | `update_account` | `boxes.views.account.update_account` | POST: update account fields (name, billable, comments, etc.). |
 | staff | `accounts/<int:pk>/waiver` | `account_fee_waiver` | `boxes.views.account.account_fee_waiver` | POST: staff credit waiver on account ledger (account_id from URL). |
 | staff | `accounts/aliases/update` | `update_account_aliases` | `boxes.views.account.update_account_aliases` | POST: replace/update account alias list. |
@@ -53,16 +54,18 @@ Resolved from the live URLConf. Access tier uses decorator `access_tier` metadat
 | staff | `mgmt/email/templates/fetch` | `email_template_content` | `boxes.views.mgmt.email_templates.email_template_content` | GET: fetch subject/body for a template id. |
 | staff | `mgmt/email/templates/update` | `update_email_template` | `boxes.views.mgmt.email_templates.update_email_template` | POST: update template name/subject/content. |
 | staff | `mgmt/email/update` | `save_email_settings` | `boxes.views.mgmt.email.save_email_settings` | POST: save EmailSettings and NotificationRule rows. |
+| staff | `mgmt/env-keys` | `env_api_keys` | `boxes.views.mgmt.env_keys.env_api_keys` | GET: dedicated page for environment/API key status (no secrets shown). |
 | staff | `mgmt/general` | `general_settings` | `boxes.views.mgmt.general.general_settings` | GET: general settings page. |
 | staff | `mgmt/general/update` | `save_general_settings` | `boxes.views.mgmt.general.save_general_settings` | POST: save GlobalSettings fields and process logo upload. |
 | staff | `mgmt/packages/carriers` | `carrier_settings` | `boxes.views.mgmt.carriers.carrier_settings` | GET: carriers management page. |
-| staff | `mgmt/packages/carriers/update` | `update_carriers` | `boxes.views.mgmt.carriers.update_carriers` | POST: create/update/delete carriers from form data. |
+| staff | `mgmt/packages/carriers/update` | `update_carriers` | `boxes.views.mgmt.carriers.update_carriers` | POST: create/update carriers from inline form data. |
 | staff | `mgmt/packages/types` | `package_type_settings` | `boxes.views.mgmt.types.package_type_settings` | GET: package types management page. |
 | staff | `mgmt/packages/types/update` | `update_package_types` | `boxes.views.mgmt.types.update_package_types` | POST: create/update/delete package types. |
 | staff | `mgmt/pickup` | `pickup_mgmt` | `boxes.views.mgmt.pickup.pickup_mgmt` | GET: staff pickup days and schedule rules management page. |
 | staff | `mgmt/pickup/days/update` | `update_pickup_days` | `boxes.views.mgmt.pickup.update_pickup_days` | POST: create/update pickup days (date, is_active, notes, picklist). |
 | staff | `mgmt/pickup/open` | `pickup_open_days` | `boxes.views.mgmt.pickup.pickup_open_days` | GET: JSON open pickup dates in a window (start/end query params). |
 | staff | `mgmt/pickup/rules/update` | `update_pickup_rules` | `boxes.views.mgmt.pickup.update_pickup_rules` | POST: create/update/delete schedule rules from JSON payload. |
+| staff | `mgmt/setup-status` | `mgmt_setup_status_api` | `boxes.views.mgmt.setup_status.mgmt_setup_status_api` | GET (staff): current setup flags for Management menu icons. |
 | staff | `mgmt/users` | `user_mgmt` | `boxes.views.user.user_mgmt` | GET (staff): list/search portal and staff users independently of accounts. |
 | staff | `modals/actions` | `get_actions_modals` | `boxes.views.modals.get_actions_modals` | Return row-action modal markup. |
 | staff | `modals/bulk` | `get_bulk_modals` | `boxes.views.modals.get_bulk_modals` | Return bulk-action modal markup. |
@@ -92,12 +95,13 @@ Resolved from the live URLConf. Access tier uses decorator `access_tier` metadat
 | staff | `reports/stats/chart` | `report_stats_chart` | `boxes.views.reports.backend.report_stats_chart` | POST: return chart data payload for dashboard. |
 | staff | `reports/stripe-totals` | `stripe_totals` | `boxes.views.reports.stripe_totals.stripe_totals` | GET: aggregate succeeded invoice money fields for staff reports. |
 | staff | `users/<int:pk>/accounts/link` | `user_link_account` | `boxes.views.user.user_link_account` | POST (staff): link this user to a billing account by account_id. |
+| staff | `users/<int:pk>/accounts/role` | `user_set_account_role` | `boxes.views.user.user_set_account_role` | POST (staff): change this user's role on a linked account. |
 | staff | `users/<int:pk>/accounts/unlink` | `user_unlink_account` | `boxes.views.user.user_unlink_account` | POST (staff): soft-disassociate this user from a billing account. |
 | staff | `users/<int:pk>/edit` | `user_detail` | `boxes.views.user.user_detail` | GET (staff): user detail / edit page (login identity, not billing account). |
-| staff | `users/<int:pk>/invite` | `send_user_invite_for` | `boxes.views.user.send_user_invite` | POST (staff): create/send a signup invite (optionally for an existing email). |
+| staff | `users/<int:pk>/invite` | `send_user_invite_for` | `boxes.views.user.send_user_invite` | POST (staff): create/send a signup invite for a **new** portal login. |
 | staff | `users/<int:pk>/status` | `update_user_status` | `boxes.views.user.update_user_status` | POST (staff): activate/deactivate user and optional password / groups. |
 | staff | `users/emails/update` | `update_user_emails` | `boxes.views.user.update_user_emails` | POST (staff): update notification emails for a target user. |
-| staff | `users/invite` | `send_user_invite` | `boxes.views.user.send_user_invite` | POST (staff): create/send a signup invite (optionally for an existing email). |
+| staff | `users/invite` | `send_user_invite` | `boxes.views.user.send_user_invite` | POST (staff): create/send a signup invite for a **new** portal login. |
 | staff | `users/new` | `create_user` | `boxes.views.user.create_user` | POST (staff): create user and/or billing account, or send a signup invite. |
 | staff | `users/search` | `user_search` | `boxes.views.account.user_search` | JSON/Select2 search over users for membership linking. |
 | staff | `users/update` | `update_user` | `boxes.views.user.update_user` | POST (staff): update a target user's profile fields. |
@@ -117,4 +121,4 @@ Resolved from the live URLConf. Access tier uses decorator `access_tier` metadat
 | customer | `invoice/new` | `customer_new_invoice` | `boxes.views.customer.customer_new_invoice` | POST: create invoice/PaymentIntent for amount and method. |
 | customer | `session/account` | `session_set_active_account` | `boxes.views.customer.session_set_active_account` | POST: set session active account after membership check. |
 
-_Generated 112 application routes (Django admin omitted)._
+_Generated 116 application routes (Django admin omitted)._

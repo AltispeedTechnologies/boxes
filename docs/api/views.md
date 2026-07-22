@@ -44,6 +44,12 @@ POST (staff): soft-disassociate a user from this account by user_id.
 
 POST (staff): link a user to this account by user_id or username.
 
+### `account_members_set_role(request, pk)`
+
+POST (staff): change a linked user's portal role on this account.
+
+Body JSON: user_id (required), role (owner|member), optional allow_last_owner.
+
 ### `account_packages(request, pk)`
 
 List packages belonging to an account.
@@ -164,8 +170,8 @@ GET: JSON open pickup dates for the customer reservation UI.
 POST: reserve selected packages for an open pickup day.
 
 Body JSON: package_ids list and date YYYY-MM-DD.
-Packages must belong to the user account and be checked-in (state 1).
-Existing reservations for those packages are moved to the new day.
+Packages must belong to the **active** customer account and be checked-in (state 1).
+Authorization (account scope) runs before pickup-day creation.
 
 ## `boxes.views.emails`
 
@@ -235,7 +241,7 @@ GET: carriers management page.
 
 ### `update_carriers(request)`
 
-POST: create/update/delete carriers from form data.
+POST: create/update carriers from inline form data.
 
 ## `boxes.views.mgmt.charges`
 
@@ -289,6 +295,14 @@ GET: fetch subject/body for a template id.
 
 POST: update template name/subject/content.
 
+## `boxes.views.mgmt.env_keys`
+
+API keys and environment status page (read-only view of /etc/boxes.env).
+
+### `env_api_keys(request)`
+
+GET: dedicated page for environment/API key status (no secrets shown).
+
 ## `boxes.views.mgmt.general`
 
 GlobalSettings (business identity and logos) management.
@@ -324,6 +338,16 @@ POST: create/update pickup days (date, is_active, notes, picklist).
 ### `update_pickup_rules(request)`
 
 POST: create/update/delete schedule rules from JSON payload.
+
+## `boxes.views.mgmt.setup_status`
+
+Staff JSON endpoint for management setup completeness (navbar refresh).
+
+### `mgmt_setup_status_api(request)`
+
+GET (staff): current setup flags for Management menu icons.
+
+Query ``?refresh=1`` forces cache invalidation then recompute.
 
 ## `boxes.views.mgmt.types`
 
@@ -602,10 +626,11 @@ alias — the same rule staff edit uses.
 
 ### `send_user_invite(request, pk=None)`
 
-POST (staff): create/send a signup invite (optionally for an existing email).
+POST (staff): create/send a signup invite for a **new** portal login.
 
-When ``pk`` is provided, prefills from that user (does not replace them).
-Body may also stand alone with email + name fields.
+Invites are not for re-inviting an existing CustomUser page (e.g. sysadmin).
+Optional ``pk`` is ignored for prefill of an existing user identity — pass
+email and name fields in the body, and optional account_id to pre-link.
 
 ### `update_profile(request)`
 
@@ -631,6 +656,9 @@ POST (staff): activate/deactivate user and optional password / groups.
 
 GET (staff): user detail / edit page (login identity, not billing account).
 
+Sign-up invitations are for **new** logins only — use Management → Accounts
+and Users → Add user (invite mode) or invite from an account's Portal Members.
+
 ### `user_link_account(request, pk)`
 
 POST (staff): link this user to a billing account by account_id.
@@ -638,6 +666,12 @@ POST (staff): link this user to a billing account by account_id.
 ### `user_mgmt(request)`
 
 GET (staff): list/search portal and staff users independently of accounts.
+
+### `user_set_account_role(request, pk)`
+
+POST (staff): change this user's role on a linked account.
+
+Body JSON: account_id, role (owner|member), optional allow_last_owner.
 
 ### `user_unlink_account(request, pk)`
 

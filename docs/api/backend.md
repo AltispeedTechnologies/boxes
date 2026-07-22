@@ -122,6 +122,10 @@ Return accounts linked to ``user`` ordered by name.
 
 Return users linked to ``account`` ordered by username.
 
+### `normalize_role(role)`
+
+Return a valid role string or raise ValidationError.
+
 ### `require_account_member(user, account)`
 
 Raise PermissionDenied unless ``user`` has an active membership on ``account``.
@@ -135,6 +139,13 @@ Staff helper: find CustomUsers by username, name, or email (case-insensitive).
 Set session active account after validating active membership.
 
 Returns the Account. Raises PermissionDenied if the user is not an active member.
+
+### `set_membership_role(account, user, role, actor=None, *, allow_last_owner=False)`
+
+Change an active membership role (owner or member).
+
+Demoting the last active owner is blocked unless ``allow_last_owner``.
+``actor`` is reserved for audit logging.
 
 ## `boxes.backend.pickup`
 
@@ -203,9 +214,65 @@ Returns ``{"x_data": [...], "y_data": {carrier: [counts...]}}`` for charting.
 
 Build chart series data for the given timeframe filter.
 
+## `boxes.backend.setup_status`
+
+Management setup completeness: DB settings and /etc/boxes.env API keys.
+
+Used by the navbar Management dropdown (warning icons), mgmt page banners, and
+``GET /mgmt/setup-status`` for robust client-side refresh after saves.
+
+### class `SetupItem`
+
+One Management menu entry's configuration status.
+
+- `__init__(self, key: 'str', label: 'str', url_name: 'str', required: 'bool', ok: 'bool', issues: 'list[str]' = <factory>, url: 'str' = '') -> None` — Initialize self.  See help(type(self)) for accurate signature.
+- `to_dict(self) -> 'dict[str, Any]'` — 
+
+### `compute_setup_status(*, use_cache: 'bool' = True) -> 'dict[str, Any]'`
+
+Return full setup status dict for navbar and API.
+
+### `env_api_key_status() -> 'dict[str, Any]'`
+
+Inspect Django settings loaded from /etc/boxes.env for integration keys.
+
+Does **not** return secret values — only presence and basic format checks.
+
+Canonical environment variables (preferred names):
+
+Stripe
+  STRIPE_PUBLISHABLE_KEY  pk_test_… / pk_live_…   (public)
+  STRIPE_SECRET_KEY       sk_test_… / sk_live_…   (private / server)
+  STRIPE_WEBHOOK_SECRET   whsec_…                 (POST /webhooks/stripe)
+
+Mailjet
+  MJ_APIKEY_PUBLIC / MJ_APIKEY_PRIVATE            (outbound API)
+  MAILJET_WEBHOOK_SECRET  invent secret; same value on Event API URL as ?secret=
+
+Legacy Stripe aliases still resolved in settings: STRIPE_API_KEY,
+STRIPE_ENDPOINT_SECRET.
+
+### `invalidate_setup_status_cache() -> 'None'`
+
+Drop cached setup status (call after any mgmt settings save).
+
+### `setup_status_for_template() -> 'dict[str, Any]'`
+
+Lightweight dict for templates (navbar).
+
 ## `boxes.backend.signup`
 
 Signup invite creation, email delivery, and token-gated registration.
+
+### `app_public_origin(request=None)`
+
+Absolute origin for in-app links (signup invites, etc.).
+
+Uses existing deployment config — not marketing ``GlobalSettings.website``:
+
+1. Request host when it is listed in ``ALLOWED_HOSTS``.
+2. Otherwise first non-local entry in ``ALLOWED_HOSTS`` with
+   ``http``/``https`` from ``SECURE_SSL_REDIRECT``.
 
 ### `complete_signup(*, token, username, password, password2=None, first_name=None, last_name=None, company=None, phone_number=None, mobile_number=None)`
 
@@ -227,14 +294,15 @@ Return a usable SignupInvite or raise ValidationError.
 
 ### `invite_signup_url(invite, request=None)`
 
-Absolute (when request given) or path-only signup URL for ``invite``.
+Absolute signup URL for email bodies (app host from ALLOWED_HOSTS).
 
 ### `send_signup_invite_email(invite, request=None)`
 
 Deliver the invite email. Returns True if a provider accepted the message.
 
 Honors GlobalSettings.email_sending. Tries Mailjet first, then Django
-``send_mail``. Updates ``email_sent_at`` / ``last_error`` on the invite.
+``send_mail``. Updates ``email_sent_at`` / ``last_error`` on the invite
+and records a ``SentEmail`` row for the email logs page.
 
 ## `boxes.backend.system`
 

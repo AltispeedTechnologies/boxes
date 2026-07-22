@@ -13,5 +13,5 @@ class BoxesConfig(AppConfig):
         from django.conf import settings
         import stripe
 
-        if settings.STRIPE_API_KEY:
-            stripe.api_key = settings.STRIPE_API_KEY
+        if settings.STRIPE_SECRET_KEY:
+            stripe.api_key = settings.STRIPE_SECRET_KEY

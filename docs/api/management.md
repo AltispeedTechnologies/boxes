@@ -1,5 +1,12 @@
 # Management commands (generated)
 
+## `manage.py apply_business_config`
+
+Apply recommended business configuration (idempotent; non-secret).
+
+The actual logic of the command. Subclasses must implement
+this method.
+
 ## `manage.py bootstrap_demo`
 
 Ensure system user, Customer group membership, and a demo billing account for the fixture customer login (idempotent).

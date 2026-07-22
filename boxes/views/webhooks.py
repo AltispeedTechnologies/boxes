@@ -1,5 +1,4 @@
 """External webhook receivers."""
-import base64
 import json
 import logging
 from datetime import datetime, timezone as dt_timezone
@@ -25,7 +24,7 @@ def stripe_webhooks(request):
 
     try:
         event = stripe.Webhook.construct_event(
-            request.body, sig_header, settings.STRIPE_ENDPOINT_SECRET
+            request.body, sig_header, settings.STRIPE_WEBHOOK_SECRET
         )
     except ValueError as e:
         logger.warning("Error parsing Stripe payload: %s", e)
@@ -51,56 +50,35 @@ def stripe_webhooks(request):
 
 
 def _mailjet_auth_ok(request):
-    """Validate Mailjet webhook via shared secret and/or HTTP basic auth.
+    """Validate Mailjet Event API webhook via shared secret.
 
-    If MAILJET_WEBHOOK_SECRET is set, require it via header or ``?secret=``.
-    Else if MAILJET_WEBHOOK_USER/PASSWORD are set, require HTTP basic auth.
-    If neither is configured, accept (development) and log a warning.
+    If ``MAILJET_WEBHOOK_SECRET`` is set in ``/etc/boxes.env``, require the same
+    value on the request as either:
+
+    * query string ``?secret=...`` (what you put on the Mailjet Event API URL), or
+    * header ``X-Mailjet-Webhook-Secret`` (not set by Mailjet UI; for tests/tools).
+
+    If the secret is unset, accept all POSTs and log a warning (development only).
     """
     secret = getattr(settings, "MAILJET_WEBHOOK_SECRET", None) or ""
-    user = getattr(settings, "MAILJET_WEBHOOK_USER", None) or ""
-    password = getattr(settings, "MAILJET_WEBHOOK_PASSWORD", None) or ""
-
-    if secret:
-        provided = (
-            request.headers.get("X-Mailjet-Webhook-Secret")
-            or request.META.get("HTTP_X_MAILJET_WEBHOOK_SECRET")
-            or request.GET.get("secret")
-            or ""
+    if not secret:
+        logger.warning(
+            "Mailjet webhook accepted without credentials; "
+            "set MAILJET_WEBHOOK_SECRET in /etc/boxes.env and use "
+            "?secret= on the Mailjet Event API callback URL"
         )
-        if provided and provided == secret:
-            return True
-        # Also accept basic auth when user/password are configured alongside secret
-        if user and password and _basic_auth_matches(request, user, password):
-            return True
-        logger.warning("Mailjet webhook auth failed (shared secret)")
-        return False
+        return True
 
-    if user and password:
-        if _basic_auth_matches(request, user, password):
-            return True
-        logger.warning("Mailjet webhook auth failed (basic auth)")
-        return False
-
-    logger.warning(
-        "Mailjet webhook accepted without credentials; "
-        "set MAILJET_WEBHOOK_SECRET or MAILJET_WEBHOOK_USER/PASSWORD"
+    provided = (
+        request.headers.get("X-Mailjet-Webhook-Secret")
+        or request.META.get("HTTP_X_MAILJET_WEBHOOK_SECRET")
+        or request.GET.get("secret")
+        or ""
     )
-    return True
-
-
-def _basic_auth_matches(request, expected_user, expected_password):
-    """Return True if Authorization: Basic matches expected credentials."""
-    auth = request.META.get("HTTP_AUTHORIZATION", "")
-    if not auth.startswith("Basic "):
-        return False
-    try:
-        decoded = base64.b64decode(auth.split(" ", 1)[1]).decode("utf-8")
-        username, _, passwd = decoded.partition(":")
-    except (ValueError, UnicodeDecodeError) as e:
-        logger.warning("Mailjet webhook basic auth decode error: %s", e)
-        return False
-    return username == expected_user and passwd == expected_password
+    if provided and provided == secret:
+        return True
+    logger.warning("Mailjet webhook auth failed (shared secret mismatch or missing)")
+    return False
 
 
 def _parse_event_timestamp(raw_time):

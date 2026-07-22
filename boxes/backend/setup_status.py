@@ -62,101 +62,243 @@ def env_api_key_status() -> dict[str, Any]:
     """Inspect Django settings loaded from /etc/boxes.env for integration keys.
 
     Does **not** return secret values — only presence and basic format checks.
+
+    Canonical environment variables (preferred names):
+
+    Stripe
+      STRIPE_PUBLISHABLE_KEY  pk_test_… / pk_live_…   (public)
+      STRIPE_SECRET_KEY       sk_test_… / sk_live_…   (private / server)
+      STRIPE_WEBHOOK_SECRET   whsec_…                 (POST /webhooks/stripe)
+
+    Mailjet
+      MJ_APIKEY_PUBLIC / MJ_APIKEY_PRIVATE            (outbound API)
+      MAILJET_WEBHOOK_SECRET  invent secret; same value on Event API URL as ?secret=
+
+    Legacy Stripe aliases still resolved in settings: STRIPE_API_KEY,
+    STRIPE_ENDPOINT_SECRET.
     """
     checks: list[dict[str, Any]] = []
 
-    def add(name: str, ok: bool, detail: str, required_for: str):
+    def add(
+        name: str,
+        ok: bool,
+        detail: str,
+        required_for: str,
+        *,
+        group: str,
+        group_label: str,
+        required: bool,
+        endpoint: str | None = None,
+    ) -> None:
         checks.append({
             "name": name,
             "ok": ok,
             "detail": detail,
             "required_for": required_for,
+            "group": group,
+            "group_label": group_label,
+            "required": required,
+            "endpoint": endpoint,
         })
 
-    # Mailjet
+    # --- Mailjet outbound API ---
     mj_pub = getattr(settings, "MJ_APIKEY_PUBLIC", None)
     mj_priv = getattr(settings, "MJ_APIKEY_PRIVATE", None)
     if not _truthy_str(mj_pub):
-        add("MJ_APIKEY_PUBLIC", False, "Not set in /etc/boxes.env", "Outbound email (Mailjet)")
+        add(
+            "MJ_APIKEY_PUBLIC", False, "Not set in /etc/boxes.env",
+            "Mailjet public API key (send email)",
+            group="mailjet_api", group_label="Mailjet outbound email", required=True,
+        )
     elif len(str(mj_pub).strip()) < 16:
-        add("MJ_APIKEY_PUBLIC", False, "Value looks too short to be a real API key", "Outbound email (Mailjet)")
+        add(
+            "MJ_APIKEY_PUBLIC", False, "Value looks too short to be a real API key",
+            "Mailjet public API key (send email)",
+            group="mailjet_api", group_label="Mailjet outbound email", required=True,
+        )
     else:
-        add("MJ_APIKEY_PUBLIC", True, "Set", "Outbound email (Mailjet)")
+        add(
+            "MJ_APIKEY_PUBLIC", True, "Set",
+            "Mailjet public API key (send email)",
+            group="mailjet_api", group_label="Mailjet outbound email", required=True,
+        )
 
     if not _truthy_str(mj_priv):
-        add("MJ_APIKEY_PRIVATE", False, "Not set in /etc/boxes.env", "Outbound email (Mailjet)")
+        add(
+            "MJ_APIKEY_PRIVATE", False, "Not set in /etc/boxes.env",
+            "Mailjet private API key (send email)",
+            group="mailjet_api", group_label="Mailjet outbound email", required=True,
+        )
     elif len(str(mj_priv).strip()) < 16:
-        add("MJ_APIKEY_PRIVATE", False, "Value looks too short to be a real API key", "Outbound email (Mailjet)")
+        add(
+            "MJ_APIKEY_PRIVATE", False, "Value looks too short to be a real API key",
+            "Mailjet private API key (send email)",
+            group="mailjet_api", group_label="Mailjet outbound email", required=True,
+        )
     else:
-        add("MJ_APIKEY_PRIVATE", True, "Set", "Outbound email (Mailjet)")
+        add(
+            "MJ_APIKEY_PRIVATE", True, "Set",
+            "Mailjet private API key (send email)",
+            group="mailjet_api", group_label="Mailjet outbound email", required=True,
+        )
 
-    # Stripe
-    stripe_key = getattr(settings, "STRIPE_API_KEY", None)
-    if not _truthy_str(stripe_key):
-        add("STRIPE_API_KEY", False, "Not set in /etc/boxes.env", "Customer card payments")
+    # --- Stripe API keys (public + private; separate from webhook) ---
+    stripe_pk = getattr(settings, "STRIPE_PUBLISHABLE_KEY", None)
+    if not _truthy_str(stripe_pk):
+        add(
+            "STRIPE_PUBLISHABLE_KEY", False,
+            "Not set in /etc/boxes.env (pk_test_… or pk_live_…)",
+            "Stripe publishable key (public)",
+            group="stripe_api", group_label="Stripe API keys", required=True,
+        )
     else:
-        sk = str(stripe_key).strip()
-        if not (sk.startswith("sk_") or sk.startswith("rk_")):
+        pk = str(stripe_pk).strip()
+        if not pk.startswith("pk_"):
             add(
-                "STRIPE_API_KEY",
-                False,
-                "Does not look like a Stripe secret key (expected sk_… or rk_…)",
-                "Customer card payments",
+                "STRIPE_PUBLISHABLE_KEY", False,
+                "Does not look like a Stripe publishable key (expected pk_…)",
+                "Stripe publishable key (public)",
+                group="stripe_api", group_label="Stripe API keys", required=True,
             )
         else:
-            add("STRIPE_API_KEY", True, "Set (format looks valid)", "Customer card payments")
+            add(
+                "STRIPE_PUBLISHABLE_KEY", True, "Set (format looks valid)",
+                "Stripe publishable key (public)",
+                group="stripe_api", group_label="Stripe API keys", required=True,
+            )
 
-    stripe_wh = getattr(settings, "STRIPE_ENDPOINT_SECRET", None)
+    stripe_sk = getattr(settings, "STRIPE_SECRET_KEY", None)
+    if not _truthy_str(stripe_sk):
+        add(
+            "STRIPE_SECRET_KEY", False,
+            "Not set in /etc/boxes.env (sk_test_… or sk_live_…). "
+            "Legacy alias STRIPE_API_KEY is also accepted.",
+            "Stripe secret key (private, server-side)",
+            group="stripe_api", group_label="Stripe API keys", required=True,
+        )
+    else:
+        sk = str(stripe_sk).strip()
+        if not (sk.startswith("sk_") or sk.startswith("rk_")):
+            add(
+                "STRIPE_SECRET_KEY", False,
+                "Does not look like a Stripe secret key (expected sk_… or rk_…)",
+                "Stripe secret key (private, server-side)",
+                group="stripe_api", group_label="Stripe API keys", required=True,
+            )
+        else:
+            add(
+                "STRIPE_SECRET_KEY", True, "Set (format looks valid)",
+                "Stripe secret key (private, server-side)",
+                group="stripe_api", group_label="Stripe API keys", required=True,
+            )
+
+    # --- Stripe webhook (third secret; not the API keys) ---
+    stripe_wh = getattr(settings, "STRIPE_WEBHOOK_SECRET", None)
     if not _truthy_str(stripe_wh):
         add(
-            "STRIPE_ENDPOINT_SECRET",
-            False,
-            "Not set in /etc/boxes.env",
-            "Stripe webhooks (payment confirmation)",
+            "STRIPE_WEBHOOK_SECRET", False,
+            "Not set in /etc/boxes.env (whsec_…). "
+            "Legacy alias STRIPE_ENDPOINT_SECRET is also accepted. "
+            "Register POST /webhooks/stripe in the Stripe Dashboard.",
+            "Stripe webhook signing secret",
+            group="stripe_webhook", group_label="Stripe webhook",
+            required=True, endpoint="/webhooks/stripe",
         )
     else:
         wh = str(stripe_wh).strip()
         if not wh.startswith("whsec_"):
             add(
-                "STRIPE_ENDPOINT_SECRET",
-                False,
+                "STRIPE_WEBHOOK_SECRET", False,
                 "Does not look like a Stripe webhook secret (expected whsec_…)",
-                "Stripe webhooks (payment confirmation)",
+                "Stripe webhook signing secret",
+                group="stripe_webhook", group_label="Stripe webhook",
+                required=True, endpoint="/webhooks/stripe",
             )
         else:
-            add("STRIPE_ENDPOINT_SECRET", True, "Set (format looks valid)", "Stripe webhooks")
+            add(
+                "STRIPE_WEBHOOK_SECRET", True,
+                "Set (format looks valid) — endpoint /webhooks/stripe",
+                "Stripe webhook signing secret",
+                group="stripe_webhook", group_label="Stripe webhook",
+                required=True, endpoint="/webhooks/stripe",
+            )
 
-    # Optional Mailjet webhook auth
+    # --- Mailjet webhook (optional shared secret; not Basic auth) ---
     mj_wh_secret = getattr(settings, "MAILJET_WEBHOOK_SECRET", None)
-    mj_wh_user = getattr(settings, "MAILJET_WEBHOOK_USER", None)
-    mj_wh_pass = getattr(settings, "MAILJET_WEBHOOK_PASSWORD", None)
-    if _truthy_str(mj_wh_secret) or (_truthy_str(mj_wh_user) and _truthy_str(mj_wh_pass)):
+    if _truthy_str(mj_wh_secret):
         add(
-            "MAILJET_WEBHOOK_AUTH",
+            "MAILJET_WEBHOOK_SECRET",
             True,
-            "Webhook auth configured",
-            "Mailjet delivery webhooks",
+            "Set — put the same value on the Mailjet Event API URL as "
+            "?secret=… (endpoint /webhooks/mailjet)",
+            "Mailjet Event API webhook shared secret",
+            group="mailjet_webhook",
+            group_label="Mailjet webhook",
+            required=False,
+            endpoint="/webhooks/mailjet",
         )
     else:
         add(
-            "MAILJET_WEBHOOK_AUTH",
+            "MAILJET_WEBHOOK_SECRET",
             False,
-            "MAILJET_WEBHOOK_SECRET or USER/PASSWORD not set (webhooks may be open or rejected)",
-            "Mailjet delivery webhooks",
+            "Optional: invent a secret in /etc/boxes.env, then set the Mailjet "
+            "Event API callback to "
+            "https://<host>/webhooks/mailjet?secret=<that-secret>. "
+            "Enable events sent/bounce/blocked/spam (+ open/click/unsub). "
+            "Separate from Stripe.",
+            "Mailjet Event API webhook shared secret",
+            group="mailjet_webhook",
+            group_label="Mailjet webhook",
+            required=False,
+            endpoint="/webhooks/mailjet",
         )
 
     missing = [c for c in checks if not c["ok"]]
-    # Hard failures for payments/email (not optional webhook auth alone)
-    hard_names = {
-        "MJ_APIKEY_PUBLIC",
-        "MJ_APIKEY_PRIVATE",
-        "STRIPE_API_KEY",
-        "STRIPE_ENDPOINT_SECRET",
-    }
-    hard_missing = [c for c in missing if c["name"] in hard_names]
+    hard_missing = [c for c in missing if c.get("required")]
+
+    group_order = [
+        ("mailjet_api", "Mailjet outbound email"),
+        ("stripe_api", "Stripe API keys"),
+        ("stripe_webhook", "Stripe webhook"),
+        ("mailjet_webhook", "Mailjet webhook"),
+    ]
+    groups: list[dict[str, Any]] = []
+    for gid, glabel in group_order:
+        gchecks = [c for c in checks if c["group"] == gid]
+        if not gchecks:
+            continue
+        groups.append({
+            "id": gid,
+            "label": glabel,
+            "endpoint": gchecks[0].get("endpoint"),
+            "required": any(c["required"] for c in gchecks),
+            "ok": all(c["ok"] for c in gchecks),
+            "checks": gchecks,
+        })
+
+    webhooks = [
+        {
+            "provider": "Stripe",
+            "endpoint": "/webhooks/stripe",
+            "purpose": "Payment confirmation (PaymentIntent events)",
+            "env": "STRIPE_WEBHOOK_SECRET (whsec_…)",
+            "required": True,
+            "ok": all(c["ok"] for c in checks if c["group"] == "stripe_webhook"),
+        },
+        {
+            "provider": "Mailjet",
+            "endpoint": "/webhooks/mailjet",
+            "purpose": "Email delivery events (sent, bounce, open, …)",
+            "env": "MAILJET_WEBHOOK_SECRET (?secret= on Event API URL)",
+            "required": False,
+            "ok": all(c["ok"] for c in checks if c["group"] == "mailjet_webhook"),
+        },
+    ]
 
     return {
         "checks": checks,
+        "groups": groups,
+        "webhooks": webhooks,
         "any_missing": len(missing) > 0,
         "hard_missing": len(hard_missing) > 0,
         "issues": [
@@ -166,6 +308,7 @@ def env_api_key_status() -> dict[str, Any]:
             f"{c['name']}: {c['detail']} ({c['required_for']})" for c in hard_missing
         ],
     }
+
 
 
 def _check_general() -> SetupItem:

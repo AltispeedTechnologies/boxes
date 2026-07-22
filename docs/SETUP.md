@@ -58,17 +58,18 @@ DB_PORT="5432"
 MJ_APIKEY_PUBLIC="{{ vault_boxes_mailjet_public }}"
 MJ_APIKEY_PRIVATE="{{ vault_boxes_mailjet_private }}"
 
-# Stripe settings
-STRIPE_API_KEY="{{ vault_boxes_stripe_api_key }}"
-# Signing secret from Stripe Dashboard → Developers → Webhooks (whsec_…)
-# See "Configuring webhooks" below for how to create the endpoint.
-STRIPE_ENDPOINT_SECRET="{{ vault_boxes_stripe_endpoint_secret }}"
+# Stripe settings (three separate secrets — not interchangeable)
+# Public / publishable key (pk_test_… or pk_live_…)
+STRIPE_PUBLISHABLE_KEY="{{ vault_boxes_stripe_publishable_key }}"
+# Private / secret key (sk_test_… or sk_live_…) — server only
+STRIPE_SECRET_KEY="{{ vault_boxes_stripe_secret_key }}"
+# Webhook signing secret from Dashboard → Developers → Webhooks (whsec_…)
+# See "Configuring webhooks" below. Not the same as pk_/sk_.
+STRIPE_WEBHOOK_SECRET="{{ vault_boxes_stripe_webhook_secret }}"
 
-# Optional Mailjet Event API webhook auth (recommended in production)
-# MAILJET_WEBHOOK_SECRET="{{ vault_boxes_mailjet_webhook_secret }}"
-# Or HTTP basic auth (Mailjet can send Basic credentials on the callback):
-# MAILJET_WEBHOOK_USER="{{ vault_boxes_mailjet_webhook_user }}"
-# MAILJET_WEBHOOK_PASSWORD="{{ vault_boxes_mailjet_webhook_password }}"
+# Optional Mailjet Event API webhook (invent secret; put same value on Event API URL)
+# MAILJET_WEBHOOK_SECRET="long-random-string-you-invent"
+# Mailjet Event API URL must be: https://<host>/webhooks/mailjet?secret=long-random-string-you-invent
 
 # Celery settings
 CELERY_BROKER_USER="{{ rabbitmq_user }}"
@@ -314,8 +315,8 @@ POST endpoints (CSRF-exempt, no session cookie required):
 
 | Provider | Path | Env secret / auth |
 |----------|------|-------------------|
-| Stripe | `/webhooks/stripe` | `STRIPE_ENDPOINT_SECRET` (`whsec_…`) |
-| Mailjet | `/webhooks/mailjet` | Optional `MAILJET_WEBHOOK_SECRET` and/or `MAILJET_WEBHOOK_USER` + `MAILJET_WEBHOOK_PASSWORD` |
+| Stripe | `/webhooks/stripe` | `STRIPE_WEBHOOK_SECRET` (`whsec_…`) only — not `pk_`/`sk_` |
+| Mailjet | `/webhooks/mailjet` | Optional `MAILJET_WEBHOOK_SECRET` (same value as `?secret=` on Event API URL) |
 
 Full URL examples (replace with your real host from `ALLOWED_HOSTS`):
 
@@ -334,7 +335,7 @@ sudo systemctl restart gunicorn celery celery-beat
 ```
 
 Check status under **Management → API keys (env)** (or **General**):
-`STRIPE_ENDPOINT_SECRET` should show OK with a `whsec_…` format, and Mailjet
+`STRIPE_WEBHOOK_SECRET` should show OK with a `whsec_…` format, and Mailjet
 webhook auth should show as set when you configure it.
 
 ### Stripe webhook (required for card payments)
@@ -342,11 +343,17 @@ webhook auth should show as set when you configure it.
 Without a correctly signed Stripe endpoint, Checkout / PaymentIntent events
 never mark invoices paid or update package balances.
 
-**1. API key**
+**1. API keys (public + private — separate from the webhook secret)**
 
-In [Stripe Dashboard](https://dashboard.stripe.com/) → **Developers → API keys**,
-copy the **Secret key** (`sk_live_…` or `sk_test_…`) into `STRIPE_API_KEY` in
-`/etc/boxes.env`. Use test keys only on non-production instances.
+In [Stripe Dashboard](https://dashboard.stripe.com/) → **Developers → API keys**:
+
+1. Copy the **Publishable key** (`pk_live_…` or `pk_test_…`) into
+   `STRIPE_PUBLISHABLE_KEY`.
+2. Copy the **Secret key** (`sk_live_…` or `sk_test_…`) into
+   `STRIPE_SECRET_KEY`.
+
+Use a matching test or live pair only. These are **not** the webhook signing
+secret (`whsec_…` goes in `STRIPE_WEBHOOK_SECRET` in the next step).
 
 **2. Create the webhook endpoint**
 
@@ -365,7 +372,7 @@ copy the **Secret key** (`sk_live_…` or `sk_test_…`) into `STRIPE_API_KEY` i
 5. Put that value in `/etc/boxes.env` as:
 
    ```bash
-   STRIPE_ENDPOINT_SECRET="whsec_…"
+   STRIPE_WEBHOOK_SECRET="whsec_…"
    ```
 
 6. Restart gunicorn and celery (command above).
@@ -385,7 +392,7 @@ copy the **Secret key** (`sk_live_…` or `sk_test_…`) into `STRIPE_API_KEY` i
 
 | Symptom | Likely cause |
 |---------|----------------|
-| HTTP 400, signature errors in log | Wrong `STRIPE_ENDPOINT_SECRET`, or secret from a different endpoint/mode (test vs live) |
+| HTTP 400, signature errors in log | Wrong `STRIPE_WEBHOOK_SECRET`, or secret from a different endpoint/mode (test vs live) |
 | HTTP 400, no signature error | Event type not one of the three `payment_intent.*` events above |
 | 200 but invoice never paid | Celery worker down, or PaymentIntent id not stored on an `Invoice` row |
 | Stripe cannot deliver | Host not public / TLS / firewall; wrong path (must be `/webhooks/stripe`, no trailing slash required) |
@@ -403,7 +410,7 @@ Stripe Cloud. Options:
    ```
 
    The CLI prints a temporary `whsec_…`. Put that in `/etc/boxes.env` as
-   `STRIPE_ENDPOINT_SECRET` and restart gunicorn. Use `stripe trigger
+   `STRIPE_WEBHOOK_SECRET` and restart gunicorn. Use `stripe trigger
    payment_intent.succeeded` only for delivery checks; real payment flow still
    needs a Checkout/PaymentIntent created by the app.
 
@@ -415,64 +422,64 @@ never mix live secrets with test keys.
 
 ### Mailjet webhook (email delivery events)
 
-Optional but recommended: Mailjet Event API callbacks are stored as
-`SentEmailEvent` rows and linked to `SentEmail` when `Message_GUID` /
-`MessageUUID` matches. Outbound mail still works without this; you only lose
-delivery/open/bounce audit detail.
+Optional but recommended for delivery audit (`SentEmailEvent`). Outbound mail
+only needs `MJ_APIKEY_PUBLIC` / `MJ_APIKEY_PRIVATE` and a verified From.
 
-**1. Choose auth (production should set one)**
+Mailjet does **not** issue a signing secret. You invent one value and set it in
+**two** places only (no username/password).
 
-Prefer a shared secret:
-
-```bash
-MAILJET_WEBHOOK_SECRET="{{ long_random_string }}"
-```
-
-The app accepts the secret from either:
-
-- Header: `X-Mailjet-Webhook-Secret: <secret>`
-- Query string: `https://{{ boxes_url }}/webhooks/mailjet?secret=<secret>`
-
-Alternatively (or additionally with the secret), HTTP Basic auth:
+#### 1. Boxes: `/etc/boxes.env`
 
 ```bash
-MAILJET_WEBHOOK_USER="{{ webhook_user }}"
-MAILJET_WEBHOOK_PASSWORD="{{ webhook_password }}"
+MAILJET_WEBHOOK_SECRET="long-random-string-you-invent"
 ```
 
-If **neither** secret nor user/password is set, the endpoint accepts all POSTs
-and logs a warning (dev only). Missing/wrong credentials return **401**.
-
-**2. Register the URL in Mailjet**
-
-1. Mailjet dashboard → **Account settings → Event API** (or **Webhooks** /
-   notification URL, depending on product UI).
-2. Endpoint URL:
-   - With secret query: `https://{{ boxes_url }}/webhooks/mailjet?secret=YOUR_SECRET`
-   - Or bare URL plus Basic auth credentials if Mailjet supports them on the
-     callback: `https://{{ boxes_url }}/webhooks/mailjet`
-3. Enable the event types you care about (sent, open, click, bounce, blocked,
-   spam, unsub, etc.). Boxes stores each event’s type string; unknown types are
-   still recorded.
-4. Save and send a test event from Mailjet if available.
-
-**3. Restart and verify**
+Restart gunicorn after editing:
 
 ```bash
 sudo systemctl restart gunicorn
 ```
 
-Send a real notification from Boxes, then confirm a `SentEmailEvent` appears
-(Management email logs / Django admin / DB). Check app logs for
-`Mailjet webhook auth failed` if Mailjet shows delivery errors to your URL.
+#### 2. Mailjet UI: Event API callback URL
+
+1. Mailjet dashboard → **Account settings** → **Event API** (or Event
+   notifications / webhooks, depending on product UI).
+2. Set the **endpoint URL** to **exactly** (same secret as above):
+
+   ```text
+   https://{{ boxes_url }}/webhooks/mailjet?secret=long-random-string-you-invent
+   ```
+
+   The path is `/webhooks/mailjet`. The query parameter name is `secret`.
+   That is the only place in the Mailjet UI where the shared secret is set
+   (embedded in the URL). Boxes also accepts header
+   `X-Mailjet-Webhook-Secret` for tests; the Event API UI does not send it.
+3. Enable events (Boxes stores any type; no allowlist):
+
+   | Event | Recommended |
+   |-------|-------------|
+   | `sent` | Yes |
+   | `bounce` | Yes |
+   | `blocked` | Yes |
+   | `spam` | Yes |
+   | `open` | Optional |
+   | `click` | Optional |
+   | `unsub` | Optional |
+
+   Minimum useful set: **sent**, **bounce**, **blocked**, **spam**.
+4. Save.
+
+If `MAILJET_WEBHOOK_SECRET` is unset, Boxes accepts all POSTs and logs a warning
+(dev only). Wrong or missing `?secret=` with the env var set returns **401**.
 
 **Common mistakes**
 
 | Symptom | Likely cause |
 |---------|----------------|
-| HTTP 401 from Boxes | Secret/basic auth mismatch with `/etc/boxes.env` |
-| Events not linked to SentEmail | Message UUID not present or different from send response |
-| Auth warning in logs, open endpoint | No `MAILJET_WEBHOOK_*` vars set (fine for local dev only) |
+| HTTP 401 | Env secret set but Mailjet URL missing/wrong `?secret=` |
+| Events not linked to SentEmail | No matching `Message_GUID` on send |
+| Open endpoint warning in logs | `MAILJET_WEBHOOK_SECRET` not set |
+
 
 ---
 

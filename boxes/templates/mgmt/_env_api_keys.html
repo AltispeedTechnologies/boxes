@@ -3,9 +3,77 @@
         <h3 class="text-center text-white py-2 h5 mb-0">API Keys and Environment</h3>
     </div>
     <p class="text-muted small">
-        Integration keys are loaded from <code>/etc/boxes.env</code> on the server (not from this form).
-        Values are never shown here — only whether each key is set and looks valid.
+        Integration keys are loaded from <code>/etc/boxes.env</code> on the server
+        (not from this form). Values are never shown here — only whether each
+        variable is set and looks valid. Restart gunicorn and celery after edits.
     </p>
+
+    <div class="alert alert-secondary small">
+        <strong>Canonical environment variables</strong>
+        <div class="row mt-2">
+            <div class="col-md-6">
+                <div class="fw-semibold">Stripe</div>
+                <ul class="mb-0 ps-3">
+                    <li><code>STRIPE_PUBLISHABLE_KEY</code> — public (<code>pk_…</code>)</li>
+                    <li><code>STRIPE_SECRET_KEY</code> — private (<code>sk_…</code>)</li>
+                    <li><code>STRIPE_WEBHOOK_SECRET</code> — webhook (<code>whsec_…</code>)</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <div class="fw-semibold">Mailjet</div>
+                <ul class="mb-0 ps-3">
+                    <li><code>MJ_APIKEY_PUBLIC</code> / <code>MJ_APIKEY_PRIVATE</code> (send mail)</li>
+                    <li><code>MAILJET_WEBHOOK_SECRET</code> — invent in <code>/etc/boxes.env</code>;
+                        same value on Mailjet Event API URL as
+                        <code>?secret=…</code> (<code>/webhooks/mailjet</code>)</li>
+                </ul>
+            </div>
+        </div>
+        <p class="mb-0 mt-2 text-muted">
+            Stripe API keys (<code>pk_</code> / <code>sk_</code>) are separate from the Stripe
+            webhook signing secret (<code>whsec_</code>). Mailjet has its own webhook at
+            <code>/webhooks/mailjet</code>, independent of Stripe.
+        </p>
+    </div>
+
+    {% if env_api_keys.webhooks %}
+    <h4 class="h6 mt-3">Webhook endpoints</h4>
+    <p class="text-muted small">
+        Boxes exposes <strong>two</strong> public POST endpoints. Configure each provider
+        separately in its own dashboard.
+    </p>
+    <div class="table-responsive mb-3">
+        <table class="table table-sm table-bordered align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Provider</th>
+                    <th>Path</th>
+                    <th>Env secret</th>
+                    <th>Purpose</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for w in env_api_keys.webhooks %}
+                <tr class="{% if not w.ok %}table-warning{% endif %}">
+                    <td>{{ w.provider }}{% if w.required %} <span class="badge text-bg-secondary">required</span>{% else %} <span class="badge text-bg-light text-muted">optional</span>{% endif %}</td>
+                    <td><code>{{ w.endpoint }}</code></td>
+                    <td class="small"><code>{{ w.env }}</code></td>
+                    <td class="small">{{ w.purpose }}</td>
+                    <td>
+                        {% if w.ok %}
+                        <span class="text-success"><i class="fas fa-check"></i> OK</span>
+                        {% else %}
+                        <span class="text-danger"><i class="fas fa-exclamation-triangle"></i> Needs attention</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
     {% if env_api_keys.hard_missing %}
     <div class="alert alert-warning">
         <i class="fas fa-exclamation-triangle"></i>
@@ -15,7 +83,7 @@
     {% elif env_api_keys.any_missing %}
     <div class="alert alert-info">
         <i class="fas fa-info-circle"></i>
-        Optional environment settings are incomplete (see table).
+        Optional settings are incomplete (often MAILJET_WEBHOOK_SECRET). Required keys look OK.
     </div>
     {% else %}
     <div class="alert alert-success py-2">
@@ -23,6 +91,44 @@
         Required API keys appear to be set correctly in the environment.
     </div>
     {% endif %}
+
+    {% if env_api_keys.groups %}
+        {% for g in env_api_keys.groups %}
+        <h4 class="h6 mt-3">
+            {{ g.label }}
+            {% if g.endpoint %}<span class="text-muted fw-normal small">— <code>{{ g.endpoint }}</code></span>{% endif %}
+            {% if not g.required %}<span class="badge text-bg-light text-muted">optional</span>{% endif %}
+        </h4>
+        <div class="table-responsive mb-2">
+            <table class="table table-sm table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Variable</th>
+                        <th>Status</th>
+                        <th>Used for</th>
+                        <th>Detail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in g.checks %}
+                    <tr class="{% if not c.ok %}table-warning{% endif %}">
+                        <td><code>{{ c.name }}</code></td>
+                        <td>
+                            {% if c.ok %}
+                            <span class="text-success"><i class="fas fa-check"></i> OK</span>
+                            {% else %}
+                            <span class="text-danger"><i class="fas fa-exclamation-triangle"></i> Needs attention</span>
+                            {% endif %}
+                        </td>
+                        <td class="small">{{ c.required_for }}</td>
+                        <td class="small">{{ c.detail }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    {% else %}
     <div class="table-responsive">
         <table class="table table-sm table-bordered align-middle">
             <thead class="table-light">
@@ -51,4 +157,5 @@
             </tbody>
         </table>
     </div>
+    {% endif %}
 </div>

@@ -35,7 +35,7 @@ webhooks while developing in the container:
    stripe listen --forward-to http://boxes.tsimonq2.internal/webhooks/stripe
    ```
 
-3. Copy the CLI’s `whsec_…` into `/etc/boxes.env` as `STRIPE_ENDPOINT_SECRET`
+3. Copy the CLI’s `whsec_…` into `/etc/boxes.env` as `STRIPE_WEBHOOK_SECRET`
    and restart gunicorn (and celery if it was not already running).
 
 Full production setup (Dashboard endpoint, event list, Mailjet auth) is in

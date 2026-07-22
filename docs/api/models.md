@@ -542,6 +542,9 @@ Generation status, progress, and PDF path for a report (1:1).
 
 Audit row for an attempted send (success, Mailjet uuid, recipient).
 
+``account`` is set for package notifications; signup invites may omit it
+when no billing account is linked yet.
+
 | Field | Type | Null | Default | Related | Help |
 |-------|------|------|---------|---------|------|
 | `sentemailcontents` | ForeignKey | True |  | boxes.SentEmailContents |  |
@@ -549,7 +552,7 @@ Audit row for an attempted send (success, Mailjet uuid, recipient).
 | `sentemailresult` | ForeignKey | True |  | boxes.SentEmailResult |  |
 | `events` | ForeignKey | True |  | boxes.SentEmailEvent |  |
 | `id` | BigAutoField | False |  |  |  |
-| `account` | ForeignKey | False |  | boxes.Account |  |
+| `account` | ForeignKey | True |  | boxes.Account |  |
 | `subject` | CharField | False |  |  |  |
 | `email` | CharField | False |  |  |  |
 | `timestamp` | DateTimeField | False | (callable) |  |  |

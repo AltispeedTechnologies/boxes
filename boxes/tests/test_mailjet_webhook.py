@@ -19,8 +19,6 @@ def _basic_header(user, password):
     ALLOWED_HOSTS=["*"],
     SECURE_SSL_REDIRECT=False,
     MAILJET_WEBHOOK_SECRET=None,
-    MAILJET_WEBHOOK_USER=None,
-    MAILJET_WEBHOOK_PASSWORD=None,
 )
 class MailjetWebhookTests(TestCase):
     def setUp(self):
@@ -110,25 +108,4 @@ class MailjetWebhookTests(TestCase):
         )
         self.assertEqual(ok_query.status_code, 200)
 
-    @override_settings(
-        MAILJET_WEBHOOK_SECRET=None,
-        MAILJET_WEBHOOK_USER="mjuser",
-        MAILJET_WEBHOOK_PASSWORD="mjpass",
-    )
-    def test_basic_auth_required(self):
-        payload = [{"event": "click", "time": 2, "Message_GUID": "y"}]
-        missing = self.client.post(
-            "/webhooks/mailjet",
-            data=json.dumps(payload),
-            content_type="application/json",
-        )
-        self.assertEqual(missing.status_code, 401)
 
-        ok = self.client.post(
-            "/webhooks/mailjet",
-            data=json.dumps(payload),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=_basic_header("mjuser", "mjpass"),
-        )
-        self.assertEqual(ok.status_code, 200)
-        self.assertEqual(SentEmailEvent.objects.filter(event_type="click").count(), 1)

@@ -18,7 +18,7 @@ Fresh installs need configuration before Boxes is fully usable. The **Management
 | **Emails** | Sender name/address, check-in template, Mailjet keys when `email_sending` is on. |
 | **Email Templates** | At least one template when email is enabled. |
 | **Pickup Days** | Schedule rules or open days for customer pickup reservations. |
-| **Stripe** | `STRIPE_API_KEY` for customer payments (environment, not only UI). |
+| **Stripe** | `STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET` (environment, not only UI). |
 
 **Accounts and Users** are operational data, not install configuration — they never show setup warnings.
 
@@ -37,10 +37,12 @@ Keys are **not** edited in the web UI. **Management → General** (and the **API
 
 | Variable | Purpose |
 |----------|---------|
-| `MJ_APIKEY_PUBLIC` / `MJ_APIKEY_PRIVATE` | Mailjet outbound email |
-| `STRIPE_API_KEY` | Customer card payments |
-| `STRIPE_ENDPOINT_SECRET` | Stripe webhooks (`whsec_…`) |
-| `MAILJET_WEBHOOK_SECRET` or USER/PASSWORD | Optional webhook auth |
+| `MJ_APIKEY_PUBLIC` | Mailjet public API key (outbound email) |
+| `MJ_APIKEY_PRIVATE` | Mailjet private API key (outbound email) |
+| `STRIPE_PUBLISHABLE_KEY` | Stripe public key (`pk_…`) |
+| `STRIPE_SECRET_KEY` | Stripe private key (`sk_…`, server-side) |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret (`whsec_…`) for `/webhooks/stripe` |
+| `MAILJET_WEBHOOK_SECRET` | Invent in `/etc/boxes.env`; same value on Mailjet Event API URL as `?secret=` |
 
 Secret values are never displayed. Fix by editing `/etc/boxes.env` on the server and restarting gunicorn/celery.
 
@@ -60,7 +62,7 @@ Summary:
 
 Stripe must send `payment_intent.succeeded`, `payment_intent.canceled`, and
 `payment_intent.payment_failed`. Paste the Dashboard **Signing secret** into
-`STRIPE_ENDPOINT_SECRET`. For local/container hosts that Stripe cannot reach,
+`STRIPE_WEBHOOK_SECRET`. For local/container hosts that Stripe cannot reach,
 use the Stripe CLI (`stripe listen --forward-to …`) and its printed `whsec_…`.
 
 

@@ -44,13 +44,15 @@ env = environ.Env(
     SECURE_REFERRER_POLICY=(str, "same-origin"),
     SECURE_SSL_HOST=(str, None),
     SECURE_SSL_REDIRECT=(bool, True),
-    STRIPE_API_KEY=(str, None),
-    STRIPE_ENDPOINT_SECRET=(str, None),
+    # Canonical Stripe keys (pk_ / sk_ / whsec_). Legacy aliases kept for fallback only.
+    STRIPE_PUBLISHABLE_KEY=(str, None),
+    STRIPE_SECRET_KEY=(str, None),
+    STRIPE_WEBHOOK_SECRET=(str, None),
+    STRIPE_API_KEY=(str, None),  # deprecated alias for STRIPE_SECRET_KEY
+    STRIPE_ENDPOINT_SECRET=(str, None),  # deprecated alias for STRIPE_WEBHOOK_SECRET
     MAILJET_WEBHOOK_SECRET=(str, None),
     MJ_APIKEY_PUBLIC=(str, None),
     MJ_APIKEY_PRIVATE=(str, None),
-    MAILJET_WEBHOOK_USER=(str, None),
-    MAILJET_WEBHOOK_PASSWORD=(str, None),
 )
 
 # Set the project base directory
@@ -518,17 +520,31 @@ CELERY_BEAT_SCHEDULE = {
 ##########
 # STRIPE #
 ##########
-STRIPE_API_KEY = env("STRIPE_API_KEY")
-STRIPE_ENDPOINT_SECRET = env("STRIPE_ENDPOINT_SECRET")
+# Canonical names (preferred):
+#   STRIPE_PUBLISHABLE_KEY  — pk_test_… / pk_live_…  (public; browser-safe)
+#   STRIPE_SECRET_KEY       — sk_test_… / sk_live_…  (private; server only)
+#   STRIPE_WEBHOOK_SECRET   — whsec_…                (endpoint signing secret)
+# Legacy aliases still accepted when canonical vars are unset:
+#   STRIPE_API_KEY          → STRIPE_SECRET_KEY
+#   STRIPE_ENDPOINT_SECRET  → STRIPE_WEBHOOK_SECRET
+_stripe_publishable = env("STRIPE_PUBLISHABLE_KEY")
+_stripe_secret = env("STRIPE_SECRET_KEY") or env("STRIPE_API_KEY")
+_stripe_webhook = env("STRIPE_WEBHOOK_SECRET") or env("STRIPE_ENDPOINT_SECRET")
+STRIPE_PUBLISHABLE_KEY = _stripe_publishable
+STRIPE_SECRET_KEY = _stripe_secret
+STRIPE_WEBHOOK_SECRET = _stripe_webhook
+# Back-compat attributes (same values) so older imports keep working briefly
+STRIPE_API_KEY = STRIPE_SECRET_KEY
+STRIPE_ENDPOINT_SECRET = STRIPE_WEBHOOK_SECRET
 
 ###########
 # MAILJET #
 ###########
-# Optional webhook auth: shared secret (header X-Mailjet-Webhook-Secret or ?secret=)
-# and/or HTTP basic auth credentials (Mailjet callback URL style).
+# Canonical names:
+#   MJ_APIKEY_PUBLIC / MJ_APIKEY_PRIVATE — outbound REST API
+#   MAILJET_WEBHOOK_SECRET — invent a secret; put the same value on the Mailjet
+#     Event API callback URL as ?secret=... (POST /webhooks/mailjet)
 MAILJET_WEBHOOK_SECRET = env("MAILJET_WEBHOOK_SECRET")
-MAILJET_WEBHOOK_USER = env("MAILJET_WEBHOOK_USER")
-MAILJET_WEBHOOK_PASSWORD = env("MAILJET_WEBHOOK_PASSWORD")
 MJ_APIKEY_PUBLIC = env("MJ_APIKEY_PUBLIC")
 MJ_APIKEY_PRIVATE = env("MJ_APIKEY_PRIVATE")
 
