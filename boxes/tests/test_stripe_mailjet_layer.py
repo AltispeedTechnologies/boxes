@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 from django.test import Client, TestCase, override_settings
 
 from boxes.models import Invoice
-from boxes.tasks.stripe import handle_stripe_webhook, process_successful_invoice
+from boxes.tasks.stripe import apply_invoice_success, handle_stripe_webhook, process_successful_invoice
 from boxes.tests.helpers import link_user, make_account, make_package, make_user
 
 
@@ -23,7 +23,7 @@ class StripeWebhookLayerTest(TestCase):
             payment_intent_id="pi_test_123",
             subtotal=Decimal("6.00"),
             current_state=1,
-            line_items=[{"id": self.package.id, "amt": 6.0, "late": False, "prtl": False}],
+            line_items=[{"id": self.package.id, "amt": 6.0, "late": False, "prtl": False, "qty": 1, "desc": "Box"}],
         )
 
     def test_process_successful_invoice_marks_paid(self):

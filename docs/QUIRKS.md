@@ -74,7 +74,7 @@ Package FKs to Account, Carrier, and PackageType use **`RESTRICT`**. Deleting a 
 
 - Secret key set in `BoxesConfig.ready()` from `STRIPE_SECRET_KEY` (legacy alias `STRIPE_API_KEY` still accepted).
 - Publishable key: `STRIPE_PUBLISHABLE_KEY` (`pk_…`) — separate from secret and webhook.
-- Webhooks: `stripe.Webhook.construct_event` with `STRIPE_WEBHOOK_SECRET` (`whsec_…`; legacy alias `STRIPE_WEBHOOK_SECRET`); handler is CSRF-exempt.
+- Webhooks: `stripe.Webhook.construct_event` with `STRIPE_WEBHOOK_SECRET` (`whsec_…`; legacy alias `STRIPE_ENDPOINT_SECRET`); handler is CSRF-exempt.
 - Mailjet Event API: `POST /webhooks/mailjet` with optional `MAILJET_WEBHOOK_SECRET` (same value as `?secret=` on the Mailjet Event API callback URL).
   Full endpoint setup (Dashboard events, Mailjet `?secret=`, Stripe CLI for boxes-dev):
   [SETUP.md → Configuring webhooks](SETUP.md#configuring-webhooks).

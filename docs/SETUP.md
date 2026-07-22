@@ -458,15 +458,15 @@ sudo systemctl restart gunicorn
 
    | Event | Recommended |
    |-------|-------------|
-   | `sent` | Yes |
    | `bounce` | Yes |
    | `blocked` | Yes |
    | `spam` | Yes |
    | `open` | Optional |
    | `click` | Optional |
    | `unsub` | Optional |
+   | `sent` | **No** — Mailjet discourages it; Boxes already records send via API |
 
-   Minimum useful set: **sent**, **bounce**, **blocked**, **spam**.
+   Minimum useful set: **bounce**, **blocked**, **spam**.
 4. Save.
 
 If `MAILJET_WEBHOOK_SECRET` is unset, Boxes accepts all POSTs and logs a warning
