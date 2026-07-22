@@ -214,7 +214,8 @@ label.form-label {
     min-height: calc(100vh - 3.5rem);
     display: flex;
     align-items: center;
-    padding: 2rem 0 3rem;
+    /* Bias the login card slightly above true vertical center */
+    padding: 1.25rem 0 7.5rem;
 }
 
 #app-main.app-main--auth > .container-fluid {
