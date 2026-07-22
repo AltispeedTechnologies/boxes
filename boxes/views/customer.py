@@ -3,6 +3,7 @@ from django.utils import timezone
 import json
 import stripe
 from boxes.backend import invoice
+from boxes.tasks.stripe import apply_invoice_success, sync_invoice_from_payment_intent
 from boxes.backend.membership import (
     get_active_account,
     list_accounts_for_user,
@@ -197,7 +198,12 @@ def customer_billing_portal(request):
 
 @require_http_methods(["GET"])
 def customer_view_invoice(request, pk):
-    """GET: invoice detail / confirmation page."""
+    """GET: invoice detail / confirmation page.
+
+    Syncs state from Checkout session or PaymentIntent when needed and
+    idempotently settles the invoice when Stripe reports success (so ledger
+    updates work even if the webhook is delayed).
+    """
     try:
         invoice_data = _invoice_for_member(request, pk)
     except PermissionDenied:
@@ -212,7 +218,11 @@ def customer_view_invoice(request, pk):
         if checkout_session["mode"] == "setup":
             setup_intent = stripe.SetupIntent.retrieve(checkout_session["setup_intent"])
             payment_method = setup_intent["payment_method"]
-            prelim_amount = invoice_data.subtotal + invoice_data.tax if invoice_data.tax else invoice_data.subtotal
+            prelim_amount = (
+                invoice_data.subtotal + invoice_data.tax
+                if invoice_data.tax
+                else invoice_data.subtotal
+            )
             amount = round(prelim_amount * 100)
             payment_intent = stripe.PaymentIntent.create(
                 amount=amount,
@@ -221,37 +231,45 @@ def customer_view_invoice(request, pk):
                 currency="usd",
             )
             invoice_data.payment_intent_id = payment_intent.id
+            invoice_data.save(update_fields=["payment_intent_id"])
         elif checkout_session["mode"] == "payment":
-            invoice_data.payment_intent_id = checkout_session["payment_intent"]
-            if checkout_session["payment_status"] == "paid":
-                invoice_data.current_state = 3
-            elif checkout_session["payment_status"] == "unpaid":
-                invoice_data.current_state = 2
-    elif invoice_data.current_state == 1:
+            pi_id = checkout_session.get("payment_intent")
+            if pi_id:
+                invoice_data.payment_intent_id = pi_id
+                invoice_data.save(update_fields=["payment_intent_id"])
+            if checkout_session.get("payment_status") == "paid":
+                apply_invoice_success(invoice_data)
+                invoice_data.refresh_from_db()
+            elif checkout_session.get("payment_status") == "unpaid":
+                if invoice_data.current_state != 3:
+                    invoice_data.current_state = 2
+                    invoice_data.save(update_fields=["current_state"])
+    elif invoice_data.payment_intent_id and invoice_data.current_state in (0, 1, 2, 4):
         payment_intent = stripe.PaymentIntent.retrieve(invoice_data.payment_intent_id)
-        match payment_intent["status"]:
-            case "requires_action":
-                invoice_data.current_state = 1
-            case "processing":
-                invoice_data.current_state = 2
-            case "succeeded":
-                invoice_data.current_state = 3
-            case "requires_payment_method":
-                invoice_data.current_state = 4
+        synced = sync_invoice_from_payment_intent(invoice_data, payment_intent)
+        if synced is None:
+            return redirect(reverse("customer_make_payment"))
+        invoice_data = synced
 
-    invoice_data.save()
+    payment_method = None
+    if not payment_intent and invoice_data.payment_intent_id:
+        try:
+            payment_intent = stripe.PaymentIntent.retrieve(invoice_data.payment_intent_id)
+        except stripe.InvalidRequestError:
+            payment_intent = None
 
-    if not payment_intent:
-        payment_intent = stripe.PaymentIntent.retrieve(invoice_data.payment_intent_id)
-
-    payment_method = payment_intent["payment_method"]
-    if not payment_method and payment_intent["last_payment_error"]:
-        if payment_intent["last_payment_error"]["payment_method"]:
-            payment_method = payment_intent["last_payment_error"]["payment_method"]["id"]
-
-    if payment_method:
-        payment_method = stripe.PaymentMethod.retrieve(payment_method)
-        payment_method = invoice.get_payment_method_json(payment_method, None)
+    if payment_intent:
+        pm = payment_intent.get("payment_method") if isinstance(payment_intent, dict) else payment_intent["payment_method"]
+        last_err = (
+            payment_intent.get("last_payment_error")
+            if isinstance(payment_intent, dict)
+            else payment_intent["last_payment_error"]
+        )
+        if not pm and last_err and last_err.get("payment_method"):
+            pm = last_err["payment_method"]["id"]
+        if pm:
+            payment_method = stripe.PaymentMethod.retrieve(pm)
+            payment_method = invoice.get_payment_method_json(payment_method, None)
 
     if invoice_data.tax and invoice_data.tax > 0:
         total = invoice_data.subtotal + invoice_data.tax
@@ -290,14 +308,20 @@ def customer_view_pdf(request, pk):
     except Invoice.DoesNotExist:
         return HttpResponseForbidden()
 
-    payment_intent = stripe.PaymentIntent.retrieve(invoice_data.payment_intent_id)
-    payment_method = payment_intent["payment_method"]
-    if not payment_method and payment_intent["last_payment_error"]:
-        if payment_intent["last_payment_error"]["payment_method"]:
-            payment_method = payment_intent["last_payment_error"]["payment_method"]["id"]
-    if payment_method:
-        payment_method = stripe.PaymentMethod.retrieve(payment_method)
-        payment_method = invoice.get_payment_method_json(payment_method, None)
+    payment_method = None
+    if invoice_data.payment_intent_id:
+        try:
+            payment_intent = stripe.PaymentIntent.retrieve(invoice_data.payment_intent_id)
+        except stripe.InvalidRequestError:
+            payment_intent = None
+        if payment_intent:
+            payment_method = payment_intent["payment_method"]
+            if not payment_method and payment_intent["last_payment_error"]:
+                if payment_intent["last_payment_error"]["payment_method"]:
+                    payment_method = payment_intent["last_payment_error"]["payment_method"]["id"]
+            if payment_method:
+                payment_method = stripe.PaymentMethod.retrieve(payment_method)
+                payment_method = invoice.get_payment_method_json(payment_method, None)
     if invoice_data.tax and invoice_data.tax > 0:
         total = invoice_data.subtotal + invoice_data.tax
         tax_rate = ((invoice_data.tax / invoice_data.subtotal) * 100)
@@ -359,7 +383,13 @@ def customer_cancel_invoice(request, pk):
 
     if inv.current_state in [0, 1, 4]:
         if inv.payment_intent_id:
-            stripe.PaymentIntent.cancel(inv.payment_intent_id)
+            try:
+                stripe.PaymentIntent.cancel(inv.payment_intent_id)
+            except stripe.InvalidRequestError:
+                # Already canceled / succeeded / missing — still clean up local row
+                pass
+        if inv.current_state != 3 and not AccountLedger.objects.filter(invoice_id=inv.pk).exists():
+            inv.delete()
 
     return redirect(reverse("customer_make_payment"))
 
@@ -515,30 +545,39 @@ def customer_confirm_invoice(request, pk):
                 invoice_data.payment_intent_id, payment_method=payment_method
             )
 
+    if not invoice_data.payment_intent_id:
+        return JsonResponse(
+            {"success": False, "errors": ["Invoice has no payment intent yet."]},
+            status=400,
+        )
+
     try:
         payment_intent = stripe.PaymentIntent.confirm(
             invoice_data.payment_intent_id, return_url=invoice_url
         )
     except stripe.InvalidRequestError as e:
-        if "already succeeded" in str(e):
-            invoice_data.current_state = 3
-            invoice_data.save()
+        if "already succeeded" in str(e).lower():
+            apply_invoice_success(invoice_data)
             return JsonResponse({"success": True, "url": None})
+        raise
 
     redirect_url = None
-    match payment_intent["status"]:
-        case "requires_action":
-            invoice_data.current_state = 1
-            if payment_intent["next_action"]["type"] == "redirect_to_url":
-                redirect_url = payment_intent["next_action"]["redirect_to_url"]["url"]
-        case "processing":
-            invoice_data.current_state = 2
-        case "succeeded":
-            invoice_data.current_state = 3
-        case "requires_payment_method":
-            invoice_data.current_state = 4
+    status = payment_intent["status"]
+    if status == "requires_action":
+        invoice_data.current_state = 1
+        invoice_data.save(update_fields=["current_state"])
+        next_action = payment_intent.get("next_action") or {}
+        if next_action.get("type") == "redirect_to_url":
+            redirect_url = next_action["redirect_to_url"]["url"]
+    elif status == "processing":
+        invoice_data.current_state = 2
+        invoice_data.save(update_fields=["current_state"])
+    elif status == "succeeded":
+        apply_invoice_success(invoice_data)
+    elif status == "requires_payment_method":
+        invoice_data.current_state = 4
+        invoice_data.save(update_fields=["current_state"])
 
-    invoice_data.save()
     return JsonResponse({"success": True, "url": redirect_url})
 
 
@@ -554,12 +593,24 @@ def customer_new_invoice(request):
 
     globalsettings = GlobalSettings.load()
 
-    data = json.loads(request.body)
-    method = data["method"]
+    try:
+        data = json.loads(request.body)
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return JsonResponse({"success": False, "errors": ["Invalid JSON body."]}, status=400)
 
-    subtotal = float(data["amount"])
+    method = data.get("method")
+    if method is None:
+        return JsonResponse({"success": False, "errors": ["Payment method is required."]}, status=400)
+
+    try:
+        subtotal = float(data.get("amount"))
+    except (TypeError, ValueError):
+        return JsonResponse({"success": False, "errors": ["Invalid payment amount."]}, status=400)
     if subtotal < 0.50:
-        raise ValueError
+        return JsonResponse(
+            {"success": False, "errors": ["Enter a valid amount of at least $0.50."]},
+            status=400,
+        )
     line_items = invoice.generate_line_items(subtotal, account_id)
 
     tax_rate = float(globalsettings.tax_rate / 100) if globalsettings.taxes else 0.00
@@ -622,7 +673,7 @@ def customer_new_invoice(request):
             line_items=line_items,
             discounts=discount if discount else [],
             mode="payment",
-            ui_mode="hosted",
+            ui_mode="hosted_page",
         )
 
         url = checkout_session["url"]
@@ -633,6 +684,7 @@ def customer_new_invoice(request):
             customer=customer_id,
             success_url=success_url,
             cancel_url=cancel_url,
+            ui_mode="hosted_page",
         )
         url = checkout_session["url"]
 
