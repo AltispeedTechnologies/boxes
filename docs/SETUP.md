@@ -12,6 +12,7 @@ After completing setup, configure **business settings in the database** (General
 - [ARCHITECTURE.md](ARCHITECTURE.md) — system overview
 - [CELERY.md](CELERY.md) — worker/beat tasks you just enabled
 - [DEVELOPMENT.md](DEVELOPMENT.md) — day-to-day development
+- [SETUP_STATUS.md](SETUP_STATUS.md) — management UI setup flags and env key checks
 
 ---
 
@@ -59,7 +60,15 @@ MJ_APIKEY_PRIVATE="{{ vault_boxes_mailjet_private }}"
 
 # Stripe settings
 STRIPE_API_KEY="{{ vault_boxes_stripe_api_key }}"
+# Signing secret from Stripe Dashboard → Developers → Webhooks (whsec_…)
+# See "Configuring webhooks" below for how to create the endpoint.
 STRIPE_ENDPOINT_SECRET="{{ vault_boxes_stripe_endpoint_secret }}"
+
+# Optional Mailjet Event API webhook auth (recommended in production)
+# MAILJET_WEBHOOK_SECRET="{{ vault_boxes_mailjet_webhook_secret }}"
+# Or HTTP basic auth (Mailjet can send Basic credentials on the callback):
+# MAILJET_WEBHOOK_USER="{{ vault_boxes_mailjet_webhook_user }}"
+# MAILJET_WEBHOOK_PASSWORD="{{ vault_boxes_mailjet_webhook_password }}"
 
 # Celery settings
 CELERY_BROKER_USER="{{ rabbitmq_user }}"
@@ -297,6 +306,181 @@ This may take a second, but should output successfully for all three units:
 systemctl status celery-beat celery gunicorn
 ```
 
+
+## Configuring webhooks
+
+Boxes receives payment and email-delivery events from external providers on two public
+POST endpoints (CSRF-exempt, no session cookie required):
+
+| Provider | Path | Env secret / auth |
+|----------|------|-------------------|
+| Stripe | `/webhooks/stripe` | `STRIPE_ENDPOINT_SECRET` (`whsec_…`) |
+| Mailjet | `/webhooks/mailjet` | Optional `MAILJET_WEBHOOK_SECRET` and/or `MAILJET_WEBHOOK_USER` + `MAILJET_WEBHOOK_PASSWORD` |
+
+Full URL examples (replace with your real host from `ALLOWED_HOSTS`):
+
+- Production: `https://boxes.example.com/webhooks/stripe`
+- Production: `https://boxes.example.com/webhooks/mailjet`
+- Internal / dev: `http://boxes.tsimonq2.internal/webhooks/stripe`
+
+NGINX must proxy these paths to Gunicorn like any other app URL (the default
+`location /` config already does). Celery workers must be running: Stripe
+payment handling is enqueued with `handle_stripe_webhook.delay(...)`.
+
+After changing `/etc/boxes.env`, restart the app processes:
+
+```bash
+sudo systemctl restart gunicorn celery celery-beat
+```
+
+Check status under **Management → API keys (env)** (or **General**):
+`STRIPE_ENDPOINT_SECRET` should show OK with a `whsec_…` format, and Mailjet
+webhook auth should show as set when you configure it.
+
+### Stripe webhook (required for card payments)
+
+Without a correctly signed Stripe endpoint, Checkout / PaymentIntent events
+never mark invoices paid or update package balances.
+
+**1. API key**
+
+In [Stripe Dashboard](https://dashboard.stripe.com/) → **Developers → API keys**,
+copy the **Secret key** (`sk_live_…` or `sk_test_…`) into `STRIPE_API_KEY` in
+`/etc/boxes.env`. Use test keys only on non-production instances.
+
+**2. Create the webhook endpoint**
+
+1. Open **Developers → Webhooks → Add endpoint**.
+2. **Endpoint URL:** `https://{{ boxes_url }}/webhooks/stripe`
+   (must be reachable from the public internet for Stripe Cloud; use the
+   [Stripe CLI](https://stripe.com/docs/stripe-cli) only for local tunneling).
+3. **Events to send** — select at least these PaymentIntent events (the app
+   rejects other event types with HTTP 400):
+
+   - `payment_intent.succeeded`
+   - `payment_intent.canceled`
+   - `payment_intent.payment_failed`
+
+4. Create the endpoint, then open it and **Reveal** the **Signing secret**.
+5. Put that value in `/etc/boxes.env` as:
+
+   ```bash
+   STRIPE_ENDPOINT_SECRET="whsec_…"
+   ```
+
+6. Restart gunicorn and celery (command above).
+
+**3. Verify**
+
+- Stripe Dashboard → Webhooks → your endpoint → **Send test webhook** for
+  `payment_intent.succeeded`. A valid signature with a PaymentIntent the app
+  does not know about still returns **200** after enqueue (handler no-ops if
+  no matching `Invoice`); a bad secret returns **400**.
+- App logs (`LOGGING_FILE`, often `/var/log/mikes-boxes.log`) warn on
+  `Error verifying Stripe webhook signature` when the secret is wrong.
+- Complete a test Checkout payment: invoice should move to paid and packages
+  should mark paid after Celery processes the task.
+
+**Common mistakes**
+
+| Symptom | Likely cause |
+|---------|----------------|
+| HTTP 400, signature errors in log | Wrong `STRIPE_ENDPOINT_SECRET`, or secret from a different endpoint/mode (test vs live) |
+| HTTP 400, no signature error | Event type not one of the three `payment_intent.*` events above |
+| 200 but invoice never paid | Celery worker down, or PaymentIntent id not stored on an `Invoice` row |
+| Stripe cannot deliver | Host not public / TLS / firewall; wrong path (must be `/webhooks/stripe`, no trailing slash required) |
+| Secret format warning in Management UI | Value does not start with `whsec_` |
+
+**Local / container development**
+
+Internal hosts such as `http://boxes.tsimonq2.internal` are not reachable by
+Stripe Cloud. Options:
+
+1. **Stripe CLI** (recommended for dev):
+
+   ```bash
+   stripe listen --forward-to http://boxes.tsimonq2.internal/webhooks/stripe
+   ```
+
+   The CLI prints a temporary `whsec_…`. Put that in `/etc/boxes.env` as
+   `STRIPE_ENDPOINT_SECRET` and restart gunicorn. Use `stripe trigger
+   payment_intent.succeeded` only for delivery checks; real payment flow still
+   needs a Checkout/PaymentIntent created by the app.
+
+2. Or expose the site with a tunnel (ngrok, etc.) and register that HTTPS URL
+   as the Dashboard endpoint.
+
+Keep **test** API keys and the matching test-mode webhook secret together;
+never mix live secrets with test keys.
+
+### Mailjet webhook (email delivery events)
+
+Optional but recommended: Mailjet Event API callbacks are stored as
+`SentEmailEvent` rows and linked to `SentEmail` when `Message_GUID` /
+`MessageUUID` matches. Outbound mail still works without this; you only lose
+delivery/open/bounce audit detail.
+
+**1. Choose auth (production should set one)**
+
+Prefer a shared secret:
+
+```bash
+MAILJET_WEBHOOK_SECRET="{{ long_random_string }}"
+```
+
+The app accepts the secret from either:
+
+- Header: `X-Mailjet-Webhook-Secret: <secret>`
+- Query string: `https://{{ boxes_url }}/webhooks/mailjet?secret=<secret>`
+
+Alternatively (or additionally with the secret), HTTP Basic auth:
+
+```bash
+MAILJET_WEBHOOK_USER="{{ webhook_user }}"
+MAILJET_WEBHOOK_PASSWORD="{{ webhook_password }}"
+```
+
+If **neither** secret nor user/password is set, the endpoint accepts all POSTs
+and logs a warning (dev only). Missing/wrong credentials return **401**.
+
+**2. Register the URL in Mailjet**
+
+1. Mailjet dashboard → **Account settings → Event API** (or **Webhooks** /
+   notification URL, depending on product UI).
+2. Endpoint URL:
+   - With secret query: `https://{{ boxes_url }}/webhooks/mailjet?secret=YOUR_SECRET`
+   - Or bare URL plus Basic auth credentials if Mailjet supports them on the
+     callback: `https://{{ boxes_url }}/webhooks/mailjet`
+3. Enable the event types you care about (sent, open, click, bounce, blocked,
+   spam, unsub, etc.). Boxes stores each event’s type string; unknown types are
+   still recorded.
+4. Save and send a test event from Mailjet if available.
+
+**3. Restart and verify**
+
+```bash
+sudo systemctl restart gunicorn
+```
+
+Send a real notification from Boxes, then confirm a `SentEmailEvent` appears
+(Management email logs / Django admin / DB). Check app logs for
+`Mailjet webhook auth failed` if Mailjet shows delivery errors to your URL.
+
+**Common mistakes**
+
+| Symptom | Likely cause |
+|---------|----------------|
+| HTTP 401 from Boxes | Secret/basic auth mismatch with `/etc/boxes.env` |
+| Events not linked to SentEmail | Message UUID not present or different from send response |
+| Auth warning in logs, open endpoint | No `MAILJET_WEBHOOK_*` vars set (fine for local dev only) |
+
+---
+
 ## Completion
 
-Setup should now be complete. If something here is incorrect, please correct it once running through these instructions.
+Setup should now be complete. Before going live, finish **[Configuring webhooks](#configuring-webhooks)**
+(Stripe is required for payment confirmation; Mailjet Event API is recommended
+for delivery audit). Confirm **Management → API keys (env)** shows the required
+keys as OK, and that Celery is processing tasks.
+
+If something here is incorrect, please correct it once running through these instructions.

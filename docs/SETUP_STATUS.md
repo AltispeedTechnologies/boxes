@@ -44,6 +44,25 @@ Keys are **not** edited in the web UI. **Management → General** (and the **API
 
 Secret values are never displayed. Fix by editing `/etc/boxes.env` on the server and restarting gunicorn/celery.
 
+### Setting up the webhook endpoints
+
+Env vars alone are not enough: you must also register the public URLs with
+Stripe and (optionally) Mailjet. Step-by-step instructions, required event
+types, auth options, and troubleshooting live in
+**[SETUP.md → Configuring webhooks](SETUP.md#configuring-webhooks)**.
+
+Summary:
+
+| Integration | Endpoint | Required? |
+|-------------|----------|-----------|
+| Stripe | `https://<host>/webhooks/stripe` | Yes for payment confirmation |
+| Mailjet Event API | `https://<host>/webhooks/mailjet` | Optional (delivery audit) |
+
+Stripe must send `payment_intent.succeeded`, `payment_intent.canceled`, and
+`payment_intent.payment_failed`. Paste the Dashboard **Signing secret** into
+`STRIPE_ENDPOINT_SECRET`. For local/container hosts that Stripe cannot reach,
+use the Stripe CLI (`stripe listen --forward-to …`) and its printed `whsec_…`.
+
 
 ## Pitfall: verified Mailjet From address
 

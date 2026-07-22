@@ -74,6 +74,8 @@ Package FKs to Account, Carrier, and PackageType use **`RESTRICT`**. Deleting a 
 
 - API key set in `BoxesConfig.ready()` from `STRIPE_API_KEY`.
 - Webhooks: `stripe.Webhook.construct_event` with `STRIPE_ENDPOINT_SECRET`; handler is CSRF-exempt.
+  Full endpoint setup (Dashboard events, Mailjet auth, Stripe CLI for boxes-dev):
+  [SETUP.md → Configuring webhooks](SETUP.md#configuring-webhooks).
 - Payment methods: DB cache (`StripePaymentMethod`) is reconciled to Stripe on list (`get_payment_methods`).
 - Tax rates may be created in Stripe when enabling taxes on the charges screen (`tax_stripe_id` stored on GlobalSettings).
 - `pass_on_fees` changes whether processing fees are added to the customer total.

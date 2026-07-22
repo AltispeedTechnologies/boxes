@@ -22,6 +22,25 @@ source env/bin/activate
 
 Git author in container: **Simon Quigley <squigley@altispeed.com>**.
 
+### Stripe / Mailjet webhooks on boxes-dev
+
+`http://boxes.tsimonq2.internal` is not reachable from Stripe Cloud. For payment
+webhooks while developing in the container:
+
+1. Install the [Stripe CLI](https://stripe.com/docs/stripe-cli) on a machine that
+   can reach the container (often the LXD host).
+2. Forward events:
+
+   ```bash
+   stripe listen --forward-to http://boxes.tsimonq2.internal/webhooks/stripe
+   ```
+
+3. Copy the CLI’s `whsec_…` into `/etc/boxes.env` as `STRIPE_ENDPOINT_SECRET`
+   and restart gunicorn (and celery if it was not already running).
+
+Full production setup (Dashboard endpoint, event list, Mailjet auth) is in
+**[SETUP.md → Configuring webhooks](SETUP.md#configuring-webhooks)**.
+
 ### Feature worktrees
 
 Parallel feature branches may live as sibling checkouts under `/var/www/wt-<name>`
