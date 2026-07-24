@@ -1,3 +1,77 @@
+<div class="container bg-body shadow rounded p-3 col-md-8 mb-4" id="http-connectivity">
+    <div class="row bg-secondary bg-gradient rounded mb-3">
+        <h3 class="text-center text-white py-2 h5 mb-0">HTTP Connectivity</h3>
+    </div>
+    <p class="text-muted small">
+        HTTP/3 is recommended for production (QUIC on 443). The browser reports
+        the protocol used for this page; the app server only sees the reverse-proxy
+        hop, so this check runs in your browser.
+    </p>
+    <div id="http-connectivity-status" class="alert alert-secondary" role="status">
+        <span class="me-2" id="http-connectivity-spinner"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i></span>
+        <span id="http-connectivity-detail">Detecting connection protocol…</span>
+    </div>
+    <p class="text-muted small mb-0">
+        Configure NGINX with <code>listen 443 quic</code> and
+        <code>Alt-Svc: h3=&quot;:443&quot;</code> as described in
+        <code>docs/SETUP.md</code>. Cleartext HTTP and HTTP/2 will show a warning here.
+    </p>
+    {# Inline paint so the panel never sticks on Detecting if external JS is stale/cached #}
+    <script>
+    (function () {
+        function detect() {
+            try {
+                if (window.performance && performance.getEntriesByType) {
+                    var e = performance.getEntriesByType("navigation");
+                    if (e && e[0] && e[0].nextHopProtocol) {
+                        return String(e[0].nextHopProtocol);
+                    }
+                }
+            } catch (err) {}
+            if (location.protocol === "http:") return "http/1.1";
+            return "unknown";
+        }
+        function isH3(p) {
+            p = String(p || "").toLowerCase();
+            return p === "h3" || p.indexOf("h3-") === 0 || p === "http/3" || p === "http/3.0";
+        }
+        function label(p) {
+            p = String(p || "").toLowerCase();
+            if (isH3(p)) return "HTTP/3";
+            if (p === "h2" || p === "h2c" || p.indexOf("h2") === 0) return "HTTP/2";
+            if (p === "http/1.1") return "HTTP/1.1";
+            if (p === "http/1.0") return "HTTP/1.0";
+            return p || "Unknown";
+        }
+        function paint() {
+            var box = document.getElementById("http-connectivity-status");
+            var detail = document.getElementById("http-connectivity-detail");
+            var spin = document.getElementById("http-connectivity-spinner");
+            if (!box || !detail) return;
+            var proto = detect();
+            var lab = label(proto);
+            var ok = isH3(proto);
+            box.classList.remove("alert-secondary", "alert-success", "alert-warning", "alert-info");
+            if (spin) spin.remove();
+            if (ok) {
+                box.classList.add("alert-success");
+                detail.innerHTML = "<i class=\"fas fa-check-circle me-1\" aria-hidden=\"true\"></i>Connected with <strong>" + lab + "</strong>.";
+            } else {
+                box.classList.add("alert-warning");
+                detail.innerHTML = "<i class=\"fas fa-exclamation-triangle me-1\" aria-hidden=\"true\"></i>Connected with <strong>" + lab + "</strong>" +
+                    (proto && proto !== lab ? " <span class=\"text-muted\">(" + proto + ")</span>" : "") +
+                    ". This is below HTTP/3. Enable QUIC / HTTP/3 on NGINX for production (see <code>docs/SETUP.md</code>).";
+            }
+        }
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", paint);
+        } else {
+            paint();
+        }
+    })();
+    </script>
+</div>
+
 <div class="container bg-body shadow rounded p-3 col-md-8 mb-4" id="env-api-keys">
     <div class="row bg-secondary bg-gradient rounded mb-3">
         <h3 class="text-center text-white py-2 h5 mb-0">API Keys and Environment</h3>
