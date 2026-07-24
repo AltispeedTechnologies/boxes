@@ -127,6 +127,36 @@ class SetupStatusTests(TestCase):
         self.assertContains(r, "setup-warn-icon")
 
 
+
+    def test_banner_issues_not_duplicated_for_stripe(self):
+        """Stripe key problems must not appear twice in all_issues."""
+        from django.test import override_settings
+
+        with override_settings(
+            STRIPE_PUBLISHABLE_KEY="",
+            STRIPE_SECRET_KEY="sk_test_abcdefghijklmnopqrstuv",
+            STRIPE_WEBHOOK_SECRET="whsec_abcdefghijklmnopqrstuv",
+            MJ_APIKEY_PUBLIC="publickeypublickey",
+            MJ_APIKEY_PRIVATE="privatekeyprivatekey",
+        ):
+            invalidate_setup_status_cache()
+            s = compute_setup_status(use_cache=False)
+        # env_keys has detail; stripe has one summary — not two STRIPE_PUBLISHABLE lines
+        stripe_pub_lines = [
+            i for i in s["all_issues"] if "STRIPE_PUBLISHABLE_KEY" in i
+        ]
+        self.assertEqual(len(stripe_pub_lines), 1, s["all_issues"])
+        self.assertIn("http3", s["items"])
+        self.assertTrue(s["items"]["http3"]["ok"])  # server placeholder; client refines
+
+    def test_http3_item_in_setup_status(self):
+        invalidate_setup_status_cache()
+        s = compute_setup_status(use_cache=False)
+        self.assertIn("http3", s["items"])
+        self.assertIn("http3", s["order"])
+        self.assertTrue(s.get("http3_client_check"))
+
+
 @override_settings(ALLOWED_HOSTS=["*"], SECURE_SSL_REDIRECT=False)
 class CustomerAccountIsolationTests(TestCase):
     """Security: customers must not act on other accounts' packages."""

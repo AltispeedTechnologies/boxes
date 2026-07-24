@@ -12,7 +12,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.urls import NoReverseMatch, reverse
 
-CACHE_KEY = "boxes_mgmt_setup_status_v3"
+CACHE_KEY = "boxes_mgmt_setup_status_v4"
 CACHE_TTL_SECONDS = 45
 
 # GlobalSettings.load() default name — treat as unconfigured branding
@@ -38,8 +38,13 @@ class SetupItem:
 def invalidate_setup_status_cache() -> None:
     """Drop cached setup status (call after any mgmt settings save)."""
     cache.delete(CACHE_KEY)
-    # Also drop previous key version if present
-    cache.delete("boxes_mgmt_setup_status_v1")
+    # Also drop previous key versions if present
+    for legacy in (
+        "boxes_mgmt_setup_status_v1",
+        "boxes_mgmt_setup_status_v2",
+        "boxes_mgmt_setup_status_v3",
+    ):
+        cache.delete(legacy)
 
 
 def _url(name: str) -> str:
@@ -425,13 +430,17 @@ def _check_emails() -> SetupItem:
         if es.check_in_template_id is None:
             issues.append("Choose a default check-in email template.")
 
-    if EmailTemplate.objects.count() < 1:
-        issues.append("Create at least one email template.")
+    # Template inventory is owned by the Email Templates setup item.
+    # Mailjet API key details are owned by API Keys and Environment.
 
     env = env_api_key_status()
-    for c in env["checks"]:
-        if c["name"].startswith("MJ_APIKEY") and not c["ok"]:
-            issues.append(f"{c['name']} is not set properly in /etc/boxes.env.")
+    if any(
+        (not c["ok"]) and c["name"].startswith("MJ_APIKEY")
+        for c in env["checks"]
+    ):
+        issues.append(
+            "Mailjet API keys are missing or invalid (see API Keys and Environment)."
+        )
 
     return SetupItem(
         key="emails",
@@ -496,10 +505,16 @@ def _check_pickup() -> SetupItem:
 
 def _check_stripe() -> SetupItem:
     env = env_api_key_status()
+    stripe_bad = [
+        c for c in env["checks"]
+        if c["name"].startswith("STRIPE_") and not c["ok"]
+    ]
     issues = []
-    for c in env["checks"]:
-        if c["name"].startswith("STRIPE_") and not c["ok"]:
-            issues.append(f"{c['name']}: {c['detail']} — set in /etc/boxes.env")
+    if stripe_bad:
+        # One summary line only — detailed per-key messages live on env_keys
+        issues.append(
+            "Stripe keys are missing or invalid (see API Keys and Environment)."
+        )
     return SetupItem(
         key="stripe",
         label="Stripe Totals",
@@ -508,6 +523,25 @@ def _check_stripe() -> SetupItem:
         ok=len(issues) == 0,
         issues=issues,
         url=_url("stripe_totals"),
+    )
+
+
+def _check_http3() -> SetupItem:
+    """HTTP/3 connectivity (client-refined).
+
+    The reverse proxy → Gunicorn hop is almost always HTTP/1.1, so the true
+    browser protocol cannot be known server-side. This item is a placeholder:
+    ``setup_status.js`` detects ``nextHopProtocol`` and marks incomplete when
+    the connection is not HTTP/3.
+    """
+    return SetupItem(
+        key="http3",
+        label="HTTP Connectivity",
+        url_name="env_api_keys",
+        required=False,
+        ok=True,
+        issues=[],
+        url=_url("env_api_keys") + "#http-connectivity",
     )
 
 
@@ -527,6 +561,32 @@ def _check_env_keys() -> SetupItem:
     )
 
 
+def _dedupe_issues(issues: list[str]) -> list[str]:
+    """Preserve order while dropping duplicate / near-duplicate banner lines.
+
+    Env-style messages often share a leading ``VAR_NAME:`` prefix across
+    setup items (env_keys vs stripe/emails). Collapse those to the first
+    occurrence so the top-of-page warning list is not repeated.
+    """
+    seen_exact: set[str] = set()
+    seen_keys: set[str] = set()
+    out: list[str] = []
+    for raw in issues:
+        issue = (raw or "").strip()
+        if not issue:
+            continue
+        if issue in seen_exact:
+            continue
+        key = issue.split(":", 1)[0].strip() if ":" in issue else issue
+        # Collapse STRIPE_* / MJ_* detail lines that only differ in suffix
+        if key.startswith(("STRIPE_", "MJ_", "MAILJET_")) and key in seen_keys:
+            continue
+        seen_exact.add(issue)
+        seen_keys.add(key)
+        out.append(issue)
+    return out
+
+
 def compute_setup_status(*, use_cache: bool = True) -> dict[str, Any]:
     """Return full setup status dict for navbar and API."""
     if use_cache:
@@ -537,6 +597,7 @@ def compute_setup_status(*, use_cache: bool = True) -> dict[str, Any]:
     builders = [
         ("accounts", None),
         ("env_keys", _check_env_keys),
+        ("http3", _check_http3),
         ("stripe", _check_stripe),
         ("carriers", _check_carriers),
         ("charges", _check_charges),
@@ -573,14 +634,28 @@ def compute_setup_status(*, use_cache: bool = True) -> dict[str, Any]:
     all_issues: list[str] = []
     required_incomplete = False
     any_incomplete = False
+    env_issues_text = " ".join(items.get("env_keys", {}).get("issues") or [])
     for key in order:
         it = items[key]
         if not it["ok"]:
             any_incomplete = True
-            all_issues.extend(it["issues"])
+            to_add = list(it["issues"] or [])
+            # Banner ownership: detailed key messages live on env_keys.
+            # Related items keep their own issues for navbar tooltips only.
+            if key == "stripe" and "STRIPE_" in env_issues_text:
+                to_add = []
+            if key == "emails" and "MJ_" in env_issues_text:
+                to_add = [
+                    i for i in to_add
+                    if "Mailjet API keys" not in i
+                ]
+            all_issues.extend(to_add)
             if it["required"]:
                 required_incomplete = True
                 required_issues.extend(it["issues"])
+
+    all_issues = _dedupe_issues(all_issues)
+    required_issues = _dedupe_issues(required_issues)
 
     env = env_api_key_status()
 
@@ -592,6 +667,8 @@ def compute_setup_status(*, use_cache: bool = True) -> dict[str, Any]:
         "required_issues": required_issues,
         "all_issues": all_issues,
         "env_api_keys": env,
+        # Client-side HTTP/3 detection overlays this item (see setup_status.js)
+        "http3_client_check": True,
     }
     cache.set(CACHE_KEY, result, CACHE_TTL_SECONDS)
     return result

@@ -19,8 +19,11 @@ Fresh installs need configuration before Boxes is fully usable. The **Management
 | **Email Templates** | At least one template when email is enabled. |
 | **Pickup Days** | Schedule rules or open days for customer pickup reservations. |
 | **Stripe** | `STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, and `STRIPE_WEBHOOK_SECRET` (environment, not only UI). |
+| **HTTP Connectivity** | Browser reports protocol via Navigation Timing (`nextHopProtocol`). Warns when not HTTP/3 (HTTP/1.1 or HTTP/2). Configure NGINX QUIC as in [SETUP.md](SETUP.md). |
 
 **Accounts and Users** are operational data, not install configuration — they never show setup warnings.
+
+Banner issue lists are de-duplicated: Stripe/Mailjet key details appear under **API Keys and Environment** only; related menu items use a single summary line.
 
 ## How flags refresh
 
