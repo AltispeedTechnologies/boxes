@@ -35,10 +35,17 @@ body {
     min-height: 100vh;
 }
 
+html {
+    /* Anchor in-page targets and focus below the sticky navbar */
+    scroll-padding-top: 4.5rem;
+}
+
 #app-navbar {
     position: sticky;
     top: 0;
     z-index: 1030;
+    /* Keep the bar in normal flow so content is never painted under it at y=0 */
+    flex-shrink: 0;
 }
 
 #app-navbar .navbar-brand-logo,
@@ -55,6 +62,8 @@ body {
 
 #app-main {
     padding-bottom: var(--boxes-main-gap);
+    /* Prefer page titles not sitting under the sticky bar after hash/nav */
+    scroll-margin-top: 4.5rem;
 }
 
 #app-main > .container,

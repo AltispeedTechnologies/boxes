@@ -488,11 +488,46 @@ function ensure_auth_chrome() {
     }
 }
 
+/**
+ * Keep page chrome (title bars) visible under the sticky navbar after
+ * full loads and htmx swaps. Browsers occasionally leave scroll mid-page
+ * or leave sticky positioning stale until the next scroll event.
+ */
+function scroll_shell_to_top() {
+    try {
+        if ("scrollRestoration" in window.history) {
+            window.history.scrollRestoration = "manual";
+        }
+    } catch (err) {
+        // ignore
+    }
+    var reset = function() {
+        window.scrollTo(0, 0);
+        if (document.documentElement) {
+            document.documentElement.scrollTop = 0;
+        }
+        if (document.body) {
+            document.body.scrollTop = 0;
+        }
+    };
+    reset();
+    // Second pass after layout: fixes sticky-nav overlap until a user scroll
+    window.requestAnimationFrame(function() {
+        reset();
+        // Tiny nudge then back to 0 forces sticky reflow in Chromium
+        if ((window.scrollY || 0) === 0) {
+            window.scrollTo(0, 1);
+            window.scrollTo(0, 0);
+        }
+    });
+}
+
 function boot_app_main() {
     ensure_auth_chrome();
     init_page();
     window.BoxesPage.mount(document.getElementById("app-main"));
     update_navbar_active();
+    scroll_shell_to_top();
 }
 
 // Full document load
