@@ -67,15 +67,17 @@ function handle_create_package() {
     if (tracking_code === "") {
         $("#noTrackingCodeModal").modal("show");
 
+        // Yes: mint an internal tracking code
         $("#noTrackingCodeModal .btn-primary").off().on("click", function() {
-            form_data["tracking_code"] = null;
+            form_data["tracking_code"] = "";
+            form_data["generate_tracking"] = true;
             request_create_package(form_data, hr_fields);
         });
 
-        $("#noTrackingCodeModal .btn-secondary").off().on("click", function() {
-            request_create_package(form_data, hr_fields);
-        });
+        // No: cancel create — do not call the API
+        $("#noTrackingCodeModal .btn-secondary").off("click");
     } else {
+        form_data["generate_tracking"] = false;
         request_create_package(form_data, hr_fields);
     }
 }

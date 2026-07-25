@@ -40,13 +40,23 @@ def create_package(request):
     else:
         data = request.POST.copy()
     return_tracking_code = False
-    if not data.get("tracking_code"):
-        tracking_code, created = PackageSystemTrackingCode.objects.get_or_create(prefix="INT")
-        tracking_code.last_number = F("last_number") + 1
-        tracking_code.save()
-        tracking_code.refresh_from_db()
-        data["tracking_code"] = f"{tracking_code.prefix}{tracking_code.last_number:010d}"
-        return_tracking_code = True
+    generate_raw = data.get("generate_tracking", "")
+    generate_tracking = str(generate_raw).lower() in ("1", "true", "yes", "on")
+    data.pop("generate_tracking", None)
+
+    if not (data.get("tracking_code") or "").strip():
+        if generate_tracking:
+            tracking_code, created = PackageSystemTrackingCode.objects.get_or_create(
+                prefix="INT"
+            )
+            tracking_code.last_number = F("last_number") + 1
+            tracking_code.save()
+            tracking_code.refresh_from_db()
+            data["tracking_code"] = (
+                f"{tracking_code.prefix}{tracking_code.last_number:010d}"
+            )
+            return_tracking_code = True
+        # else leave empty; PackageForm requires tracking_code
 
     form = PackageForm(data)
     if form.is_valid():
@@ -94,3 +104,4 @@ def check_in_packages(request):
 
     if not result["success"]:
         return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occured."])})
+    return JsonResponse({"success": True})
