@@ -102,6 +102,7 @@ from boxes.views.packages import (
     check_out,
     check_out_packages,
     check_out_packages_reverse,
+    clear_checkin_queue,
     create_package,
     package_detail,
     queue_packages,
@@ -242,6 +243,7 @@ delivery_urlpatterns = [
     path("packages/checkin", check_in, name="check_in"),
     path("packages/checkin/create", create_package, name="create_package"),
     path("packages/checkin/submit", check_in_packages, name="check_in_packages"),
+    path("packages/checkin/queue/clear", clear_checkin_queue, name="clear_checkin_queue"),
     path("queues/<int:pk>/packages", queue_packages, name="queue_packages"),
 
     # Select2 helpers for check-in / search

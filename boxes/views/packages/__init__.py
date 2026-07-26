@@ -1,6 +1,6 @@
 """Explicit exports for package views."""
 from boxes.views.packages.backend import queue_packages, type_search, update_queue_name
-from boxes.views.packages.check_in import check_in, check_in_packages, create_package
+from boxes.views.packages.check_in import check_in, check_in_packages, clear_checkin_queue, create_package
 from boxes.views.packages.check_out import (
     check_out,
     check_out_packages,
@@ -17,6 +17,7 @@ __all__ = [
     "check_out",
     "check_out_packages",
     "check_out_packages_reverse",
+    "clear_checkin_queue",
     "create_package",
     "package_detail",
     "queue_packages",

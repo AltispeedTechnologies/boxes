@@ -112,6 +112,7 @@ function reset_form_fields() {
  */
 function display_packages(response) {
     $("#checkinbtn").prop("disabled", false);
+    $("#clearqueuebtn").prop("disabled", false);
 
     let new_row = $("tbody#checkin").find(".visually-hidden")
         .clone()
@@ -164,6 +165,8 @@ function handle_checkin() {
             $(document).trigger("rowsUpdated");
             window.packages.clear();
             $("#checkinbtn").prop("disabled", true);
+            $("#clearqueuebtn").prop("disabled", true);
+            $("#clearqueuebtn").prop("disabled", true);
         }
     });
 }
@@ -190,6 +193,57 @@ function load_queue(selected_queue) {
         on_response: function(response) {
             document.querySelectorAll("tbody#checkin tr:not(.visually-hidden)").forEach(row => row.remove());
             window.packages.clear();
+        }
+    });
+}
+
+
+/**
+ * Remove staged packages from the check-in queue without checking them in.
+ * @param {boolean} selectedOnly - if true, only selected table rows
+ */
+function handle_clear_checkin_queue(selectedOnly) {
+    let selected_queue = localStorage.getItem("selected_queue");
+    let ids = [];
+    if (selectedOnly && window.selected_packages && window.selected_packages.size > 0) {
+        ids = Array.from(window.selected_packages);
+    } else if (selectedOnly) {
+        // fall back to packages set if selection empty
+        window.alert("Select packages to remove, or use Clear All.");
+        return;
+    } else {
+        ids = Array.from(window.packages || []);
+    }
+
+    let payload = { queue_id: selected_queue };
+    if (selectedOnly) {
+        payload.ids = ids;
+    }
+
+    window.ajax_request({
+        type: "POST",
+        url: "/packages/checkin/queue/clear",
+        payload: payload,
+        on_success: function(response) {
+            if (selectedOnly) {
+                ids.forEach(function(id) {
+                    window.packages.delete(id);
+                    if (window.selected_packages) {
+                        window.selected_packages.delete(id);
+                    }
+                    $("tbody#checkin tr[data-row-id=\"" + id + "\"]").remove();
+                });
+            } else {
+                document.querySelectorAll("tbody#checkin tr:not(.visually-hidden)")
+                    .forEach(function(row) { row.remove(); });
+                window.packages.clear();
+                if (window.selected_packages) {
+                    window.selected_packages.clear();
+                }
+            }
+            $(document).trigger("rowsUpdated");
+            $("#checkinbtn").prop("disabled", window.packages.size === 0);
+            $("#clearqueuebtn").prop("disabled", window.packages.size === 0);
         }
     });
 }
@@ -229,6 +283,17 @@ function init_create_page() {
     $("#checkinbtn, #createbtn").off("click").on("click", function(event) {
         event.preventDefault();
         $(this).attr("id") === "checkinbtn" ? handle_checkin() : handle_create_package();
+    });
+
+    $("#clearqueuebtn").off("click").on("click", function(event) {
+        event.preventDefault();
+        if (window.packages.size === 0) {
+            return;
+        }
+        if (!window.confirm("Remove all staged packages from this queue without checking them in?")) {
+            return;
+        }
+        handle_clear_checkin_queue(false);
     });
 
     $("#create_tracking_code").off("keydown").on("keydown", function(event) {

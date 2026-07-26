@@ -105,3 +105,35 @@ def check_in_packages(request):
     if not result["success"]:
         return JsonResponse({"success": False, "errors": result.get("errors", ["An unknown error occured."])})
     return JsonResponse({"success": True})
+
+
+@require_http_methods(["POST"])
+@exception_catcher()
+def clear_checkin_queue(request):
+    """POST: remove packages from a check-in queue without checking them in.
+
+    Body (JSON or form): queue_id required; optional ids / ids[] for a subset.
+    Omitting ids clears the entire queue. Packages stay Received.
+    """
+    if request.content_type and "application/json" in request.content_type:
+        try:
+            payload = json.loads(request.body.decode("utf-8") or "{}")
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            return JsonResponse({"success": False, "errors": ["Invalid JSON"]})
+        queue_id = payload.get("queue_id")
+        ids = payload.get("ids") or payload.get("ids[]") or []
+        if isinstance(ids, str):
+            ids = [x for x in ids.split(",") if x]
+    else:
+        queue_id = request.POST.get("queue_id")
+        ids = request.POST.getlist("ids[]") or request.POST.getlist("ids")
+
+    if not queue_id:
+        return JsonResponse({"success": False, "errors": ["queue_id is required"]})
+
+    qs = PackageQueue.objects.filter(queue_id=queue_id)
+    if ids:
+        qs = qs.filter(package_id__in=ids)
+    removed = qs.count()
+    qs.delete()
+    return JsonResponse({"success": True, "removed": removed})
