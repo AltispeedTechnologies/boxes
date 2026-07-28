@@ -75,13 +75,30 @@ function init_searchbox_page() {
 
         if (filter === "customer") {
             let customer_id = $("#customer_select").val();
+            if (!customer_id) {
+                // Avoid /accounts//packages (404). Require a selected account.
+                let $sel = $("#customer_select");
+                $sel.addClass("is-invalid");
+                if (!$sel.next(".invalid-feedback").length) {
+                    $sel.after(
+                        '<div class="invalid-feedback d-block">Select a customer before searching.</div>'
+                    );
+                }
+                return;
+            }
             window.location.href = "/accounts/" + customer_id + "/packages";
         } else if (filter === "tracking_code") {
-            let query = form.find('input[name="q"]').val();
+            let query = (form.find('input[name="q"]').val() || "").trim();
             let search_url = $(this).data("search");
+            // Empty query is allowed: show results page (not 404)
             let full_url = search_url + "?q=" + encodeURIComponent(query) + "&filter=" + encodeURIComponent(filter);
             window.location.href = full_url;
         }
+    });
+
+    $("#customer_select").off("select2:select.searchguard").on("select2:select.searchguard", function() {
+        $(this).removeClass("is-invalid");
+        $(this).nextAll(".invalid-feedback").remove();
     });
 
     $("#showallbtn").off("click").on("click", function(event) {
