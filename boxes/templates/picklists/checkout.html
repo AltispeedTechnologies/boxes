@@ -12,7 +12,11 @@
     <br />
     {% include "_messages.html" %}
 
-    <div class="d-flex justify-content-end mb-3">
+    <div class="d-flex justify-content-end gap-2 mb-3">
+        <button type="button" id="clearstagedbtn" class="btn btn-outline-danger"
+                title="Clear staged packages without checking them out">
+            Clear Staged
+        </button>
         <button class="btn btn-primary"
                 data-bs-target="#checkOutModal"
                 data-bs-toggle="modal">

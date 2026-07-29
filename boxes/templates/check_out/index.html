@@ -17,6 +17,18 @@
     {% include "_messages.html" %}
     {% include "check_out/searchbox.html" %}
 
+    <div class="container d-flex justify-content-end gap-2 mb-3">
+        <button type="button" id="clearstagedbtn" class="btn btn-outline-danger"
+                title="Clear staged packages without checking them out">
+            Clear Staged
+        </button>
+        <button type="button" class="btn btn-primary"
+                data-bs-target="#checkOutModal" data-bs-toggle="modal">
+            Check Out All Packages
+        </button>
+    </div>
+
+
     {% include "check_out/table.html" %}
 </div>
 

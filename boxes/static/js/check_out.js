@@ -21,6 +21,7 @@ function init_checkout_page() {
         new_row.find("td:nth-child(4)").text(pkg.comments);
 
         $("tbody").append(new_row);
+        $("#clearstagedbtn").prop("disabled", false);
     });
 
     $("#checkOutModal .btn-primary").off("click").on("click", function() {
@@ -36,6 +37,21 @@ function init_checkout_page() {
                 window.location.reload();
             }
         });
+    });
+
+    // Clear staged packages without checking them out
+    $("#clearstagedbtn").off("click").on("click", function(event) {
+        event.preventDefault();
+        if (!window.queued_packages || window.queued_packages.size === 0) {
+            return;
+        }
+        if (!window.confirm("Clear staged packages without checking them out?")) {
+            return;
+        }
+        window.queued_packages.clear();
+        $("table tbody tr").not(".visually-hidden").remove();
+        $(this).prop("disabled", true);
+        $(document).trigger("rowsUpdated");
     });
 }
 
