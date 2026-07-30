@@ -126,16 +126,25 @@
                     <label class="form-check-label" for="user-is-active">Active login</label>
                 </div>
             </div>
-            <div class="col-md-6">
-                <label class="form-label">Groups</label>
-                <div class="d-flex flex-wrap gap-3">
+            <div class="col-md-9">
+                <label class="form-label">Groups / roles</label>
+                <p class="text-muted small mb-2">
+                    Toggle staff access roles. Customer is required for the customer portal.
+                </p>
+                <div class="d-flex flex-wrap gap-2" id="user-group-toggles" role="group"
+                     aria-label="User groups">
                     {% for g in all_groups %}
-                    <div class="form-check">
-                        <input class="form-check-input user-group-check" type="checkbox"
-                               value="{{ g }}" id="group-{{ g }}"
-                               {% if g in groups %}checked{% endif %}>
-                        <label class="form-check-label" for="group-{{ g }}">{{ g }}</label>
-                    </div>
+                    <input type="checkbox" class="btn-check user-group-check"
+                           value="{{ g }}" id="group-{{ g }}" autocomplete="off"
+                           {% if g in groups %}checked{% endif %}>
+                    <label class="btn btn-outline-primary" for="group-{{ g }}">
+                        {% if g == "Admin" %}<i class="fas fa-user-shield me-1"></i>
+                        {% elif g == "Staff" %}<i class="fas fa-clipboard-list me-1"></i>
+                        {% elif g == "Customer" %}<i class="fas fa-user me-1"></i>
+                        {% elif g == "Delivery" %}<i class="fas fa-truck me-1"></i>
+                        {% endif %}
+                        {{ g }}
+                    </label>
                     {% empty %}
                     <span class="text-muted">No groups defined. Load initial_data.</span>
                     {% endfor %}
