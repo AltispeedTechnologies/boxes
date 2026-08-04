@@ -77,15 +77,23 @@ def _mailjet_auth_ok(request):
 
     Set ``MAILJET_WEBHOOK_SECRET`` in ``/etc/boxes.env`` and the same value on
     the Mailjet Event API callback URL as ``?secret=...``.
+
+    When the secret is unset: allow only if Django ``DEBUG`` is True (local
+    development). Production-like runs reject unauthenticated webhooks.
     """
     secret = getattr(settings, "MAILJET_WEBHOOK_SECRET", None) or ""
     if not secret:
-        logger.warning(
-            "Mailjet webhook accepted without credentials; "
-            "set MAILJET_WEBHOOK_SECRET in /etc/boxes.env and use "
-            "?secret= on the Mailjet Event API callback URL"
+        if getattr(settings, "DEBUG", False):
+            logger.warning(
+                "Mailjet webhook accepted without credentials (DEBUG); "
+                "set MAILJET_WEBHOOK_SECRET in /etc/boxes.env and use "
+                "?secret= on the Mailjet Event API callback URL"
+            )
+            return True
+        logger.error(
+            "MAILJET_WEBHOOK_SECRET is not configured; rejecting Mailjet webhook"
         )
-        return True
+        return False
 
     provided = (
         request.headers.get("X-Mailjet-Webhook-Secret")

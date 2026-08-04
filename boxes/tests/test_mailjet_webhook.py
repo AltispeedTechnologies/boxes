@@ -19,6 +19,7 @@ def _basic_header(user, password):
     ALLOWED_HOSTS=["*"],
     SECURE_SSL_REDIRECT=False,
     MAILJET_WEBHOOK_SECRET=None,
+    DEBUG=True,
 )
 class MailjetWebhookTests(TestCase):
     def setUp(self):
@@ -109,3 +110,40 @@ class MailjetWebhookTests(TestCase):
         self.assertEqual(ok_query.status_code, 200)
 
 
+
+
+@override_settings(
+    ALLOWED_HOSTS=["*"],
+    SECURE_SSL_REDIRECT=False,
+    MAILJET_WEBHOOK_SECRET="expected-secret",
+    DEBUG=False,
+)
+class MailjetWebhookAuthTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_rejects_when_secret_configured_and_missing(self):
+        resp = self.client.post(
+            "/webhooks/mailjet",
+            data=json.dumps({"event": "open"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 401)
+
+    def test_accepts_matching_query_secret(self):
+        resp = self.client.post(
+            "/webhooks/mailjet?secret=expected-secret",
+            data=json.dumps({"event": "click", "email": "a@b.com"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(SentEmailEvent.objects.count(), 1)
+
+    def test_rejects_when_secret_unset_and_not_debug(self):
+        with override_settings(MAILJET_WEBHOOK_SECRET=None, DEBUG=False):
+            resp = self.client.post(
+                "/webhooks/mailjet",
+                data=json.dumps({"event": "bounce"}),
+                content_type="application/json",
+            )
+            self.assertEqual(resp.status_code, 401)
